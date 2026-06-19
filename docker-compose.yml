@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: bugbyte_postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: bugbyte_user
+      POSTGRES_PASSWORD: bugbyte_password
+      POSTGRES_DB: bugbyte_db
+    volumes:
+      - bugbyte_pgdata:/var/lib/postgresql
+
+volumes:
+  bugbyte_pgdata:
