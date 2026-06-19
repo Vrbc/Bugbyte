@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  DEVELOPER
+  TESTER
+  ADMIN
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  CASUAL
+  EXPERIENCED
+  QA_ORIENTED
+}
+
+enum TesterLevel {
+  NEW_TESTER
+  RELIABLE_TESTER
+  TRUSTED_TESTER
+  EXPERT_TESTER
+  ELITE_TESTER
+}
+
+enum GameStatus {
+  DRAFT
+  TESTING
+  ARCHIVED
+}
+
+enum BuildStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum CampaignType {
+  FIRST_IMPRESSION
+  BUG_HUNT
+  BALANCE_TEST
+  TUTORIAL_CLARITY
+  PERFORMANCE_CHECK
+  UX_FEEDBACK
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum SessionStatus {
+  LIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum FeedbackType {
+  BUG
+  CONFUSION
+  SUGGESTION
+  POSITIVE
+  DIFFICULTY_SPIKE
+  COMMENT
+}
+
+enum FeedbackSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  developerProfile DeveloperProfile?
+  testerProfile    TesterProfile?
+
+  developedGames       Game[]                @relation("DeveloperGames")
+  developerCampaigns   PlaytestCampaign[]    @relation("DeveloperCampaigns")
+  campaignApplications CampaignApplication[] @relation("TesterApplications")
+  testSessions         TestSession[]         @relation("TesterSessions")
+  feedbackBytes        FeedbackByte[]        @relation("TesterFeedbackBytes")
+  developerReviews     TesterReview[]        @relation("DeveloperReviews")
+  testerReviews        TesterReview[]        @relation("TesterReviews")
+}
+
+model DeveloperProfile {
+  id         String  @id @default(cuid())
+  userId     String  @unique
+  studioName String
+  bio        String?
+  websiteUrl String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TesterProfile {
+  id               String          @id @default(cuid())
+  userId           String          @unique
+  platforms        String[]
+  favoriteGenres   String[]
+  experienceLevel  ExperienceLevel
+  rating           Float           @default(0)
+  reputationPoints Int             @default(0)
+  level            TesterLevel     @default(NEW_TESTER)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Game {
+  id            String     @id @default(cuid())
+  developerId   String
+  title         String
+  description   String
+  genre         String
+  platforms     String[]
+  coverImageUrl String?
+  status        GameStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  developer User               @relation("DeveloperGames", fields: [developerId], references: [id], onDelete: Cascade)
+  builds    GameBuild[]
+  campaigns PlaytestCampaign[]
+
+  @@index([developerId])
+}
+
+model GameBuild {
+  id        String      @id @default(cuid())
+  gameId    String
+  version   String
+  buildUrl  String
+  changelog String?
+  status    BuildStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  game      Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  campaigns PlaytestCampaign[]
+
+  @@unique([gameId, version])
+  @@index([gameId])
+}
+
+model PlaytestCampaign {
+  id                String         @id @default(cuid())
+  gameId            String
+  buildId           String
+  developerId       String
+  title             String
+  type              CampaignType
+  description       String?
+  instructions      String
+  requiredTesters   Int
+  minTesterRating   Float          @default(0)
+  requiredPlatforms String[]
+  estimatedMinutes  Int
+  status            CampaignStatus @default(DRAFT)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  game         Game                  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  build        GameBuild             @relation(fields: [buildId], references: [id], onDelete: Cascade)
+  developer    User                  @relation("DeveloperCampaigns", fields: [developerId], references: [id], onDelete: Cascade)
+  applications CampaignApplication[]
+  sessions     TestSession[]
+
+  @@index([gameId])
+  @@index([buildId])
+  @@index([developerId])
+  @@index([status])
+}
+
+model CampaignApplication {
+  id         String            @id @default(cuid())
+  campaignId String
+  testerId   String
+  message    String?
+  status     ApplicationStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  campaign    PlaytestCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  tester      User             @relation("TesterApplications", fields: [testerId], references: [id], onDelete: Cascade)
+  testSession TestSession?
+
+  @@unique([campaignId, testerId])
+  @@index([campaignId])
+  @@index([testerId])
+}
+
+model TestSession {
+  id                    String        @id @default(cuid())
+  campaignId            String
+  applicationId         String        @unique
+  testerId              String
+  startedAt             DateTime      @default(now())
+  endedAt               DateTime?
+  durationSeconds       Int?
+  status                SessionStatus @default(LIVE)
+  finalFunRating        Int?
+  finalDifficultyRating Int?
+  finalClarityRating    Int?
+  finalComment          String?
+
+  campaign      PlaytestCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  application   CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tester        User                @relation("TesterSessions", fields: [testerId], references: [id], onDelete: Cascade)
+  feedbackBytes FeedbackByte[]
+  review        TesterReview?
+
+  @@index([campaignId])
+  @@index([testerId])
+  @@index([status])
+}
+
+model FeedbackByte {
+  id                String            @id @default(cuid())
+  sessionId         String
+  testerId          String
+  type              FeedbackType
+  timestampSeconds  Int
+  severity          FeedbackSeverity?
+  comment           String
+  reproductionSteps String?
+  screenshotUrl     String?
+  createdAt         DateTime          @default(now())
+
+  session TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tester  User        @relation("TesterFeedbackBytes", fields: [testerId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([testerId])
+  @@index([type])
+}
+
+model TesterReview {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  developerId String
+  testerId    String
+  rating      Int
+  helpful     Boolean  @default(true)
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  session   TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  developer User        @relation("DeveloperReviews", fields: [developerId], references: [id], onDelete: Cascade)
+  tester    User        @relation("TesterReviews", fields: [testerId], references: [id], onDelete: Cascade)
+
+  @@index([developerId])
+  @@index([testerId])
+}
