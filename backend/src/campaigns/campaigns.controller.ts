@@ -20,16 +20,29 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 
 @Controller('campaigns')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.DEVELOPER)
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
+  @Get('public')
+  @Roles(UserRole.TESTER)
+  async findPublicCampaigns() {
+    return this.campaignsService.findPublicCampaigns();
+  }
+
+  @Get('public/:id')
+  @Roles(UserRole.TESTER)
+  async findPublicCampaign(@Param('id') id: string) {
+    return this.campaignsService.findPublicCampaign(id);
+  }
+
   @Get('my')
+  @Roles(UserRole.DEVELOPER)
   findMyCampaigns(@CurrentUser() user: CurrentUserPayload) {
     return this.campaignsService.findMyCampaigns(user);
   }
 
   @Get(':id')
+  @Roles(UserRole.DEVELOPER)
   findOneCampaign(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -38,6 +51,7 @@ export class CampaignsController {
   }
 
   @Post()
+  @Roles(UserRole.DEVELOPER)
   createCampaign(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateCampaignDto,
@@ -46,6 +60,7 @@ export class CampaignsController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.DEVELOPER)
   updateCampaign(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -55,6 +70,7 @@ export class CampaignsController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.DEVELOPER)
   archiveCampaign(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

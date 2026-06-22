@@ -267,4 +267,51 @@ export class CampaignsService {
       },
     } satisfies Prisma.PlaytestCampaignInclude;
   }
+
+  // Public / Tester
+
+  async findPublicCampaigns() {
+    return this.prisma.playtestCampaign.findMany({
+      where: {
+        status: CampaignStatus.ACTIVE,
+      },
+      include: this.publicCampaignsInclude(),
+    });
+  }
+
+  async findPublicCampaign(id: string) {
+    const campaign = await this.prisma.playtestCampaign.findFirst({
+      where: {
+        id,
+        status: CampaignStatus.ACTIVE,
+      },
+      include: this.publicCampaignsInclude(),
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign not found');
+    }
+
+    return campaign;
+  }
+
+  private publicCampaignsInclude() {
+    return {
+      game: true,
+      build: true,
+      developer: {
+        select: {
+          id: true,
+          username: true,
+          developerProfile: true,
+        },
+      },
+      _count: {
+        select: {
+          applications: true,
+          sessions: true,
+        },
+      },
+    } satisfies Prisma.PlaytestCampaignInclude;
+  }
 }
