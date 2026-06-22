@@ -275,7 +275,7 @@ export class CampaignsService {
       where: {
         status: CampaignStatus.ACTIVE,
       },
-      include: this.publicCampaignsInclude(),
+      select: this.publicCampaignListSelect(),
     });
   }
 
@@ -285,7 +285,7 @@ export class CampaignsService {
         id,
         status: CampaignStatus.ACTIVE,
       },
-      include: this.publicCampaignsInclude(),
+      select: this.publicCampaignDetailsSelect(),
     });
 
     if (!campaign) {
@@ -295,10 +295,84 @@ export class CampaignsService {
     return campaign;
   }
 
-  private publicCampaignsInclude() {
+  private publicCampaignListSelect() {
     return {
-      game: true,
-      build: true,
+      id: true,
+      title: true,
+      type: true,
+      requiredPlatforms: true,
+      estimatedMinutes: true,
+      minTesterRating: true,
+      createdAt: true,
+
+      game: {
+        select: {
+          id: true,
+          title: true,
+          genre: true,
+          coverImageUrl: true,
+        },
+      },
+
+      build: {
+        select: {
+          id: true,
+          version: true,
+        },
+      },
+
+      developer: {
+        select: {
+          id: true,
+          username: true,
+          developerProfile: {
+            select: {
+              studioName: true,
+            },
+          },
+        },
+      },
+
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    } satisfies Prisma.PlaytestCampaignSelect;
+  }
+
+  private publicCampaignDetailsSelect() {
+    return {
+      id: true,
+      title: true,
+      type: true,
+      description: true,
+      instructions: true,
+      requiredTesters: true,
+      requiredPlatforms: true,
+      estimatedMinutes: true,
+      minTesterRating: true,
+      createdAt: true,
+
+      game: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          genre: true,
+          platforms: true,
+          coverImageUrl: true,
+        },
+      },
+
+      build: {
+        select: {
+          id: true,
+          version: true,
+          status: true,
+        },
+      },
+
       developer: {
         select: {
           id: true,
@@ -306,12 +380,13 @@ export class CampaignsService {
           developerProfile: true,
         },
       },
+
       _count: {
         select: {
           applications: true,
           sessions: true,
         },
       },
-    } satisfies Prisma.PlaytestCampaignInclude;
+    } satisfies Prisma.PlaytestCampaignSelect;
   }
 }
