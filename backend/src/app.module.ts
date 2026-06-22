@@ -9,6 +9,7 @@ import { GamesModule } from './games/games.module';
 import { BuildsModule } from './builds/builds.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { ApplicationsModule } from './applications/applications.module';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ApplicationsModule } from './applications/applications.module';
     BuildsModule,
     CampaignsModule,
     ApplicationsModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
