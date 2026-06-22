@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { GamesModule } from './games/games.module';
 import { BuildsModule } from './builds/builds.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
+import { ApplicationsModule } from './applications/applications.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
     GamesModule,
     BuildsModule,
     CampaignsModule,
+    ApplicationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

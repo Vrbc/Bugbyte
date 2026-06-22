@@ -216,7 +216,7 @@ export class CampaignsService {
     });
 
     if (!campaign) {
-      throw new NotFoundException('Game build not found');
+      throw new NotFoundException('Campaign not found');
     }
 
     return campaign;
