@@ -10,6 +10,7 @@ import { BuildsModule } from './builds/builds.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SessionsModule } from './sessions/sessions.module';
     CampaignsModule,
     ApplicationsModule,
     SessionsModule,
+    FeedbackBytesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
