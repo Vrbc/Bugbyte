@@ -11,6 +11,7 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
     ApplicationsModule,
     SessionsModule,
     FeedbackBytesModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

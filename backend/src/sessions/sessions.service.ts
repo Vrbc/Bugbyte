@@ -132,7 +132,6 @@ export class SessionsService {
       const updatedSession = await tx.testSession.update({
         where: {
           id: id,
-          testerId: user.id,
         },
         data: {
           endedAt: endedAt,
@@ -141,6 +140,7 @@ export class SessionsService {
           finalFunRating: dto.finalFunRating,
           finalClarityRating: dto.finalClarityRating,
           finalComment: dto.finalComment?.trim() || null,
+          finalDifficultyRating: dto.finalDifficultyRating,
         },
         include: this.sessionDetailsInclude(),
       });
