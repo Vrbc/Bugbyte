@@ -11,6 +11,7 @@ import {
 } from '@prisma/client';
 import { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EndSessionDto } from './dto/end-session.dto';
 
 @Injectable()
 export class SessionsService {
@@ -96,6 +97,65 @@ export class SessionsService {
       throw new NotFoundException('Session not found.');
     }
     return session;
+  }
+
+  async endSession(user: CurrentUserPayload, id: string, dto: EndSessionDto) {
+    const session = await this.prisma.testSession.findFirst({
+      where: {
+        id: id,
+        testerId: user.id,
+      },
+      select: {
+        id: true,
+        applicationId: true,
+        startedAt: true,
+        status: true,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session not found.');
+    }
+
+    if (session.status !== SessionStatus.LIVE) {
+      throw new BadRequestException('Only live sessions can be ended.');
+    }
+
+    const endedAt = new Date();
+
+    const duration = Math.max(
+      0,
+      Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
+    );
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedSession = await tx.testSession.update({
+        where: {
+          id: id,
+          testerId: user.id,
+        },
+        data: {
+          endedAt: endedAt,
+          durationSeconds: duration,
+          status: SessionStatus.COMPLETED,
+          finalFunRating: dto.finalFunRating,
+          finalClarityRating: dto.finalClarityRating,
+          finalComment: dto.finalComment?.trim() || null,
+        },
+        include: this.sessionDetailsInclude(),
+      });
+
+      await tx.campaignApplication.update({
+        where: {
+          id: session.applicationId,
+        },
+        data: {
+          status: ApplicationStatus.COMPLETED,
+        },
+      });
+
+      return updatedSession;
+    });
   }
 
   private sessionListInclude() {

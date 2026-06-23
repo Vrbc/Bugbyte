@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { SessionsService } from './sessions.service';
@@ -8,6 +16,7 @@ import {
   CurrentUser,
   type CurrentUserPayload,
 } from 'src/auth/decorators/current-user.decorator';
+import { EndSessionDto } from './dto/end-session.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -36,5 +45,15 @@ export class SessionsController {
     @Param('id') id: string,
   ) {
     return this.sessionsService.findOneSession(user, id);
+  }
+
+  @Patch('sessions/:id/end')
+  @Roles(UserRole.TESTER)
+  endSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: EndSessionDto,
+  ) {
+    return this.sessionsService.endSession(user, id, dto);
   }
 }
