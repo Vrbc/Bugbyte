@@ -12,6 +12,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     SessionsModule,
     FeedbackBytesModule,
     ReviewsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
