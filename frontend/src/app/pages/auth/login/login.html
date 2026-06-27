@@ -1,0 +1,36 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p>Sign in and continue your playtest loop.</p>
+
+    <form (ngSubmit)="submit()">
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" [(ngModel)]="email" name="email" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input
+          class="form-control"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      @if (errorMessage()) {
+        <div class="auth-error">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button class="btn btn-primary w-100" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Signing in...' : 'Login' }}
+      </button>
+    </form>
+
+    <a routerLink="/auth/register">Create account</a>
+  </div>
+</div>
