@@ -5,6 +5,7 @@ import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
 import { DeveloperDashboard } from './pages/developer/developer-dashboard/developer-dashboard';
 import { TesterDashboard } from './pages/tester/tester-dashboard/tester-dashboard';
+import { DashboardLayout } from './layout/dashboard-layout/dashboard-layout';
 
 export const routes: Routes = [
   {
@@ -21,16 +22,28 @@ export const routes: Routes = [
     component: Register,
   },
   {
-    path: 'developer/dashboard',
-    component: DeveloperDashboard,
+    path: 'developer',
+    component: DashboardLayout,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['DEVELOPER'] },
+    children: [
+      {
+        path: 'dashboard',
+        component: DeveloperDashboard,
+      },
+    ],
   },
   {
-    path: 'tester/dashboard',
-    component: TesterDashboard,
+    path: 'tester',
+    component: DashboardLayout,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['TESTER'] },
+    children: [
+      {
+        path: 'dashboard',
+        component: TesterDashboard,
+      },
+    ],
   },
   {
     path: '**',

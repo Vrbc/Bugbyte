@@ -1,1 +1,101 @@
-<p>developer-dashboard works!</p>
+<section>
+  <div class="mb-8">
+    <p class="text-sm font-medium text-sky-300">Developer dashboard</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight">Your playtest control room</h1>
+    <p class="mt-2 text-slate-400">
+      Track your games, campaigns, tester applications and feedback bytes.
+    </p>
+  </div>
+
+  @if (loading()) {
+    <p class="text-slate-400">Loading dashboard...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (dashboard(); as data) {
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Games</p>
+        <h2 class="mt-2 text-3xl font-bold">{{ data.stats.gamesCount }}</h2>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Campaigns</p>
+        <h2 class="mt-2 text-3xl font-bold">{{ data.stats.campaignsCount }}</h2>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Active campaigns</p>
+        <h2 class="mt-2 text-3xl font-bold text-sky-300">
+          {{ data.stats.activeCampaignsCount }}
+        </h2>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Pending applications</p>
+        <h2 class="mt-2 text-3xl font-bold text-yellow-300">
+          {{ data.stats.pendingApplicationsCount }}
+        </h2>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Live sessions</p>
+        <h2 class="mt-2 text-3xl font-bold text-emerald-300">
+          {{ data.stats.liveSessionsCount }}
+        </h2>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <p class="text-sm text-slate-400">Feedback bytes</p>
+        <h2 class="mt-2 text-3xl font-bold text-violet-300">
+          {{ data.stats.feedbackBytesCount }}
+        </h2>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-6 xl:grid-cols-2">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <h2 class="mb-4 text-lg font-semibold">Recent campaigns</h2>
+
+        @if (data.recentCampaigns.length === 0) {
+          <p class="text-sm text-slate-500">No campaigns yet.</p>
+        }
+
+        <div class="space-y-3">
+          @for (campaign of data.recentCampaigns; track campaign.id) {
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <p class="font-medium">{{ campaign.title }}</p>
+              <p class="text-sm text-slate-400">
+                {{ campaign.game.title }} · {{ campaign.build.version }} · {{ campaign.status }}
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <h2 class="mb-4 text-lg font-semibold">Pending applications</h2>
+
+        @if (data.recentApplications.length === 0) {
+          <p class="text-sm text-slate-500">No pending applications.</p>
+        }
+
+        <div class="space-y-3">
+          @for (application of data.recentApplications; track application.id) {
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <p class="font-medium">{{ application.tester.username }}</p>
+              <p class="text-sm text-slate-400">
+                Applied for {{ application.campaign.title }}
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

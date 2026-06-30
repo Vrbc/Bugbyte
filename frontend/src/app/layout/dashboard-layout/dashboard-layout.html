@@ -1,0 +1,50 @@
+<div class="min-h-screen bg-white text-black">
+  <aside class="fixed inset-y-0 left-0 w-56 border-r border-black bg-white">
+    <div class="px-5 py-5">
+      <h1 class="text-lg font-semibold">Bugbyte</h1>
+      <p class="text-sm text-gray-600">Dashboard</p>
+    </div>
+
+    @if (authService.currentUser(); as user) {
+      <nav class="space-y-1 px-3">
+        @if (user.role === 'DEVELOPER') {
+          <a routerLink="/developer/dashboard" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Dashboard</a>
+          <a routerLink="/developer/games" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">My Games</a>
+          <a routerLink="/developer/campaigns" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Campaigns</a>
+        }
+        @if (user.role === 'TESTER') {
+          <a routerLink="/tester/dashboard" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Dashboard</a>
+          <a routerLink="/tester/campaigns" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Discover Tests</a>
+          <a routerLink="/tester/applications" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">My Applications</a>
+        }
+      </nav>
+    }
+  </aside>
+
+  <div class="pl-56">
+    <header class="border-b border-black px-8 py-4">
+      <div class="flex items-center justify-between">
+        @if (authService.currentUser(); as user) {
+          <div>
+            <p class="text-xs text-gray-600">Signed in as</p>
+            <p class="text-sm font-medium">
+              {{ user.username }}
+              <span class="font-normal text-gray-600">({{ user.role }})</span>
+            </p>
+          </div>
+        }
+        <button
+          type="button"
+          class="border border-black px-4 py-2 text-sm hover:bg-black hover:text-white"
+          (click)="logout()"
+        >
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="p-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>
