@@ -12,6 +12,7 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'access-token',
     )
+    .addSecurityRequirements('access-token')
     .addServer('http://localhost:3000/api', 'Local')
     .build();
   const document = SwaggerModule.createDocument(app, config);

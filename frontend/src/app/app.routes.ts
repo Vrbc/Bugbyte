@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { RouteConfigLoadStart, Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
 import { Login } from './pages/auth/login/login';
@@ -6,6 +6,8 @@ import { Register } from './pages/auth/register/register';
 import { DeveloperDashboard } from './pages/developer/developer-dashboard/developer-dashboard';
 import { TesterDashboard } from './pages/tester/tester-dashboard/tester-dashboard';
 import { DashboardLayout } from './layout/dashboard-layout/dashboard-layout';
+import { DeveloperGamesComponent } from './pages/developer/games/developer-games-component/developer-games-component';
+import { CreateGameComponent } from './pages/developer/games/create-game-component/create-game-component';
 
 export const routes: Routes = [
   {
@@ -30,6 +32,22 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: DeveloperDashboard,
+      },
+      {
+        path: 'games',
+        component: DeveloperGamesComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        }
+      },
+      {
+        path: 'developer/games/new',
+        component: CreateGameComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
       },
     ],
   },
