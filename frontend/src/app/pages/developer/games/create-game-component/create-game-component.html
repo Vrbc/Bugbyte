@@ -1,1 +1,134 @@
-<p>create-game-component works!</p>
+<section class="mx-auto max-w-3xl">
+  <div class="mb-8">
+    <a routerLink="/developer/games" class="text-sm text-sky-300 hover:text-sky-200">
+      Back to games
+    </a>
+
+    <h1 class="mt-4 text-3xl font-bold tracking-tight">Create new game</h1>
+    <p class="mt-2 text-slate-400">
+      Add the game that you want to playtest through Bugbyte.
+    </p>
+  </div>
+
+  <form
+    class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+    (ngSubmit)="submit()"
+  >
+    <div class="space-y-5">
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Game title
+        </label>
+
+        <input
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="title"
+          [(ngModel)]="title"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Description
+        </label>
+
+        <textarea
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="description"
+          rows="4"
+          [(ngModel)]="description"
+          required
+        ></textarea>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Genre
+          </label>
+
+          <input
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="genre"
+            [(ngModel)]="genre"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Status
+          </label>
+
+          <select
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="status"
+            [(ngModel)]="status"
+          >
+            <option value="DRAFT">Draft</option>
+            <option value="TESTING">Testing</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Cover image URL
+        </label>
+
+        <input
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="coverImageUrl"
+          [(ngModel)]="coverImageUrl"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Platforms
+        </label>
+
+        <div class="flex flex-wrap gap-2">
+          @for (platform of avalaiblePlatforms; track platform) {
+            <button
+              type="button"
+              class="rounded-full border px-4 py-2 text-sm transition"
+              [ngClass]="
+                selectedPlatforms.includes(platform)
+                  ? 'border-sky-400 bg-sky-400/10 text-sky-200'
+                  : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/70'
+              "
+              (click)="togglePlatform(platform)"
+            >
+              {{ platform }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+          [disabled]="loading()"
+        >
+          {{ loading() ? 'Creating...' : 'Create game' }}
+        </button>
+
+        <a
+          routerLink="/developer/games"
+          class="rounded-xl border border-slate-700 px-5 py-3 text-sm text-slate-300 hover:border-slate-500"
+        >
+          Cancel
+        </a>
+      </div>
+    </div>
+  </form>
+</section>

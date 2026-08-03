@@ -42,7 +42,7 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'developer/games/new',
+        path: 'games/new',
         component: CreateGameComponent,
         canActivate: [roleGuard],
         data: {

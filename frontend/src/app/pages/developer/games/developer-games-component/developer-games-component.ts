@@ -2,10 +2,11 @@ import { Component, OnInit, signal } from '@angular/core';
 import { Game } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
 import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-developer-games-component',
-  imports: [NgClass],
+  imports: [NgClass, RouterLink],
   templateUrl: './developer-games-component.html',
   styleUrl: './developer-games-component.scss',
 })
