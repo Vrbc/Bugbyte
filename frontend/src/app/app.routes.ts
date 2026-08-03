@@ -9,6 +9,8 @@ import { DashboardLayout } from './layout/dashboard-layout/dashboard-layout';
 import { DeveloperGamesComponent } from './pages/developer/games/developer-games-component/developer-games-component';
 import { CreateGameComponent } from './pages/developer/games/create-game-component/create-game-component';
 import { GameDetailsComponent } from './pages/developer/games/game-details-component/game-details-component';
+import { DeveloperCampaignsComponent } from './pages/developer/campaigns/developer-campaigns-component/developer-campaigns-component';
+import { CreateCampaignComponent } from './pages/developer/campaigns/create-campaign-component/create-campaign-component';
 
 export const routes: Routes = [
   {
@@ -53,6 +55,22 @@ export const routes: Routes = [
       {
         path: 'games/:id',
         component: GameDetailsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
+      },
+      {
+        path: 'campaigns',
+        component: DeveloperCampaignsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
+      },
+      {
+        path: 'campaigns/new',
+        component: CreateCampaignComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['DEVELOPER'],
