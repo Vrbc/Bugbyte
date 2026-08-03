@@ -8,6 +8,7 @@ import { TesterDashboard } from './pages/tester/tester-dashboard/tester-dashboar
 import { DashboardLayout } from './layout/dashboard-layout/dashboard-layout';
 import { DeveloperGamesComponent } from './pages/developer/games/developer-games-component/developer-games-component';
 import { CreateGameComponent } from './pages/developer/games/create-game-component/create-game-component';
+import { GameDetailsComponent } from './pages/developer/games/game-details-component/game-details-component';
 
 export const routes: Routes = [
   {
@@ -44,6 +45,14 @@ export const routes: Routes = [
       {
         path: 'games/new',
         component: CreateGameComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
+      },
+      {
+        path: 'games/:id',
+        component: GameDetailsComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['DEVELOPER'],

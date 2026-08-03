@@ -1,1 +1,198 @@
-<p>game-details-component works!</p>
+<section>
+  <a routerLink="/developer/games" class="text-sm text-sky-300 hover:text-sky-200">
+    Back to games
+  </a>
+
+  @if (loading()) {
+    <p class="mt-6 text-slate-400">Loading game details...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="mt-6 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (game(); as gameData) {
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
+      <div class="h-56 bg-slate-950">
+        @if (gameData.coverImageUrl) {
+          <img
+            [src]="gameData.coverImageUrl"
+            [alt]="gameData.title"
+            class="h-full w-full object-cover"
+          />
+        } @else {
+          <div class="flex h-full items-center justify-center text-6xl text-white">
+            G
+          </div>
+        }
+      </div>
+
+      <div class="p-6">
+        <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+          <div>
+            <p class="text-sm font-medium text-sky-300">Game details</p>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight">
+              {{ gameData.title }}
+            </h1>
+            <p class="mt-2 text-slate-400">
+              {{ gameData.genre }}
+            </p>
+          </div>
+
+          <span
+            class="w-fit rounded-full border px-3 py-1 text-xs"
+            [ngClass]="{
+              'border-sky-400/40 bg-sky-400/10 text-sky-300': gameData.status === 'TESTING',
+              'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': gameData.status === 'DRAFT',
+              'border-slate-600 bg-slate-800 text-slate-400': gameData.status === 'ARCHIVED'
+            }"
+          >
+            {{ gameData.status }}
+          </span>
+        </div>
+
+        <p class="mt-5 max-w-3xl text-sm leading-6 text-slate-300">
+          {{ gameData.description }}
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          @for (platform of gameData.platforms; track platform) {
+            <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+              {{ platform }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <form
+        class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+        (ngSubmit)="createBuild()"
+      >
+        <h2 class="text-xl font-semibold">Add build version</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Add a playable version of this game that can be used in campaigns.
+        </p>
+
+        <div class="mt-5 space-y-4">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Version
+            </label>
+
+            <input
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="version"
+              placeholder="v0.1"
+              [(ngModel)]="version"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Build URL
+            </label>
+
+            <input
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="buildUrl"
+              placeholder="https://..."
+              [(ngModel)]="buildUrl"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Changelog
+            </label>
+
+            <textarea
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="changelog"
+              rows="4"
+              [(ngModel)]="changelog"
+            ></textarea>
+          </div>
+
+          @if (buildErrorMessage()) {
+            <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              {{ buildErrorMessage() }}
+            </div>
+          }
+
+          <button
+            type="submit"
+            class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+            [disabled]="creatingBuild()"
+          >
+            {{ creatingBuild() ? 'Adding...' : 'Add build' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <h2 class="text-xl font-semibold">Build history</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Versions available for playtest campaigns.
+        </p>
+
+        @if (builds().length === 0) {
+          <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-5 text-center">
+            <p class="text-slate-400">No builds yet.</p>
+          </div>
+        }
+
+        <div class="mt-6 space-y-3">
+          @for (build of builds(); track build.id) {
+            <article class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <div class="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-semibold text-white">{{ build.version }}</h3>
+
+                    <span
+                      class="rounded-full border px-2 py-1 text-xs"
+                      [ngClass]="{
+                        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': build.status === 'ACTIVE',
+                        'border-slate-600 bg-slate-800 text-slate-400': build.status === 'ARCHIVED'
+                      }"
+                    >
+                      {{ build.status }}
+                    </span>
+                  </div>
+
+                  <a
+                    [href]="build.buildUrl"
+                    target="_blank"
+                    class="mt-1 block text-sm text-sky-300 hover:text-sky-200"
+                  >
+                    {{ build.buildUrl }}
+                  </a>
+
+                  @if (build.changelog) {
+                    <p class="mt-3 text-sm text-slate-400">
+                      {{ build.changelog }}
+                    </p>
+                  }
+                </div>
+
+                @if (build.status !== 'ARCHIVED') {
+                  <button
+                    type="button"
+                    class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
+                    (click)="archiveBuild(build)"
+                  >
+                    Archive
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>
