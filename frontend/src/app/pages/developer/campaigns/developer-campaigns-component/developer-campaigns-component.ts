@@ -1,9 +1,53 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-developer-campaigns-component',
-  imports: [],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './developer-campaigns-component.html',
   styleUrl: './developer-campaigns-component.scss',
 })
-export class DeveloperCampaignsComponent {}
+export class DeveloperCampaignsComponent implements OnInit {
+  campaigns = signal<PlaytestCampaign[]>([]);
+  loading = signal(true);
+  errorMessage = signal<string | null>(null);
+
+  constructor(private readonly campaignsService: CampaignsService) {}
+
+  ngOnInit(): void {
+    this.loadCampaigns();
+  }
+
+  loadCampaigns(): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    this.campaignsService.getMyCampaigns().subscribe({
+      next: (campaigns) => {
+        this.campaigns.set(campaigns);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.errorMessage.set('Failed to load campaigns.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  archiveCampaign(campaign: PlaytestCampaign): void {
+    const confirmed = confirm(`Archive "${campaign.title}"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.campaignsService.archiveCampaign(campaign.id).subscribe({
+      next: () => this.loadCampaigns(),
+      error: () => this.errorMessage.set('Failed to archive campaign.'),
+    });
+  }
+}

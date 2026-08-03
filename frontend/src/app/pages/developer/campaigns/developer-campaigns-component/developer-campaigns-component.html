@@ -1,1 +1,119 @@
-<p>developer-campaigns-component works!</p>
+<section>
+  <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <div>
+      <p class="text-sm font-medium text-sky-300">Campaigns</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight">Playtest campaigns</h1>
+      <p class="mt-2 text-slate-400">
+        Create campaigns and invite testers to play your games.
+      </p>
+    </div>
+
+    <a
+      routerLink="/developer/campaigns/new"
+      class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90"
+    >
+      + New Campaign
+    </a>
+  </div>
+
+  @if (loading()) {
+    <p class="text-slate-400">Loading campaigns...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="mb-5 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (!loading() && campaigns().length === 0) {
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
+      <h2 class="text-xl font-semibold">No campaigns yet</h2>
+      <p class="mt-2 text-slate-400">
+        Create a campaign after you have at least one game and one build.
+      </p>
+
+      <a
+        routerLink="/developer/campaigns/new"
+        class="mt-5 inline-flex rounded-xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:opacity-90"
+      >
+        Create campaign
+      </a>
+    </div>
+  }
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    @for (campaign of campaigns(); track campaign.id) {
+      <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 transition hover:border-sky-400/60">
+        <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-xl font-semibold">{{ campaign.title }}</h2>
+
+              <span
+                class="rounded-full border px-3 py-1 text-xs"
+                [ngClass]="{
+                  'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': campaign.status === 'ACTIVE',
+                  'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': campaign.status === 'DRAFT',
+                  'border-sky-400/40 bg-sky-400/10 text-sky-300': campaign.status === 'PAUSED',
+                  'border-violet-400/40 bg-violet-400/10 text-violet-300': campaign.status === 'COMPLETED',
+                  'border-slate-600 bg-slate-800 text-slate-400': campaign.status === 'ARCHIVED'
+                }"
+              >
+                {{ campaign.status }}
+              </span>
+            </div>
+
+            <p class="mt-2 text-sm text-slate-400">
+              {{ campaign.game?.title }} · {{ campaign.build?.version }} · {{ campaign.type }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
+            (click)="archiveCampaign(campaign)"
+          >
+            Archive
+          </button>
+        </div>
+
+        @if (campaign.description) {
+          <p class="mt-4 line-clamp-2 text-sm text-slate-400">
+            {{ campaign.description }}
+          </p>
+        }
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          @for (platform of campaign.requiredPlatforms; track platform) {
+            <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+              {{ platform }}
+            </span>
+          }
+        </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-4 text-white">
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs text-slate-500">Needed</p>
+            <p class="mt-1 font-semibold">{{ campaign.requiredTesters }}</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs text-slate-500">Applications</p>
+            <p class="mt-1 font-semibold">{{ campaign._count?.applications ?? 0 }}</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs text-slate-500">Sessions</p>
+            <p class="mt-1 font-semibold">{{ campaign._count?.sessions ?? 0 }}</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs text-slate-500">Minutes</p>
+            <p class="mt-1 font-semibold">{{ campaign.estimatedMinutes }}</p>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>

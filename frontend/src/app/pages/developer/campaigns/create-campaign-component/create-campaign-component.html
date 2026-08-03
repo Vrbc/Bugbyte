@@ -1,1 +1,225 @@
-<p>create-campaign-component works!</p>
+<section class="mx-auto max-w-4xl">
+  <div class="mb-8">
+    <a routerLink="/developer/campaigns" class="text-sm text-sky-300 hover:text-sky-200">
+      Back to campaigns
+    </a>
+
+    <h1 class="mt-4 text-3xl font-bold tracking-tight">Create playtest campaign</h1>
+    <p class="mt-2 text-slate-400">
+      Select a game build and define what testers should focus on.
+    </p>
+  </div>
+
+  <form
+    class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+    (ngSubmit)="submit()"
+  >
+    <div class="space-y-6">
+      <div class="grid gap-5 md:grid-cols-2">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Game
+          </label>
+
+          <select
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="gameId"
+            [(ngModel)]="gameId"
+            (ngModelChange)="onGameChange()"
+          >
+            <option value="">Select game</option>
+            @for (game of games(); track game.id) {
+              <option [value]="game.id">{{ game.title }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Build
+          </label>
+
+          <select
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="buildId"
+            [(ngModel)]="buildId"
+            [disabled]="!gameId || loadingBuilds()"
+          >
+            <option value="">
+              {{ loadingBuilds() ? 'Loading builds...' : 'Select build' }}
+            </option>
+
+            @for (build of builds(); track build.id) {
+              <option [value]="build.id">{{ build.version }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Campaign title
+        </label>
+
+        <input
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="title"
+          [(ngModel)]="title"
+          required
+        />
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Campaign type
+          </label>
+
+          <select
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="type"
+            [(ngModel)]="type"
+          >
+            @for (campaignType of campaignTypes; track campaignType) {
+              <option [value]="campaignType">{{ campaignType }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Status
+          </label>
+
+          <select
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="status"
+            [(ngModel)]="status"
+          >
+            <option value="DRAFT">Draft</option>
+            <option value="ACTIVE">Active</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Description
+        </label>
+
+        <textarea
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="description"
+          rows="3"
+          [(ngModel)]="description"
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Instructions for testers
+        </label>
+
+        <textarea
+          class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="instructions"
+          rows="5"
+          [(ngModel)]="instructions"
+          required
+        ></textarea>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-3">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Required testers
+          </label>
+
+          <input
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            type="number"
+            name="requiredTesters"
+            min="1"
+            [(ngModel)]="requiredTesters"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Min tester rating
+          </label>
+
+          <input
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            type="number"
+            name="minTesterRating"
+            min="0"
+            max="5"
+            step="0.1"
+            [(ngModel)]="minTesterRating"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Estimated minutes
+          </label>
+
+          <input
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            type="number"
+            name="estimatedMinutes"
+            min="1"
+            [(ngModel)]="estimatedMinutes"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-300">
+          Required platforms
+        </label>
+
+        <div class="flex flex-wrap gap-2">
+          @for (platform of availablePlatforms; track platform) {
+            <button
+              type="button"
+              class="rounded-full border px-4 py-2 text-sm transition"
+              [ngClass]="
+                selectedPlatforms.includes(platform)
+                  ? 'border-sky-400 bg-sky-400/10 text-sky-200'
+                  : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/70'
+              "
+              (click)="togglePlatform(platform)"
+            >
+              {{ platform }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? 'Creating...' : 'Create campaign' }}
+        </button>
+
+        <a
+          routerLink="/developer/campaigns"
+          class="rounded-xl border border-slate-700 px-5 py-3 text-sm text-slate-300 hover:border-slate-500"
+        >
+          Cancel
+        </a>
+      </div>
+    </div>
+  </form>
+</section>
