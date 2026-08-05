@@ -28,4 +28,15 @@ export class ApplicationsService {
     );
   }
 
+  applyToCampaign(
+    campaignId: string,
+    message?: string,
+  ): Observable<CampaignApplication> {
+    return this.http.post<CampaignApplication>(
+      `${this.apiUrl}/campaigns/${campaignId}/apply`,
+      {
+        message,
+      },
+    );
+  }
 }

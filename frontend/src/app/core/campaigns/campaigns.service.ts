@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateCampaignRequest, PlaytestCampaign, UpdateCampaignRequest } from './campaigns.models';
+import { CreateCampaignRequest, PlaytestCampaign, PublicCampaign, PublicCampaignDetails, UpdateCampaignRequest } from './campaigns.models';
 
 @Injectable({
   providedIn: 'root',
@@ -36,5 +36,15 @@ export class CampaignsService {
 
   archiveCampaign(id: string): Observable<PlaytestCampaign> {
     return this.http.delete<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}`);
+  }
+
+  getPublicCampaigns(): Observable<PublicCampaign[]> {
+    return this.http.get<PublicCampaign[]>(`${this.apiUrl}/campaigns/public`);
+  }
+
+  getPublicCampaign(id: string): Observable<PublicCampaignDetails> {
+    return this.http.get<PublicCampaignDetails>(
+      `${this.apiUrl}/campaigns/public/${id}`,
+    );
   }
 }
