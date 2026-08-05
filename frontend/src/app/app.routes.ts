@@ -12,6 +12,8 @@ import { GameDetailsComponent } from './pages/developer/games/game-details-compo
 import { DeveloperCampaignsComponent } from './pages/developer/campaigns/developer-campaigns-component/developer-campaigns-component';
 import { CreateCampaignComponent } from './pages/developer/campaigns/create-campaign-component/create-campaign-component';
 import { CampaignDetailsComponent } from './pages/developer/campaigns/campaign-details-component/campaign-details-component';
+import { TesterCampaignsComponent } from './pages/tester/campaigns/tester-campaigns-component/tester-campaigns-component';
+import { TesterCampaignsDetailsComponent } from './pages/tester/campaigns/tester-campaigns-details-component/tester-campaigns-details-component';
 
 export const routes: Routes = [
   {
@@ -97,6 +99,23 @@ export const routes: Routes = [
         path: 'dashboard',
         component: TesterDashboard,
       },
+      {
+        path: 'campaigns',
+        component: TesterCampaignsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['TESTER'],
+        },
+      },
+      {
+        path: 'campaigns/:id',
+        component: TesterCampaignsDetailsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['TESTER'],
+        },
+      },
+
     ],
   },
   {

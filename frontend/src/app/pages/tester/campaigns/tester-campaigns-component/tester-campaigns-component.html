@@ -1,1 +1,130 @@
-<p>tester-campaigns-component works!</p>
+<section>
+  <div class="mb-8">
+    <p class="text-sm font-medium text-sky-300">Discover Tests</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight">Available playtest campaigns</h1>
+    <p class="mt-2 text-slate-400">
+      Find active campaigns, apply for tests and build your tester reputation.
+    </p>
+  </div>
+
+  <div class="mb-6 grid gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-5 md:grid-cols-[1fr_220px]">
+    <input
+      class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+      placeholder="Search by campaign, game or genre..."
+      [ngModel]="searchTerm()"
+      (ngModelChange)="setSearchTerm($event)"
+    />
+
+    <select
+      class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+      [ngModel]="selectedPlatform()"
+      (ngModelChange)="setSelectedPlatform($event)"
+    >
+      <option value="">All platforms</option>
+      @for (platform of platforms; track platform) {
+        <option [value]="platform">{{ platform }}</option>
+      }
+    </select>
+  </div>
+
+  @if (loading()) {
+    <p class="text-slate-400">Loading campaigns...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (!loading() && filteredCampaigns().length === 0) {
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
+      <h2 class="text-xl font-semibold">No campaigns found</h2>
+      <p class="mt-2 text-slate-400">
+        Try changing filters or check again later.
+      </p>
+    </div>
+  }
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    @for (campaign of filteredCampaigns(); track campaign.id) {
+      <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 transition hover:border-sky-400/60">
+        <div class="h-44 bg-slate-950">
+          @if (campaign.game.coverImageUrl) {
+            <img
+              [src]="campaign.game.coverImageUrl"
+              [alt]="campaign.game.title"
+              class="h-full w-full object-cover"
+            />
+          } @else {
+            <div class="flex h-full items-center justify-center text-5xl">
+              G
+            </div>
+          }
+        </div>
+
+        <div class="p-5">
+          <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+            <div>
+              <p class="text-sm text-sky-300">{{ campaign.game.title }}</p>
+              <h2 class="mt-1 text-xl font-semibold">{{ campaign.title }}</h2>
+              <p class="mt-1 text-sm text-slate-400">
+                {{ campaign.game.genre }} · {{ campaign.type }}
+              </p>
+            </div>
+
+            <span class="w-fit rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+              ACTIVE
+            </span>
+          </div>
+
+          <div class="mt-5 flex flex-wrap gap-2">
+            @for (platform of campaign.requiredPlatforms; track platform) {
+              <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+                {{ platform }}
+              </span>
+            }
+          </div>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <p class="text-xs text-slate-500">Time</p>
+              <p class="mt-1 font-semibold">{{ campaign.estimatedMinutes }}m</p>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <p class="text-xs text-slate-500">Min rating</p>
+              <p class="mt-1 font-semibold">{{ campaign.minTesterRating }}</p>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <p class="text-xs text-slate-500">Build</p>
+              <p class="mt-1 font-semibold">{{ campaign.build.version }}</p>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <p class="text-xs text-slate-500">Applied</p>
+              <p class="mt-1 font-semibold">{{ campaign._count?.applications ?? 0 }}</p>
+            </div>
+          </div>
+
+          <div class="mt-5 flex items-center justify-between gap-3">
+            <p class="text-sm text-slate-400">
+              Studio:
+              <span class="text-slate-200">
+                {{ campaign.developer.developerProfile?.studioName || campaign.developer.username }}
+              </span>
+            </p>
+
+            <a
+              [routerLink]="['/tester/campaigns', campaign.id]"
+              class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:opacity-90"
+            >
+              View details
+            </a>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+</section>

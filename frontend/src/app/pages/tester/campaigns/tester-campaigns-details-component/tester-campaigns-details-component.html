@@ -1,1 +1,154 @@
-<p>tester-campaigns-details-component works!</p>
+<section>
+  <a routerLink="/tester/campaigns" class="text-sm text-sky-300 hover:text-sky-200">
+    Back to campaigns
+  </a>
+
+  @if (loading()) {
+    <p class="mt-6 text-slate-400">Loading campaign...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="mt-6 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="mt-6 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-4 text-emerald-200">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (campaign(); as campaignData) {
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
+      <div class="h-64 bg-slate-950">
+        @if (campaignData.game.coverImageUrl) {
+          <img
+            [src]="campaignData.game.coverImageUrl"
+            [alt]="campaignData.game.title"
+            class="h-full w-full object-cover"
+          />
+        } @else {
+          <div class="flex h-full items-center justify-center text-6xl">
+            G
+          </div>
+        }
+      </div>
+
+      <div class="p-6">
+        <p class="text-sm font-medium text-sky-300">{{ campaignData.game.title }}</p>
+
+        <div class="mt-2 flex flex-col justify-between gap-4 md:flex-row md:items-start">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">
+              {{ campaignData.title }}
+            </h1>
+
+            <p class="mt-2 text-slate-400">
+              {{ campaignData.game.genre }} · {{ campaignData.type }} · Build {{ campaignData.build.version }}
+            </p>
+          </div>
+
+          <span class="w-fit rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+            ACTIVE
+          </span>
+        </div>
+
+        @if (campaignData.description) {
+          <p class="mt-5 max-w-4xl text-sm leading-6 text-slate-300">
+            {{ campaignData.description }}
+          </p>
+        }
+
+        <div class="mt-6 grid gap-4 md:grid-cols-4">
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs text-slate-500">Estimated time</p>
+            <p class="mt-1 text-xl font-semibold">{{ campaignData.estimatedMinutes }}m</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs text-slate-500">Min rating</p>
+            <p class="mt-1 text-xl font-semibold">{{ campaignData.minTesterRating }}</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs text-slate-500">Needed testers</p>
+            <p class="mt-1 text-xl font-semibold">{{ campaignData.requiredTesters }}</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs text-slate-500">Applications</p>
+            <p class="mt-1 text-xl font-semibold">{{ campaignData._count?.applications ?? 0 }}</p>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <p class="mb-2 text-sm font-medium text-slate-300">Required platforms</p>
+
+          <div class="flex flex-wrap gap-2">
+            @for (platform of campaignData.requiredPlatforms; track platform) {
+              <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+                {{ platform }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-5">
+          <p class="text-sm font-medium text-slate-300">Instructions</p>
+          <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-400">
+            {{ campaignData.instructions }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-6 xl:grid-cols-[1fr_0.8fr]">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <h2 class="text-xl font-semibold">Game details</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-400">
+          {{ campaignData.game.description }}
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          @for (platform of campaignData.game.platforms; track platform) {
+            <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+              {{ platform }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <form
+        class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+        (ngSubmit)="apply()"
+      >
+        <h2 class="text-xl font-semibold">Apply for this test</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Send a short message to the developer.
+        </p>
+
+        <textarea
+          class="mt-5 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+          name="message"
+          rows="5"
+          placeholder="I can focus on tutorial clarity, bugs and first impression..."
+          [(ngModel)]="message"
+          [disabled]="alreadyApplied()"
+        ></textarea>
+
+        <button
+          type="submit"
+          class="mt-4 w-full rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="applying() || alreadyApplied()"
+        >
+          @if (alreadyApplied()) {
+            Application sent
+          } @else {
+            {{ applying() ? 'Applying...' : 'Apply for test' }}
+          }
+        </button>
+      </form>
+    </div>
+  }
+</section>
