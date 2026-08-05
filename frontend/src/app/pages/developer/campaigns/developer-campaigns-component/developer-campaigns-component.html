@@ -69,6 +69,13 @@
             </p>
           </div>
 
+          <div class="flex gap-2">
+          <a
+            [routerLink]="['/developer/campaigns', campaign.id]"
+            class="rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:opacity-90"
+          >
+            Open
+          </a>
           <button
             type="button"
             class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
@@ -76,6 +83,7 @@
           >
             Archive
           </button>
+          </div>
         </div>
 
         @if (campaign.description) {

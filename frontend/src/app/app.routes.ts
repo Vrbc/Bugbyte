@@ -11,6 +11,7 @@ import { CreateGameComponent } from './pages/developer/games/create-game-compone
 import { GameDetailsComponent } from './pages/developer/games/game-details-component/game-details-component';
 import { DeveloperCampaignsComponent } from './pages/developer/campaigns/developer-campaigns-component/developer-campaigns-component';
 import { CreateCampaignComponent } from './pages/developer/campaigns/create-campaign-component/create-campaign-component';
+import { CampaignDetailsComponent } from './pages/developer/campaigns/campaign-details-component/campaign-details-component';
 
 export const routes: Routes = [
   {
@@ -76,6 +77,14 @@ export const routes: Routes = [
           roles: ['DEVELOPER'],
         },
       },
+      {
+        path: 'campaigns/:id',
+        component: CampaignDetailsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        }
+      }
     ],
   },
   {

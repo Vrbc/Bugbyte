@@ -1,0 +1,96 @@
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, Signal, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { CampaignApplication } from '../../../../core/applications/applications.models';
+import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
+import { ApplicationsService } from '../../../../core/applications/applications.service';
+import { forkJoin } from 'rxjs';
+
+@Component({
+  selector: 'app-campaign-details-component',
+  imports: [CommonModule, RouterLink],
+  templateUrl: './campaign-details-component.html',
+  styleUrl: './campaign-details-component.scss',
+})
+export class CampaignDetailsComponent implements OnInit {
+  campaign = signal<PlaytestCampaign | null>(null);
+  applications = signal<CampaignApplication[]>([]);
+
+  loading = signal(true);
+  errorMessage = signal<string | null>(null);
+  actionMessage = signal<string | null>(null);
+  updatingApplicationId = signal<string | null>(null);
+
+  private campaignId = '';
+
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly campaignsService: CampaignsService,
+    private readonly applicationService: ApplicationsService,
+  ) {}
+
+  ngOnInit() : void {
+    this.campaignId = this.route.snapshot.paramMap.get('id') || '';
+    this.loadPage();
+  }
+
+  loadPage() : void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    forkJoin({
+      campaign: this.campaignsService.getCampaign(this.campaignId),
+      applications: this.applicationService.getApplicationsForCampaign(this.campaignId),
+    }).subscribe({
+      next: ({campaign, applications}) => {
+        this.campaign.set(campaign);
+        this.applications.set(applications);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        this.errorMessage.set('Failed to load campaign details');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  acceptApplication(application: CampaignApplication): void {
+    this.updateStatus(application, 'ACCEPTED');
+  }
+
+  rejectApplication(application: CampaignApplication): void {
+    this.updateStatus(application, 'REJECTED');
+  }
+
+  private updateStatus(
+    application : CampaignApplication,
+    status: 'ACCEPTED' | 'REJECTED',
+  ): void {
+    this.actionMessage.set(null);
+    this.updatingApplicationId.set(application.id);
+
+    this.applicationService.updateApplicationStatus(application.id, {
+      status,
+    }).subscribe({
+      next: () => {
+        this.updatingApplicationId.set(null);
+        this.actionMessage.set(`Application ${status.toLocaleLowerCase()}.`);
+        this.reloadApplications();
+      },
+      error: (error) => {
+        this.updatingApplicationId.set(null);
+        this.errorMessage.set(
+          error?.error?.message || 'Failed to update application.',
+        );
+      },
+    })
+  }
+  private reloadApplications(): void {
+    this.applicationService.getApplicationsForCampaign(this.campaignId).subscribe({
+      next: (applications) => this.applications.set(applications),
+      error: () => this.errorMessage.set('Failed to reload applications.'),
+    });
+  }
+
+}

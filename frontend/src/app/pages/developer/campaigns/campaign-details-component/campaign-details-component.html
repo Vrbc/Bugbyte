@@ -1,0 +1,195 @@
+<section>
+  <a routerLink="/developer/campaigns" class="text-sm text-sky-300 hover:text-sky-200">
+    Back to campaigns
+  </a>
+
+  @if (loading()) {
+    <p class="mt-6 text-slate-400">Loading campaign details...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="mt-6 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (actionMessage()) {
+    <div class="mt-6 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-4 text-emerald-200">
+      {{ actionMessage() }}
+    </div>
+  }
+
+  @if (campaign(); as campaignData) {
+    <div class="mt-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+      <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+        <div>
+          <p class="text-sm font-medium text-sky-300">Campaign details</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight">
+            {{ campaignData.title }}
+          </h1>
+
+          <p class="mt-2 text-slate-400">
+            {{ campaignData.game?.title }} · {{ campaignData.build?.version }} · {{ campaignData.type }}
+          </p>
+        </div>
+
+        <span
+          class="w-fit rounded-full border px-3 py-1 text-xs"
+          [ngClass]="{
+            'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': campaignData.status === 'ACTIVE',
+            'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': campaignData.status === 'DRAFT',
+            'border-sky-400/40 bg-sky-400/10 text-sky-300': campaignData.status === 'PAUSED',
+            'border-violet-400/40 bg-violet-400/10 text-violet-300': campaignData.status === 'COMPLETED',
+            'border-slate-600 bg-slate-800 text-slate-400': campaignData.status === 'ARCHIVED'
+          }"
+        >
+          {{ campaignData.status }}
+        </span>
+      </div>
+
+      @if (campaignData.description) {
+        <p class="mt-5 max-w-4xl text-sm leading-6 text-slate-300">
+          {{ campaignData.description }}
+        </p>
+      }
+
+      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-5">
+        <p class="text-sm font-medium text-slate-300">Instructions</p>
+        <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-400">
+          {{ campaignData.instructions }}
+        </p>
+      </div>
+
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5 text-white">
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Needed testers</p>
+          <p class="mt-1 text-xl font-semibold">{{ campaignData.requiredTesters }}</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Applications</p>
+          <p class="mt-1 text-xl font-semibold">{{ campaignData._count?.applications ?? 0 }}</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Sessions</p>
+          <p class="mt-1 text-xl font-semibold">{{ campaignData._count?.sessions ?? 0 }}</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Min rating</p>
+          <p class="mt-1 text-xl font-semibold">{{ campaignData.minTesterRating }}</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Minutes</p>
+          <p class="mt-1 text-xl font-semibold">{{ campaignData.estimatedMinutes }}</p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        @for (platform of campaignData.requiredPlatforms; track platform) {
+          <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+            {{ platform }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+      <div class="mb-5 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold">Tester applications</h2>
+          <p class="mt-1 text-sm text-slate-400">
+            Accept or reject testers who applied for this campaign.
+          </p>
+        </div>
+      </div>
+
+      @if (applications().length === 0) {
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+          <p class="text-slate-400">No applications yet.</p>
+        </div>
+      }
+
+      <div class="space-y-4">
+        @for (application of applications(); track application.id) {
+          <article class="rounded-xl border border-slate-800 bg-slate-950 p-5">
+            <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="text-lg font-semibold text-white">
+                    {{ application.tester?.username }}
+                  </h3>
+
+                  <span
+                    class="rounded-full border px-3 py-1 text-xs"
+                    [ngClass]="{
+                      'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': application.status === 'PENDING',
+                      'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': application.status === 'ACCEPTED',
+                      'border-rose-400/40 bg-rose-400/10 text-rose-300': application.status === 'REJECTED',
+                      'border-violet-400/40 bg-violet-400/10 text-violet-300': application.status === 'COMPLETED',
+                      'border-slate-600 bg-slate-800 text-slate-400': application.status === 'CANCELLED'
+                    }"
+                  >
+                    {{ application.status }}
+                  </span>
+                </div>
+
+                <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-400">
+                  <span>
+                    Rating: {{ application.tester?.testerProfile?.rating ?? 0 }}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    Level: {{ application.tester?.testerProfile?.level }}
+                  </span>
+                  <span>·</span>
+                  <span>
+                    Experience: {{ application.tester?.testerProfile?.experienceLevel }}
+                  </span>
+                </div>
+
+                @if (application.message) {
+                  <p class="mt-4 rounded-xl border border-slate-800 bg-slate-900 p-4 text-sm text-slate-300">
+                    {{ application.message }}
+                  </p>
+                }
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  @for (platform of application.tester?.testerProfile?.platforms ?? []; track platform) {
+                    <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+                      {{ platform }}
+                    </span>
+                  }
+                </div>
+              </div>
+
+              @if (application.status === 'PENDING') {
+                <div class="flex gap-2">
+                  <button
+                    type="button"
+                    class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:opacity-90 disabled:opacity-60"
+                    [disabled]="updatingApplicationId() === application.id"
+                    (click)="acceptApplication(application)"
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    type="button"
+                    class="rounded-xl border border-rose-400/50 px-4 py-2 text-sm text-rose-300 hover:bg-rose-500/10 disabled:opacity-60"
+                    [disabled]="updatingApplicationId() === application.id"
+                    (click)="rejectApplication(application)"
+                  >
+                    Reject
+                  </button>
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  }
+</section>
