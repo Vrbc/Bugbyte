@@ -1,17 +1,22 @@
-
 <section>
   @if (loading()) {
     <p class="text-slate-400">Loading session...</p>
   }
 
   @if (errorMessage()) {
-    <div class="rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+    <div class="mb-5 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
       {{ errorMessage() }}
     </div>
   }
 
+  @if (successMessage()) {
+    <div class="mb-5 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-4 text-emerald-200">
+      {{ successMessage() }}
+    </div>
+  }
+
   @if (session(); as sessionData) {
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+    <div class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
       <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
         <div>
           <p class="text-sm font-medium text-sky-300">Active Test Session</p>
@@ -24,9 +29,15 @@
           </p>
         </div>
 
-        <span class="w-fit rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
-          {{ sessionData.status }}
-        </span>
+        <div class="text-right">
+          <span class="inline-flex rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+            {{ sessionData.status }}
+          </span>
+
+          <p class="mt-3 font-mono text-3xl font-bold text-sky-300">
+            {{ formatTime(elapsedSeconds()) }}
+          </p>
+        </div>
       </div>
 
       <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-5">
@@ -40,11 +51,168 @@
         <a
           [href]="sessionData.campaign?.build?.buildUrl"
           target="_blank"
-          class="mt-6 inline-flex rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:opacity-90"
+          class="mt-6 inline-flex rounded-xl bg-gradient-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:opacity-90"
         >
           Open build
         </a>
       }
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <form
+        class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+        (ngSubmit)="submitFeedback()"
+      >
+        <h2 class="text-xl font-semibold">Submit feedback byte</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Mark the current moment in your playtest session.
+        </p>
+
+        <div class="mt-5 grid gap-2 sm:grid-cols-2">
+          @for (type of feedbackTypes; track type) {
+            <button
+              type="button"
+              class="rounded-xl border px-4 py-3 text-left text-sm transition"
+              [ngClass]="
+                selectedType() === type
+                  ? 'border-sky-400 bg-sky-400/10 text-sky-200'
+                  : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/60'
+              "
+              (click)="selectType(type)"
+            >
+              {{ type }}
+            </button>
+          }
+        </div>
+
+        @if (selectedType() === 'BUG') {
+          <div class="mt-5">
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Severity
+            </label>
+
+            <select
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="severity"
+              [(ngModel)]="severity"
+            >
+              @for (item of severities; track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="mt-5">
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Comment
+          </label>
+
+          <textarea
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="comment"
+            rows="4"
+            [(ngModel)]="comment"
+            placeholder="Describe what happened..."
+          ></textarea>
+        </div>
+
+        @if (selectedType() === 'BUG') {
+          <div class="mt-5">
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Reproduction steps
+            </label>
+
+            <textarea
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="reproductionSteps"
+              rows="3"
+              [(ngModel)]="reproductionSteps"
+              placeholder="What should the developer do to reproduce this bug?"
+            ></textarea>
+          </div>
+        }
+
+        <div class="mt-5">
+          <label class="mb-2 block text-sm font-medium text-slate-300">
+            Screenshot URL optional
+          </label>
+
+          <input
+            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            name="screenshotUrl"
+            [(ngModel)]="screenshotUrl"
+            placeholder="https://..."
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="mt-5 w-full rounded-xl bg-gradient-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+          [disabled]="sending()"
+        >
+          {{ sending() ? 'Submitting...' : 'Submit feedback byte' }}
+        </button>
+      </form>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <h2 class="text-xl font-semibold">Session log</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          Feedback bytes submitted during this test run.
+        </p>
+
+        @if (feedbackBytes().length === 0) {
+          <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+            <p class="text-slate-400">No feedback submitted yet.</p>
+          </div>
+        }
+
+        <div class="mt-6 space-y-3">
+          @for (byte of feedbackBytes(); track byte.id) {
+            <article class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-sm text-sky-300">
+                      {{ formatTime(byte.timestampSeconds) }}
+                    </span>
+
+                    <span
+                      class="rounded-full border px-2 py-1 text-xs"
+                      [ngClass]="{
+                        'border-rose-400/40 bg-rose-400/10 text-rose-300': byte.type === 'BUG',
+                        'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': byte.type === 'CONFUSION',
+                        'border-violet-400/40 bg-violet-400/10 text-violet-300': byte.type === 'SUGGESTION',
+                        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': byte.type === 'POSITIVE',
+                        'border-orange-400/40 bg-orange-400/10 text-orange-300': byte.type === 'DIFFICULTY_SPIKE',
+                        'border-slate-600 bg-slate-800 text-slate-300': byte.type === 'COMMENT'
+                      }"
+                    >
+                      {{ byte.type }}
+                    </span>
+
+                    @if (byte.severity) {
+                      <span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">
+                        {{ byte.severity }}
+                      </span>
+                    }
+                  </div>
+
+                  <p class="mt-3 text-sm leading-6 text-slate-300">
+                    {{ byte.comment }}
+                  </p>
+
+                  @if (byte.reproductionSteps) {
+                    <p class="mt-3 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-400">
+                      {{ byte.reproductionSteps }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
     </div>
   }
 </section>
