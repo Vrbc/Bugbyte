@@ -14,6 +14,8 @@ import { CreateCampaignComponent } from './pages/developer/campaigns/create-camp
 import { CampaignDetailsComponent } from './pages/developer/campaigns/campaign-details-component/campaign-details-component';
 import { TesterCampaignsComponent } from './pages/tester/campaigns/tester-campaigns-component/tester-campaigns-component';
 import { TesterCampaignsDetailsComponent } from './pages/tester/campaigns/tester-campaigns-details-component/tester-campaigns-details-component';
+import { TesterApplicationsComponent } from './pages/tester/applications/tester-applications-component/tester-applications-component';
+import { ActiveSessionComponent } from './pages/tester/applications/active-session-component/active-session-component';
 
 export const routes: Routes = [
   {
@@ -115,7 +117,22 @@ export const routes: Routes = [
           roles: ['TESTER'],
         },
       },
-
+      {
+        path: 'applications',
+        component: TesterApplicationsComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['TESTER'],
+        },
+      },
+      {
+        path: 'sessions/:id/live',
+        component: ActiveSessionComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['TESTER'],
+        },
+      },
     ],
   },
   {
