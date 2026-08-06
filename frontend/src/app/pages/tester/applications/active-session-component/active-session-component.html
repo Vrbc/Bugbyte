@@ -59,101 +59,103 @@
     </div>
 
     <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <form
-        class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
-        (ngSubmit)="submitFeedback()"
-      >
-        <h2 class="text-xl font-semibold">Submit feedback byte</h2>
-        <p class="mt-2 text-sm text-slate-400">
-          Mark the current moment in your playtest session.
-        </p>
+        @if (sessionData.status === 'LIVE') {
+          <form
+            class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+            (ngSubmit)="submitFeedback()"
+          >
+            <h2 class="text-xl font-semibold">Submit feedback byte</h2>
+            <p class="mt-2 text-sm text-slate-400">
+              Mark the current moment in your playtest session.
+            </p>
 
-        <div class="mt-5 grid gap-2 sm:grid-cols-2">
-          @for (type of feedbackTypes; track type) {
-            <button
-              type="button"
-              class="rounded-xl border px-4 py-3 text-left text-sm transition"
-              [ngClass]="
-                selectedType() === type
-                  ? 'border-sky-400 bg-sky-400/10 text-sky-200'
-                  : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/60'
-              "
-              (click)="selectType(type)"
-            >
-              {{ type }}
-            </button>
-          }
-        </div>
-
-        @if (selectedType() === 'BUG') {
-          <div class="mt-5">
-            <label class="mb-2 block text-sm font-medium text-slate-300">
-              Severity
-            </label>
-
-            <select
-              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-              name="severity"
-              [(ngModel)]="severity"
-            >
-              @for (item of severities; track item) {
-                <option [value]="item">{{ item }}</option>
+            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+              @for (type of feedbackTypes; track type) {
+                <button
+                  type="button"
+                  class="rounded-xl border px-4 py-3 text-left text-sm transition"
+                  [ngClass]="
+                    selectedType() === type
+                      ? 'border-sky-400 bg-sky-400/10 text-sky-200'
+                      : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/60'
+                  "
+                  (click)="selectType(type)"
+                >
+                  {{ type }}
+                </button>
               }
-            </select>
-          </div>
+            </div>
+
+            @if (selectedType() === 'BUG') {
+              <div class="mt-5">
+                <label class="mb-2 block text-sm font-medium text-slate-300">
+                  Severity
+                </label>
+
+                <select
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                  name="severity"
+                  [(ngModel)]="severity"
+                >
+                  @for (item of severities; track item) {
+                    <option [value]="item">{{ item }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <div class="mt-5">
+              <label class="mb-2 block text-sm font-medium text-slate-300">
+                Comment
+              </label>
+
+              <textarea
+                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                name="comment"
+                rows="4"
+                [(ngModel)]="comment"
+                placeholder="Describe what happened..."
+              ></textarea>
+            </div>
+
+            @if (selectedType() === 'BUG') {
+              <div class="mt-5">
+                <label class="mb-2 block text-sm font-medium text-slate-300">
+                  Reproduction steps
+                </label>
+
+                <textarea
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                  name="reproductionSteps"
+                  rows="3"
+                  [(ngModel)]="reproductionSteps"
+                  placeholder="What should the developer do to reproduce this bug?"
+                ></textarea>
+              </div>
+            }
+
+            <div class="mt-5">
+              <label class="mb-2 block text-sm font-medium text-slate-300">
+                Screenshot URL optional
+              </label>
+
+              <input
+                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                name="screenshotUrl"
+                [(ngModel)]="screenshotUrl"
+                placeholder="https://..."
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="mt-5 w-full rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+              [disabled]="sending()"
+            >
+              {{ sending() ? 'Submitting...' : 'Submit feedback byte' }}
+            </button>
+          </form>
         }
-
-        <div class="mt-5">
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Comment
-          </label>
-
-          <textarea
-            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-            name="comment"
-            rows="4"
-            [(ngModel)]="comment"
-            placeholder="Describe what happened..."
-          ></textarea>
-        </div>
-
-        @if (selectedType() === 'BUG') {
-          <div class="mt-5">
-            <label class="mb-2 block text-sm font-medium text-slate-300">
-              Reproduction steps
-            </label>
-
-            <textarea
-              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-              name="reproductionSteps"
-              rows="3"
-              [(ngModel)]="reproductionSteps"
-              placeholder="What should the developer do to reproduce this bug?"
-            ></textarea>
-          </div>
-        }
-
-        <div class="mt-5">
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Screenshot URL optional
-          </label>
-
-          <input
-            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-            name="screenshotUrl"
-            [(ngModel)]="screenshotUrl"
-            placeholder="https://..."
-          />
-        </div>
-
-        <button
-          type="submit"
-          class="mt-5 w-full rounded-xl bg-gradient-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
-          [disabled]="sending()"
-        >
-          {{ sending() ? 'Submitting...' : 'Submit feedback byte' }}
-        </button>
-      </form>
 
       <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
         <h2 class="text-xl font-semibold">Session log</h2>
@@ -212,7 +214,132 @@
             </article>
           }
         </div>
-      </div>
+        
     </div>
+    @if (sessionData.status === 'LIVE') {
+          <form
+            class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+            (ngSubmit)="endSession()"
+          >
+            <div class="mb-6">
+              <p class="text-sm font-medium text-rose-300">End Session</p>
+              <h2 class="mt-2 text-2xl font-bold tracking-tight">Final playtest survey</h2>
+              <p class="mt-2 text-sm text-slate-400">
+                Finish the test session and send final ratings to the developer.
+              </p>
+            </div>
+        
+            <div class="grid gap-5 md:grid-cols-3">
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-300">
+                  Fun rating
+                </label>
+            
+                <select
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                  name="finalFunRating"
+                  [(ngModel)]="finalFunRating"
+                >
+                  <option [ngValue]="1">1 - Not fun</option>
+                  <option [ngValue]="2">2</option>
+                  <option [ngValue]="3">3</option>
+                  <option [ngValue]="4">4</option>
+                  <option [ngValue]="5">5 - Very fun</option>
+                </select>
+              </div>
+          
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-300">
+                  Difficulty rating
+                </label>
+            
+                <select
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                  name="finalDifficultyRating"
+                  [(ngModel)]="finalDifficultyRating"
+                >
+                  <option [ngValue]="1">1 - Too easy</option>
+                  <option [ngValue]="2">2</option>
+                  <option [ngValue]="3">3 - Balanced</option>
+                  <option [ngValue]="4">4</option>
+                  <option [ngValue]="5">5 - Too hard</option>
+                </select>
+              </div>
+          
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-300">
+                  Clarity rating
+                </label>
+            
+                <select
+                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                  name="finalClarityRating"
+                  [(ngModel)]="finalClarityRating"
+                >
+                  <option [ngValue]="1">1 - Confusing</option>
+                  <option [ngValue]="2">2</option>
+                  <option [ngValue]="3">3</option>
+                  <option [ngValue]="4">4</option>
+                  <option [ngValue]="5">5 - Very clear</option>
+                </select>
+              </div>
+            </div>
+        
+            <div class="mt-5">
+              <label class="mb-2 block text-sm font-medium text-slate-300">
+                Final comment
+              </label>
+          
+              <textarea
+                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+                name="finalComment"
+                rows="4"
+                [(ngModel)]="finalComment"
+                placeholder="Overall thoughts about the game, build and testing experience..."
+              ></textarea>
+            </div>
+        
+            <button
+              type="submit"
+              class="mt-5 rounded-xl border border-rose-400/60 bg-rose-500/10 px-5 py-3 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-60"
+              [disabled]="ending()"
+            >
+              {{ ending() ? 'Ending session...' : 'End session' }}
+            </button>
+          </form>
+        }
+
+        @if (sessionData.status === 'COMPLETED') {
+          <div class="mt-8 rounded-2xl border border-emerald-400/40 bg-emerald-500 p-6">
+            <p class="text-sm font-medium text-emerald-300">Session completed</p>
+            <h2 class="mt-2 text-2xl font-bold text-emerald-100">
+              Final survey submitted
+            </h2>
+        
+            <div class="mt-5 grid gap-4 md:grid-cols-3">
+              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
+                <p class="text-xs text-slate-400">Fun</p>
+                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalFunRating }}/5</p>
+              </div>
+          
+              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
+                <p class="text-xs text-slate-400">Difficulty</p>
+                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalDifficultyRating }}/5</p>
+              </div>
+          
+              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
+                <p class="text-xs text-slate-400">Clarity</p>
+                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalClarityRating }}/5</p>
+              </div>
+            </div>
+        
+            @if (sessionData.finalComment) {
+              <p class="mt-5 rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4 text-sm text-slate-300">
+                {{ sessionData.finalComment }}
+              </p>
+            }
+          </div>
+        }
+  </div>
   }
 </section>

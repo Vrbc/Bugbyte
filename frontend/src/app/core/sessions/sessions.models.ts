@@ -41,3 +41,10 @@ export interface TestSession {
     feedbackBytes: number;
   };
 }
+
+export interface EndSessionRequest {
+  finalFunRating: number;
+  finalDifficultyRating: number;
+  finalClarityRating: number;
+  finalComment?: string;
+}

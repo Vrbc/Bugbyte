@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { TestSession } from '../../../../core/sessions/sessions.models';
 import { CommonModule } from '@angular/common';
@@ -32,7 +32,14 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   elapsedSeconds = signal(0);
 
-    feedbackTypes: FeedbackType[] = [
+  ending = signal(false);
+
+  finalFunRating = 4;
+  finalDifficultyRating = 3;
+  finalClarityRating = 4;
+  finalComment = '';
+
+  feedbackTypes: FeedbackType[] = [
     'BUG',
     'CONFUSION',
     'SUGGESTION',
@@ -51,6 +58,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly sessionsService: SessionsService,
     private readonly feedbackBytesService: FeedbackBytesService,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -70,8 +78,14 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   }
 
   submitFeedback() : void {
+    
     this.errorMessage.set(null);
     this.successMessage.set(null);
+
+    if (this.session()?.status !== 'LIVE') {
+      this.errorMessage.set('Only live sessions can receive feedback.');
+      return;
+    }
 
     if(!this.comment.trim()){
       this.errorMessage.set('Comment is required.');
@@ -139,6 +153,41 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+
+  endSession(): void {
+  this.errorMessage.set(null);
+  this.successMessage.set(null);
+
+  const confirmed = confirm('End this test session? You will not be able to send more feedback.');
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.ending.set(true);
+
+  this.sessionsService.endSession(this.sessionId, {
+      finalFunRating: Number(this.finalFunRating),
+      finalDifficultyRating: Number(this.finalDifficultyRating),
+      finalClarityRating: Number(this.finalClarityRating),
+      finalComment: this.finalComment || undefined,
+    }).subscribe({
+      next: (session) => {
+        this.session.set(session);
+        this.timerSubscription?.unsubscribe();
+        this.ending.set(false);
+        this.successMessage.set('Session completed successfully.');
+      },
+      error: (error) => {
+        this.ending.set(false);
+        this.errorMessage.set(
+          error?.error?.message || 'Failed to end session.',
+        );
+      },
+    });
+  }
+
 
   private startTimer(startedAt: string): void {
     const startedAtMs = new Date(startedAt).getTime();

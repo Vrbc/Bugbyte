@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { CampaignApplication } from '../applications/applications.models';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { TestSession } from './sessions.models';
+import { EndSessionRequest, TestSession } from './sessions.models';
 
 @Injectable({
   providedIn: 'root',
@@ -27,4 +27,12 @@ export class SessionsService {
   getSession(id: string): Observable<TestSession> {
     return this.http.get<TestSession>(`${this.apiUrl}/sessions/${id}`);
   }
+
+  endSession(id: string, data: EndSessionRequest): Observable<TestSession> {
+    return this.http.patch<TestSession>(
+      `${this.apiUrl}/sessions/${id}/end`,
+      data,
+    );
+  }
+
 }
