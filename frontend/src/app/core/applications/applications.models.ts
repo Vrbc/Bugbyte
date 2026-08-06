@@ -14,6 +14,30 @@ export interface CampaignApplication {
   createdAt: string;
   updatedAt: string;
 
+  campaign?: {
+    id: string;
+    title: string;
+    type: string;
+    estimatedMinutes: number;
+    status: string;
+    game: {
+      id: string;
+      title: string;
+      coverImageUrl?: string | null;
+    };
+    build: {
+      id: string;
+      version: string;
+    };
+    developer?: {
+      id: string;
+      username: string;
+      developerProfile?: {
+        studioName: string;
+      } | null;
+    };
+  };
+
   tester?: {
     id: string;
     username: string;

@@ -39,4 +39,10 @@ export class ApplicationsService {
       },
     );
   }
+
+  getMyApplications(): Observable<CampaignApplication[]> {
+    return this.http.get<CampaignApplication[]>(
+      `${this.apiUrl}/applications/my`,
+    );
+  }
 }
