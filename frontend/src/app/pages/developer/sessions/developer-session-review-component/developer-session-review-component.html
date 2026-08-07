@@ -1,0 +1,239 @@
+<section>
+  <a routerLink="/developer/campaigns" class="text-sm text-sky-300 hover:text-sky-200">
+    Back to campaigns
+  </a>
+
+  @if (loading()) {
+    <p class="mt-6 text-slate-400">Loading session review...</p>
+  }
+
+  @if (errorMessage()) {
+    <div class="mt-6 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="mt-6 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-4 text-emerald-200">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (session(); as sessionData) {
+    <div class="mt-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+      <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+        <div>
+          <p class="text-sm font-medium text-sky-300">Session Review</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight">
+            {{ sessionData.campaign?.game?.title }}
+          </h1>
+
+          <p class="mt-2 text-slate-400">
+            {{ sessionData.campaign?.title }}
+            · Build {{ sessionData.campaign?.build?.version }}
+          </p>
+        </div>
+
+        <span
+          class="w-fit rounded-full border px-3 py-1 text-xs"
+          [ngClass]="{
+            'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': sessionData.status === 'COMPLETED',
+            'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': sessionData.status === 'LIVE',
+            'border-slate-600 bg-slate-800 text-slate-400': sessionData.status !== 'COMPLETED' && sessionData.status !== 'LIVE'
+          }"
+        >
+          {{ sessionData.status }}
+        </span>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-4">
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Tester</p>
+          <p class="mt-1 font-semibold">
+            {{ sessionData.tester?.username || 'Tester' }}
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Duration</p>
+          <p class="mt-1 font-semibold">
+            {{ formatDuration(sessionData.durationSeconds) }}
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Feedback bytes</p>
+          <p class="mt-1 font-semibold">
+            {{ feedbackBytes().length }}
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs text-slate-500">Tester rating</p>
+          <p class="mt-1 font-semibold">
+            {{ sessionData.tester?.testerProfile?.rating ?? 0 }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <h2 class="text-xl font-semibold">Feedback timeline</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          All feedback bytes submitted during the session.
+        </p>
+
+        @if (feedbackBytes().length === 0) {
+          <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+            <p class="text-slate-400">No feedback bytes submitted.</p>
+          </div>
+        }
+
+        <div class="mt-6 space-y-3">
+          @for (byte of feedbackBytes(); track byte.id) {
+            <article class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-mono text-sm text-sky-300">
+                  {{ formatTime(byte.timestampSeconds) }}
+                </span>
+
+                <span
+                  class="rounded-full border px-2 py-1 text-xs"
+                  [ngClass]="{
+                    'border-rose-400/40 bg-rose-400/10 text-rose-300': byte.type === 'BUG',
+                    'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': byte.type === 'CONFUSION',
+                    'border-violet-400/40 bg-violet-400/10 text-violet-300': byte.type === 'SUGGESTION',
+                    'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': byte.type === 'POSITIVE',
+                    'border-orange-400/40 bg-orange-400/10 text-orange-300': byte.type === 'DIFFICULTY_SPIKE',
+                    'border-slate-600 bg-slate-800 text-slate-300': byte.type === 'COMMENT'
+                  }"
+                >
+                  {{ byte.type }}
+                </span>
+
+                @if (byte.severity) {
+                  <span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">
+                    {{ byte.severity }}
+                  </span>
+                }
+              </div>
+
+              <p class="mt-3 text-sm leading-6 text-slate-300">
+                {{ byte.comment }}
+              </p>
+
+              @if (byte.reproductionSteps) {
+                <p class="mt-3 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-400">
+                  {{ byte.reproductionSteps }}
+                </p>
+              }
+
+              @if (byte.screenshotUrl) {
+                <a
+                  [href]="byte.screenshotUrl"
+                  target="_blank"
+                  class="mt-3 inline-flex text-sm text-sky-300 hover:text-sky-200"
+                >
+                  Open screenshot
+                </a>
+              }
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+          <h2 class="text-xl font-semibold">Final survey</h2>
+          <p class="mt-2 text-sm text-slate-400">
+            Tester submitted these final ratings.
+          </p>
+
+          <div class="mt-5 grid gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <p class="text-xs text-slate-500">Fun</p>
+              <p class="mt-1 text-2xl font-bold">{{ sessionData.finalFunRating }}/5</p>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <p class="text-xs text-slate-500">Difficulty</p>
+              <p class="mt-1 text-2xl font-bold">{{ sessionData.finalDifficultyRating }}/5</p>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <p class="text-xs text-slate-500">Clarity</p>
+              <p class="mt-1 text-2xl font-bold">{{ sessionData.finalClarityRating }}/5</p>
+            </div>
+          </div>
+
+          @if (sessionData.finalComment) {
+            <p class="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-300">
+              {{ sessionData.finalComment }}
+            </p>
+          }
+        </div>
+
+        <form
+          class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
+          (ngSubmit)="submitReview()"
+        >
+          <h2 class="text-xl font-semibold">Rate tester</h2>
+          <p class="mt-2 text-sm text-slate-400">
+            This updates tester reputation and rating.
+          </p>
+
+          <div class="mt-5">
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Rating
+            </label>
+
+            <select
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="rating"
+              [(ngModel)]="rating"
+            >
+              <option [ngValue]="1">1 - Poor</option>
+              <option [ngValue]="2">2</option>
+              <option [ngValue]="3">3 - Good</option>
+              <option [ngValue]="4">4</option>
+              <option [ngValue]="5">5 - Excellent</option>
+            </select>
+          </div>
+
+          <label class="mt-5 flex items-center gap-3 text-sm text-slate-300">
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-slate-700 bg-slate-950"
+              name="helpful"
+              [(ngModel)]="helpful"
+            />
+            Feedback was helpful
+          </label>
+
+          <div class="mt-5">
+            <label class="mb-2 block text-sm font-medium text-slate-300">
+              Review comment
+            </label>
+
+            <textarea
+              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              name="comment"
+              rows="4"
+              [(ngModel)]="comment"
+              placeholder="Tester gave useful, clear and actionable feedback..."
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="mt-5 w-full rounded-xl bg-gradient-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
+            [disabled]="submittingReview() || sessionData.status !== 'COMPLETED'"
+          >
+            {{ submittingReview() ? 'Submitting...' : 'Submit tester review' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+</section>

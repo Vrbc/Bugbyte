@@ -36,17 +36,6 @@ export interface CampaignApplication {
         studioName: string;
       } | null;
     };
-    session?: {
-      id: string;
-      status: 'LIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
-      startedAt: string;
-      endedAt?: string | null;
-      durationSeconds?: number | null;
-      finalFunRating?: number | null;
-      finalDifficultyRating?: number | null;
-      finalClarityRating?: number | null;
-      finalComment?: string | null;
-    };
   };
 
   tester?: {
@@ -61,6 +50,18 @@ export interface CampaignApplication {
       reputationPoints: number;
       level: string;
     };
+  };
+
+  testSession?: {
+    id: string;
+    status: 'LIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+    startedAt: string;
+    endedAt?: string | null;
+    durationSeconds?: number | null;
+    finalFunRating?: number | null;
+    finalDifficultyRating?: number | null;
+    finalClarityRating?: number | null;
+    finalComment?: string | null;
   };
 }
 
