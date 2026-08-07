@@ -37,6 +37,25 @@ export interface TestSession {
     };
   };
 
+  tester?: {
+    id: string;
+    username: string;
+    testerProfile?: {
+      rating: number;
+      reputationPoints: number;
+      level: string;
+      experienceLevel: string;
+      platforms: string[];
+      favoriteGenres: string[];
+    };
+  };
+
+  application?: {
+    id: string;
+    status: string;
+    message?: string | null;
+  };
+  
   _count?: {
     feedbackBytes: number;
   };

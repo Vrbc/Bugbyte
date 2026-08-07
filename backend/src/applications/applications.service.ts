@@ -119,6 +119,7 @@ export class ApplicationsService {
             username: true,
             testerProfile: true,
           },
+          testSession: true,
         },
       },
     });
