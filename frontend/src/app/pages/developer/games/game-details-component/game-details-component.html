@@ -51,6 +51,12 @@
           >
             {{ gameData.status }}
           </span>
+          <a
+             [routerLink]="['/developer/games', gameData.id, 'edit']"
+             class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-sky-400/60 hover:text-sky-300"
+           >
+             Edit game
+           </a>
         </div>
 
         <p class="mt-5 max-w-3xl text-sm leading-6 text-slate-300">

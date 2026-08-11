@@ -18,6 +18,7 @@ import { TesterApplicationsComponent } from './pages/tester/applications/tester-
 import { ActiveSessionComponent } from './pages/tester/applications/active-session-component/active-session-component';
 import { DeveloperSessionReviewComponent } from './pages/developer/sessions/developer-session-review-component/developer-session-review-component';
 import { TesterSessionsComponent } from './pages/tester/sessions/tester-sessions-component/tester-sessions-component';
+import { EditGameComponent } from './pages/developer/games/edit-game-component/edit-game-component';
 
 export const routes: Routes = [
   {
@@ -54,6 +55,14 @@ export const routes: Routes = [
       {
         path: 'games/new',
         component: CreateGameComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
+      },
+      {
+        path: 'games/:id/edit',
+        component: EditGameComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['DEVELOPER'],

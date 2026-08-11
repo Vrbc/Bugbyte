@@ -24,8 +24,8 @@ export class GamesService {
     return this.http.post<Game>(`${this.apiUrl}/games`, data)
   }
 
-  updateGame(data: UpdateGameRequest) : Observable<Game> {
-    return this.http.patch<Game>(`${this.apiUrl}/games`, data)
+  updateGame(id: string, data: UpdateGameRequest) : Observable<Game> {
+    return this.http.patch<Game>(`${this.apiUrl}/games/${id}`, data)
   }
 
   archiveGame(id: string): Observable<Game> {
