@@ -19,6 +19,7 @@ import { ActiveSessionComponent } from './pages/tester/applications/active-sessi
 import { DeveloperSessionReviewComponent } from './pages/developer/sessions/developer-session-review-component/developer-session-review-component';
 import { TesterSessionsComponent } from './pages/tester/sessions/tester-sessions-component/tester-sessions-component';
 import { EditGameComponent } from './pages/developer/games/edit-game-component/edit-game-component';
+import { EditCampaignComponent } from './pages/developer/campaigns/edit-campaign-component/edit-campaign-component';
 
 export const routes: Routes = [
   {
@@ -87,6 +88,14 @@ export const routes: Routes = [
       {
         path: 'campaigns/new',
         component: CreateCampaignComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['DEVELOPER'],
+        },
+      },
+      {
+        path: 'campaigns/:id/edit',
+        component: EditCampaignComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['DEVELOPER'],
