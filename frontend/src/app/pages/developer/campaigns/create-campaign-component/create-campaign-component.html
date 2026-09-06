@@ -53,6 +53,12 @@
               <option [value]="build.id">{{ build.version }}</option>
             }
           </select>
+
+          @if (gameId && !loadingBuilds() && builds().length === 0) {
+            <p class="mt-2 text-sm text-yellow-300">
+              Selected game has no active builds. Add an active build before creating a campaign.
+            </p>
+          }
         </div>
       </div>
 
