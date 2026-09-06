@@ -228,9 +228,13 @@
           <button
             type="submit"
             class="mt-5 w-full rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
-            [disabled]="submittingReview() || sessionData.status !== 'COMPLETED'"
+            [disabled]="submittingReview() || reviewSubmitted() || sessionData.status !== 'COMPLETED'"
           >
-            {{ submittingReview() ? 'Submitting...' : 'Submit tester review' }}
+            @if (reviewSubmitted()) {
+              Review submitted
+            } @else {
+              {{ submittingReview() ? 'Submitting...' : 'Submit tester review' }}
+            }
           </button>
         </form>
       </div>

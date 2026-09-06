@@ -21,6 +21,7 @@ export class DeveloperSessionReviewComponent implements OnInit {
 
   loading = signal(true);
   submittingReview = signal(false);
+  reviewSubmitted = signal(false);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
@@ -82,6 +83,7 @@ export class DeveloperSessionReviewComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.submittingReview.set(false);
+        this.reviewSubmitted.set(true);
         this.successMessage.set('Tester review submitted successfully.');
       },
       error: (error) => {
