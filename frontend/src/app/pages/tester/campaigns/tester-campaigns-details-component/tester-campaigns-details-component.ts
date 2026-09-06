@@ -5,6 +5,7 @@ import { ApplicationsService } from '../../../../core/applications/applications.
 import { PublicCampaignDetails } from '../../../../core/campaigns/campaigns.models';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-tester-campaigns-details-component',
@@ -33,9 +34,23 @@ export class TesterCampaignsDetailsComponent {
   ngOnInit(): void {
     this.campaignId = this.route.snapshot.paramMap.get('id') || '';
 
-    this.campaignsService.getPublicCampaign(this.campaignId).subscribe({
-      next: (campaign) => {
+    forkJoin({
+      campaign: this.campaignsService.getPublicCampaign(this.campaignId),
+      applications: this.applicationsService.getMyApplications(),
+    }).subscribe({
+      next: ({ campaign, applications }) => {
         this.campaign.set(campaign);
+
+        const existingApplication = applications.find(
+          (application) => application.campaignId === this.campaignId,
+        );
+
+        if (existingApplication) {
+          this.alreadyApplied.set(true);
+          this.message = existingApplication.message || '';
+          this.successMessage.set('You already applied for this campaign.');
+        }
+
         this.loading.set(false);
       },
       error: () => {
@@ -61,6 +76,13 @@ export class TesterCampaignsDetailsComponent {
       },
       error: (error) => {
         this.applying.set(false);
+
+        if (error?.status === 409) {
+          this.alreadyApplied.set(true);
+          this.successMessage.set('You already applied for this campaign.');
+          return;
+        }
+
         this.errorMessage.set(
           error?.error?.message || 'Failed to apply for campaign.',
         );
