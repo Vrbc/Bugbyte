@@ -101,14 +101,16 @@
              >
                Edit
              </a>
-            <button
-              type="button"
-              class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
-              (click)="archiveGame(game)"
-            >
-              Archive
-            </button>
-            
+            @if (game.status !== 'ARCHIVED') {
+              <button
+                type="button"
+                class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
+                (click)="archiveGame(game)"
+              >
+                Archive
+              </button>
+            }
+
           </div>
         </div>
       </article>
