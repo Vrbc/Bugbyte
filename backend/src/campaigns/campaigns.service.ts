@@ -37,7 +37,14 @@ export class CampaignsService {
                 id: true,
                 username: true,
                 email: true,
-                testerProfile: true,
+                testerProfile: {
+                  select: {
+                    rating: true,
+                    level: true,
+                    experienceLevel: true,
+                    platforms: true,
+                  },
+                },
               },
             },
           },
@@ -389,7 +396,11 @@ export class CampaignsService {
         select: {
           id: true,
           username: true,
-          developerProfile: true,
+          developerProfile: {
+            select: {
+              studioName: true,
+            },
+          },
         },
       },
 
