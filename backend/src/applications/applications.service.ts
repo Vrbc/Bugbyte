@@ -117,7 +117,14 @@ export class ApplicationsService {
           select: {
             id: true,
             username: true,
-            testerProfile: true,
+            testerProfile: {
+              select: {
+                rating: true,
+                level: true,
+                experienceLevel: true,
+                platforms: true,
+              },
+            },
           },
         },
         testSession: true,
@@ -209,15 +216,34 @@ export class ApplicationsService {
     return {
       campaign: {
         include: {
-          game: true,
-          build: true,
+          game: {
+            select: {
+              id: true,
+              title: true,
+              coverImageUrl: true,
+            },
+          },
+          build: {
+            select: {
+              id: true,
+              version: true,
+              status: true,
+            },
+          },
         },
       },
       tester: {
         select: {
           id: true,
           username: true,
-          testerProfile: true,
+          testerProfile: {
+            select: {
+              rating: true,
+              level: true,
+              experienceLevel: true,
+              platforms: true,
+            },
+          },
         },
       },
     } satisfies Prisma.CampaignApplicationInclude;
@@ -226,7 +252,13 @@ export class ApplicationsService {
     return {
       campaign: {
         include: {
-          game: true,
+          game: {
+            select: {
+              id: true,
+              title: true,
+              coverImageUrl: true,
+            },
+          },
           build: {
             select: {
               id: true,
@@ -238,7 +270,11 @@ export class ApplicationsService {
             select: {
               id: true,
               username: true,
-              developerProfile: true,
+              developerProfile: {
+                select: {
+                  studioName: true,
+                },
+              },
             },
           },
         },
