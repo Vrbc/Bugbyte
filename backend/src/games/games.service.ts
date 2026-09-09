@@ -57,19 +57,6 @@ export class GamesService {
         developerId: user.id,
       },
       include: {
-        builds: {
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-        campaigns: {
-          orderBy: {
-            createdAt: 'desc',
-          },
-          include: {
-            build: true,
-          },
-        },
         _count: {
           select: {
             builds: true,
