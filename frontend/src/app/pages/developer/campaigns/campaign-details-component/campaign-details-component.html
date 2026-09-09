@@ -193,12 +193,12 @@
                  
                 </div>
               }
-              @if (application.status === 'COMPLETED' && application.testSession?.id) {
+              @if (application.testSession; as testSession) {
                 <a
-                  [routerLink]="['/developer/sessions', application.testSession?.id, 'review']"
+                  [routerLink]="['/developer/sessions', testSession.id, 'review']"
                   class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:opacity-90"
                 >
-                  Review session
+                  {{ testSession.status === 'LIVE' ? 'Watch live' : 'Review session' }}
                 </a>
               }
             </div>

@@ -1,7 +1,3 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-
-export class JoinSessionDto {
-  @IsString()
-  @IsNotEmpty()
-  sessionId!: string;
+export interface JoinSessionDto {
+  sessionId: string;
 }

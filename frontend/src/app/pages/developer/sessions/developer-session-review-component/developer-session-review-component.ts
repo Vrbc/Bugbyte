@@ -1,13 +1,14 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
 import { ReviewsService } from '../../../../core/reviews/reviews.service';
 import { FeedbackByte } from '../../../../core/feedback-bytes/feedback-bytes.models';
 import { TestSession } from '../../../../core/sessions/sessions.models';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 
 @Component({
   selector: 'app-developer-session-review-component',
@@ -15,7 +16,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './developer-session-review-component.html',
   styleUrl: './developer-session-review-component.scss',
 })
-export class DeveloperSessionReviewComponent implements OnInit {
+export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
   session = signal<TestSession | null>(null);
   feedbackBytes = signal<FeedbackByte[]>([]);
 
@@ -30,17 +31,25 @@ export class DeveloperSessionReviewComponent implements OnInit {
   comment = '';
 
   private sessionId = '';
+  private readonly socketSubscriptions = new Subscription();
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly sessionsService: SessionsService,
     private readonly feedbackBytesService: FeedbackBytesService,
     private readonly reviewsService: ReviewsService,
+    private readonly sessionSocket: SessionSocketService,
   ) {}
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.loadPage();
+    this.connectToLiveUpdates();
+  }
+
+  ngOnDestroy(): void {
+    this.socketSubscriptions.unsubscribe();
+    this.sessionSocket.leaveSession(this.sessionId);
   }
 
   loadPage(): void {
@@ -63,6 +72,45 @@ export class DeveloperSessionReviewComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  private connectToLiveUpdates(): void {
+    this.sessionSocket.joinSession(this.sessionId);
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onNewFeedback().subscribe((feedbackByte) => {
+        if (feedbackByte.sessionId !== this.sessionId) {
+          return;
+        }
+
+        this.feedbackBytes.update((items) => {
+          if (items.some((item) => item.id === feedbackByte.id)) {
+            return items;
+          }
+
+          return [...items, feedbackByte].sort(
+            (a, b) => a.timestampSeconds - b.timestampSeconds,
+          );
+        });
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onSessionUpdate().subscribe((session) => {
+        if (session.id !== this.sessionId) {
+          return;
+        }
+
+        this.session.set(session);
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onReconnect().subscribe(() => {
+        this.sessionSocket.joinSession(this.sessionId);
+        this.loadPage();
+      }),
+    );
   }
 
   submitReview(): void {

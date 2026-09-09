@@ -7,6 +7,7 @@ import { FeedbackByte, FeedbackSeverity, FeedbackType } from '../../../../core/f
 import { interval, Subscription } from 'rxjs';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
 import { FormsModule } from '@angular/forms';
+import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 
 @Component({
   selector: 'app-active-session-component',
@@ -52,6 +53,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   private sessionId = '';
   private timerSubscription?: Subscription;
+  private readonly socketSubscriptions = new Subscription();
 
 
   constructor(
@@ -59,16 +61,20 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     private readonly sessionsService: SessionsService,
     private readonly feedbackBytesService: FeedbackBytesService,
     private readonly router: Router,
+    private readonly sessionSocket: SessionSocketService,
   ) {}
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.loadSession();
     this.loadFeedbackBytes();
+    this.connectToLiveUpdates();
   }
 
   ngOnDestroy(): void {
     this.timerSubscription?.unsubscribe();
+    this.socketSubscriptions.unsubscribe();
+    this.sessionSocket.leaveSession(this.sessionId);
   }
 
   selectType(type: FeedbackType): void {
@@ -104,11 +110,15 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       screenshotUrl: this.screenshotUrl || undefined,
     }).subscribe({
       next: (feedbackByte) => {
-        this.feedbackBytes.update(
-          (items) => [...items, feedbackByte].sort( 
-            (a, b) => a.timestampSeconds - b.timestampSeconds
-          ),
-        );
+        this.feedbackBytes.update((items) => {
+          if (items.some((item) => item.id === feedbackByte.id)) {
+            return items;
+          }
+
+          return [...items, feedbackByte].sort(
+            (a, b) => a.timestampSeconds - b.timestampSeconds,
+          );
+        });
 
         this.comment = '';
         this.reproductionSteps = '';
@@ -152,6 +162,48 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
         this.errorMessage.set('Failed to load feedback bytes.');
       },
     });
+  }
+
+  private connectToLiveUpdates(): void {
+    this.sessionSocket.joinSession(this.sessionId);
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onNewFeedback().subscribe((feedbackByte) => {
+        if (feedbackByte.sessionId !== this.sessionId) {
+          return;
+        }
+
+        this.feedbackBytes.update((items) => {
+          if (items.some((item) => item.id === feedbackByte.id)) {
+            return items;
+          }
+
+          return [...items, feedbackByte].sort(
+            (a, b) => a.timestampSeconds - b.timestampSeconds,
+          );
+        });
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onSessionUpdate().subscribe((session) => {
+        if (session.id !== this.sessionId) {
+          return;
+        }
+
+        this.session.set(session);
+        if (session.status !== 'LIVE') {
+          this.timerSubscription?.unsubscribe();
+        }
+      }),
+    );
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onReconnect().subscribe(() => {
+        this.sessionSocket.joinSession(this.sessionId);
+        this.loadFeedbackBytes();
+      }),
+    );
   }
 
 

@@ -1,4 +1,4 @@
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -13,7 +13,7 @@ import {
 import { UserRole } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { JoinSessionDto } from './dto/join-session.dto';
+import type { JoinSessionDto } from './dto/join-session.dto';
 
 type JwtPayload = {
   sub: string;
@@ -26,7 +26,9 @@ type SocketUser = {
   role: UserRole;
 };
 
-type AppSocket = Omit<Socket, 'data'> & { data: { user?: SocketUser } };
+type AppSocket = Omit<Socket, 'data'> & {
+  data: { authPromise: Promise<SocketUser | null> };
+};
 
 type JoinSessionResponse = {
   success: boolean;
@@ -53,7 +55,23 @@ export class SessionRealtimeGateway
     private readonly prisma: PrismaService,
   ) {}
 
-  async handleConnection(client: AppSocket) {
+  handleConnection(client: AppSocket): void {
+    // Assigned synchronously (before any await) so that a message handler
+    // firing right after 'connect' - which happens on every reconnect,
+    // since the frontend rejoins its room as soon as the socket reconnects -
+    // always finds this promise in place and awaits the *same* in-flight
+    // authentication instead of racing ahead of it.
+    client.data.authPromise = this.authenticateSocket(client);
+    void client.data.authPromise.then((user) => {
+      if (!user) {
+        client.disconnect(true);
+      }
+    });
+  }
+
+  private async authenticateSocket(
+    client: AppSocket,
+  ): Promise<SocketUser | null> {
     try {
       const token = client.handshake.auth?.token as string | undefined;
       if (!token) {
@@ -74,12 +92,12 @@ export class SessionRealtimeGateway
         throw new Error('User is not active or does not exist.');
       }
 
-      client.data.user = { id: user.id, role: user.role };
+      return { id: user.id, role: user.role };
     } catch (error) {
       this.logger.warn(
         `Rejected WebSocket connection: ${(error as Error).message}`,
       );
-      client.disconnect(true);
+      return null;
     }
   }
 
@@ -87,13 +105,16 @@ export class SessionRealtimeGateway
     this.logger.debug(`Client disconnected: ${client.id}`);
   }
 
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @SubscribeMessage('joinSession')
   async handleJoinSession(
     @MessageBody() dto: JoinSessionDto,
     @ConnectedSocket() client: AppSocket,
   ): Promise<JoinSessionResponse> {
-    const user = client.data.user;
+    if (!dto?.sessionId || typeof dto.sessionId !== 'string') {
+      return { success: false, message: 'A valid sessionId is required.' };
+    }
+
+    const user = await client.data.authPromise;
     if (!user) {
       return { success: false, message: 'Not authenticated.' };
     }
@@ -117,12 +138,15 @@ export class SessionRealtimeGateway
     return { success: true };
   }
 
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @SubscribeMessage('leaveSession')
   async handleLeaveSession(
     @MessageBody() dto: JoinSessionDto,
     @ConnectedSocket() client: AppSocket,
   ): Promise<void> {
+    if (!dto?.sessionId || typeof dto.sessionId !== 'string') {
+      return;
+    }
+
     await client.leave(this.roomName(dto.sessionId));
   }
 
