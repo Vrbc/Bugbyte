@@ -125,7 +125,14 @@ export class DashboardService {
             select: {
               id: true,
               username: true,
-              testerProfile: true,
+              testerProfile: {
+                select: {
+                  rating: true,
+                  level: true,
+                  experienceLevel: true,
+                  platforms: true,
+                },
+              },
             },
           },
           campaign: {

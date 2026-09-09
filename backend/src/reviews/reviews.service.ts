@@ -153,21 +153,38 @@ export class ReviewsService {
           startedAt: true,
           endedAt: true,
           durationSeconds: true,
-          campaign: true,
+          campaign: {
+            select: {
+              id: true,
+              title: true,
+              type: true,
+            },
+          },
         },
       },
       developer: {
         select: {
           id: true,
           username: true,
-          developerProfile: true,
+          developerProfile: {
+            select: {
+              studioName: true,
+            },
+          },
         },
       },
       tester: {
         select: {
           id: true,
           username: true,
-          testerProfile: true,
+          testerProfile: {
+            select: {
+              rating: true,
+              level: true,
+              experienceLevel: true,
+              platforms: true,
+            },
+          },
         },
       },
     } satisfies Prisma.TesterReviewInclude;
