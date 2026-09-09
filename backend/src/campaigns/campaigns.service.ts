@@ -257,8 +257,20 @@ export class CampaignsService {
 
   private campaignInclude() {
     return {
-      game: true,
-      build: true,
+      game: {
+        select: {
+          id: true,
+          title: true,
+          coverImageUrl: true,
+        },
+      },
+      build: {
+        select: {
+          id: true,
+          version: true,
+          status: true,
+        },
+      },
       _count: {
         select: {
           applications: true,
