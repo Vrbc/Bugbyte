@@ -198,7 +198,13 @@ export class SessionsService {
           type: true,
           instructions: true,
           status: true,
-          game: true,
+          game: {
+            select: {
+              id: true,
+              title: true,
+              coverImageUrl: true,
+            },
+          },
           build: {
             select: {
               id: true,
@@ -213,7 +219,11 @@ export class SessionsService {
             select: {
               id: true,
               username: true,
-              developerProfile: true,
+              developerProfile: {
+                select: {
+                  studioName: true,
+                },
+              },
             },
           },
         },
@@ -223,7 +233,14 @@ export class SessionsService {
           id: true,
           username: true,
           email: true,
-          testerProfile: true,
+          testerProfile: {
+            select: {
+              rating: true,
+              level: true,
+              experienceLevel: true,
+              platforms: true,
+            },
+          },
         },
       },
       _count: {
