@@ -8,10 +8,14 @@ import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decora
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFeedbackByteDto } from './dto/create-feedback-byte.dto';
 import { FeedbackType, Prisma, SessionStatus } from '@prisma/client';
+import { SessionRealtimeGateway } from 'src/realtime/session-realtime.gateway';
 
 @Injectable()
 export class FeedbackBytesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeGateway: SessionRealtimeGateway,
+  ) {}
 
   async createFeedbackByte(
     user: CurrentUserPayload,
@@ -43,7 +47,7 @@ export class FeedbackBytesService {
       throw new BadRequestException('Bug feedback requires severity.');
     }
 
-    return this.prisma.feedbackByte.create({
+    const feedbackByte = await this.prisma.feedbackByte.create({
       data: {
         sessionId,
         testerId: user.id,
@@ -56,6 +60,10 @@ export class FeedbackBytesService {
       },
       select: this.feedbackByteSelect(),
     });
+
+    this.realtimeGateway.broadcastNewFeedback(sessionId, feedbackByte);
+
+    return feedbackByte;
   }
 
   async findFeedbackBytesForSession(

@@ -13,6 +13,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     FeedbackBytesModule,
     ReviewsModule,
     DashboardModule,
+    RealtimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

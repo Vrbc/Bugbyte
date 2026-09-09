@@ -1,0 +1,148 @@
+import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { UserRole } from '@prisma/client';
+import { Server, Socket } from 'socket.io';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { JoinSessionDto } from './dto/join-session.dto';
+
+type JwtPayload = {
+  sub: string;
+  email: string;
+  role: UserRole;
+};
+
+type SocketUser = {
+  id: string;
+  role: UserRole;
+};
+
+type AppSocket = Omit<Socket, 'data'> & { data: { user?: SocketUser } };
+
+type JoinSessionResponse = {
+  success: boolean;
+  message?: string;
+};
+
+@WebSocketGateway({
+  cors: {
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:4200',
+    credentials: true,
+  },
+})
+export class SessionRealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer()
+  server!: Server;
+
+  private readonly logger = new Logger(SessionRealtimeGateway.name);
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async handleConnection(client: AppSocket) {
+    try {
+      const token = client.handshake.auth?.token as string | undefined;
+      if (!token) {
+        throw new Error('Missing auth token.');
+      }
+
+      const secret = this.configService.get<string>('JWT_SECRET');
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret,
+      });
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: { id: true, role: true, isActive: true },
+      });
+
+      if (!user || !user.isActive) {
+        throw new Error('User is not active or does not exist.');
+      }
+
+      client.data.user = { id: user.id, role: user.role };
+    } catch (error) {
+      this.logger.warn(
+        `Rejected WebSocket connection: ${(error as Error).message}`,
+      );
+      client.disconnect(true);
+    }
+  }
+
+  handleDisconnect(client: AppSocket) {
+    this.logger.debug(`Client disconnected: ${client.id}`);
+  }
+
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @SubscribeMessage('joinSession')
+  async handleJoinSession(
+    @MessageBody() dto: JoinSessionDto,
+    @ConnectedSocket() client: AppSocket,
+  ): Promise<JoinSessionResponse> {
+    const user = client.data.user;
+    if (!user) {
+      return { success: false, message: 'Not authenticated.' };
+    }
+
+    const session = await this.prisma.testSession.findFirst({
+      where: {
+        id: dto.sessionId,
+        OR: [{ testerId: user.id }, { campaign: { developerId: user.id } }],
+      },
+      select: { id: true },
+    });
+
+    if (!session) {
+      return {
+        success: false,
+        message: 'You do not have access to this session.',
+      };
+    }
+
+    await client.join(this.roomName(dto.sessionId));
+    return { success: true };
+  }
+
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @SubscribeMessage('leaveSession')
+  async handleLeaveSession(
+    @MessageBody() dto: JoinSessionDto,
+    @ConnectedSocket() client: AppSocket,
+  ): Promise<void> {
+    await client.leave(this.roomName(dto.sessionId));
+  }
+
+  broadcastNewFeedback(
+    sessionId: string,
+    feedbackByte: Record<string, unknown>,
+  ): void {
+    this.server
+      .to(this.roomName(sessionId))
+      .emit('feedbackByte:new', feedbackByte);
+  }
+
+  broadcastSessionStatus(
+    sessionId: string,
+    session: Record<string, unknown>,
+  ): void {
+    this.server.to(this.roomName(sessionId)).emit('session:updated', session);
+  }
+
+  private roomName(sessionId: string): string {
+    return `session:${sessionId}`;
+  }
+}

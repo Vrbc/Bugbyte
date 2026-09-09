@@ -12,10 +12,14 @@ import {
 import { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EndSessionDto } from './dto/end-session.dto';
+import { SessionRealtimeGateway } from 'src/realtime/session-realtime.gateway';
 
 @Injectable()
 export class SessionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeGateway: SessionRealtimeGateway,
+  ) {}
 
   async startSession(user: CurrentUserPayload, applicationId: string) {
     const application = await this.prisma.campaignApplication.findFirst({
@@ -128,7 +132,7 @@ export class SessionsService {
       Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
     );
 
-    return this.prisma.$transaction(async (tx) => {
+    const updatedSession = await this.prisma.$transaction(async (tx) => {
       const updatedSession = await tx.testSession.update({
         where: {
           id: id,
@@ -156,6 +160,10 @@ export class SessionsService {
 
       return updatedSession;
     });
+
+    this.realtimeGateway.broadcastSessionStatus(id, updatedSession);
+
+    return updatedSession;
   }
 
   private sessionListInclude() {
