@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 
@@ -32,6 +33,7 @@ export class UpdateGameDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   coverImageUrl?: string;
 
   @IsOptional()

@@ -31,5 +31,6 @@ export class CreateFeedbackByteDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   screenshotUrl?: string;
 }
