@@ -55,6 +55,11 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   severities: FeedbackSeverity[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
+  feedbackPage = signal(1);
+  feedbackTotalPages = signal(1);
+  feedbackTotal = signal(0);
+  loadingMoreFeedback = signal(false);
+
   private sessionId = '';
   private timerSubscription?: Subscription;
   private readonly socketSubscriptions = new Subscription();
@@ -72,7 +77,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.loadSession();
-    this.loadFeedbackBytes();
+    this.loadFeedbackBytes(1);
     this.connectToLiveUpdates();
   }
 
@@ -150,15 +155,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       ),
     ).subscribe({
       next: (feedbackByte) => {
-        this.feedbackBytes.update((items) => {
-          if (items.some((item) => item.id === feedbackByte.id)) {
-            return items;
-          }
-
-          return [...items, feedbackByte].sort(
-            (a, b) => a.timestampSeconds - b.timestampSeconds,
-          );
-        });
+        this.prependFeedbackByte(feedbackByte);
 
         this.comment = '';
         this.reproductionSteps = '';
@@ -179,6 +176,33 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadMoreFeedbackBytes(): void {
+    if (this.loadingMoreFeedback() || this.feedbackPage() >= this.feedbackTotalPages()) {
+      return;
+    }
+
+    const nextPage = this.feedbackPage() + 1;
+    this.loadingMoreFeedback.set(true);
+
+    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, nextPage).subscribe({
+      next: (result) => {
+        this.feedbackBytes.update((items) => {
+          const existingIds = new Set(items.map((item) => item.id));
+          const olderItems = result.items.filter((item) => !existingIds.has(item.id));
+          return [...items, ...olderItems];
+        });
+        this.feedbackPage.set(result.page);
+        this.feedbackTotalPages.set(result.totalPages);
+        this.feedbackTotal.set(result.total);
+        this.loadingMoreFeedback.set(false);
+      },
+      error: () => {
+        this.errorMessage.set('Failed to load older feedback.');
+        this.loadingMoreFeedback.set(false);
+      },
+    });
+  }
+
   private loadSession() : void {
     this.sessionsService.getSession(this.sessionId).subscribe({
        next: (session) => {
@@ -193,17 +217,34 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     })
   }
 
-  private loadFeedbackBytes(): void {
-    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId).subscribe({
-      next: (feedbackBytes) => {
-        this.feedbackBytes.set(
-          feedbackBytes.sort((a, b) => a.timestampSeconds - b.timestampSeconds),
-        );
+  private loadFeedbackBytes(page: number): void {
+    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page).subscribe({
+      next: (result) => {
+        this.feedbackBytes.set(result.items);
+        this.feedbackPage.set(result.page);
+        this.feedbackTotalPages.set(result.totalPages);
+        this.feedbackTotal.set(result.total);
       },
       error: () => {
         this.errorMessage.set('Failed to load feedback bytes.');
       },
     });
+  }
+
+  private prependFeedbackByte(feedbackByte: FeedbackByte): void {
+    let added = false;
+    this.feedbackBytes.update((items) => {
+      if (items.some((item) => item.id === feedbackByte.id)) {
+        return items;
+      }
+
+      added = true;
+      return [feedbackByte, ...items];
+    });
+
+    if (added) {
+      this.feedbackTotal.update((total) => total + 1);
+    }
   }
 
   private connectToLiveUpdates(): void {
@@ -215,15 +256,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.feedbackBytes.update((items) => {
-          if (items.some((item) => item.id === feedbackByte.id)) {
-            return items;
-          }
-
-          return [...items, feedbackByte].sort(
-            (a, b) => a.timestampSeconds - b.timestampSeconds,
-          );
-        });
+        this.prependFeedbackByte(feedbackByte);
       }),
     );
 
@@ -243,7 +276,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     this.socketSubscriptions.add(
       this.sessionSocket.onReconnect().subscribe(() => {
         this.sessionSocket.joinSession(this.sessionId);
-        this.loadFeedbackBytes();
+        this.loadFeedbackBytes(1);
       }),
     );
   }

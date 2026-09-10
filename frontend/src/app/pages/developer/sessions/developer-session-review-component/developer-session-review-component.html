@@ -64,7 +64,7 @@
         <div class="rounded-xl border border-slate-800 bg-slate-950 p-4">
           <p class="text-xs text-slate-500">Feedback bytes</p>
           <p class="mt-1 font-semibold">
-            {{ feedbackBytes().length }}
+            {{ feedbackTotal() }}
           </p>
         </div>
 
@@ -84,7 +84,7 @@
           All feedback bytes submitted during the session.
         </p>
 
-        @if (feedbackBytes().length === 0) {
+        @if (feedbackTotal() === 0) {
           <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
             <p class="text-slate-400">No feedback bytes submitted.</p>
           </div>
@@ -141,6 +141,19 @@
             </article>
           }
         </div>
+
+        @if (feedbackPage() < feedbackTotalPages()) {
+          <div class="mt-4 flex justify-center">
+            <button
+              type="button"
+              class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
+              [disabled]="loadingMoreFeedback()"
+              (click)="loadMoreFeedbackBytes()"
+            >
+              {{ loadingMoreFeedback() ? 'Loading...' : 'Load older feedback' }}
+            </button>
+          </div>
+        }
       </div>
 
       <div class="space-y-6">

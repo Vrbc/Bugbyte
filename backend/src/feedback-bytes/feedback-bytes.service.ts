@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFeedbackByteDto } from './dto/create-feedback-byte.dto';
 import { FeedbackType, Prisma, SessionStatus } from '@prisma/client';
 import { SessionRealtimeGateway } from 'src/realtime/session-realtime.gateway';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { buildPaginatedResult } from 'src/common/paginate.util';
 
 @Injectable()
 export class FeedbackBytesService {
@@ -69,23 +71,36 @@ export class FeedbackBytesService {
   async findFeedbackBytesForSession(
     user: CurrentUserPayload,
     sessionId: string,
+    query: PaginationQueryDto,
   ) {
     await this.ensureSessionAccess(user, sessionId);
 
-    return this.prisma.feedbackByte.findMany({
-      where: {
-        sessionId,
-      },
-      orderBy: [
-        {
-          timestampSeconds: 'asc',
-        },
-        {
-          createdAt: 'asc',
-        },
-      ],
-      select: this.feedbackByteSelect(),
-    });
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.FeedbackByteWhereInput = {
+      sessionId,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.feedbackByte.findMany({
+        where,
+        orderBy: [
+          {
+            timestampSeconds: 'desc',
+          },
+          {
+            createdAt: 'desc',
+          },
+        ],
+        select: this.feedbackByteSelect(),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.feedbackByte.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
   }
 
   private async ensureSessionAccess(

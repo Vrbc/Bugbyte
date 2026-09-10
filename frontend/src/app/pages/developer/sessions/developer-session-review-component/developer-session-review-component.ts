@@ -31,6 +31,11 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
   helpful = true;
   comment = '';
 
+  feedbackPage = signal(1);
+  feedbackTotalPages = signal(1);
+  feedbackTotal = signal(0);
+  loadingMoreFeedback = signal(false);
+
   private sessionId = '';
   private readonly socketSubscriptions = new Subscription();
 
@@ -44,7 +49,7 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadPage();
+    this.loadPage(1);
     this.connectToLiveUpdates();
   }
 
@@ -53,24 +58,52 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
     this.sessionSocket.leaveSession(this.sessionId);
   }
 
-  loadPage(): void {
+  loadPage(page: number): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
     forkJoin({
       session: this.sessionsService.getSession(this.sessionId),
-      feedbackBytes: this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId),
+      feedbackBytes: this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page),
     }).subscribe({
       next: ({ session, feedbackBytes }) => {
         this.session.set(session);
-        this.feedbackBytes.set(
-          feedbackBytes.sort((a, b) => a.timestampSeconds - b.timestampSeconds),
-        );
+        this.feedbackBytes.set(feedbackBytes.items);
+        this.feedbackPage.set(feedbackBytes.page);
+        this.feedbackTotalPages.set(feedbackBytes.totalPages);
+        this.feedbackTotal.set(feedbackBytes.total);
         this.loading.set(false);
       },
       error: () => {
         this.errorMessage.set('Failed to load session review.');
         this.loading.set(false);
+      },
+    });
+  }
+
+  loadMoreFeedbackBytes(): void {
+    if (this.loadingMoreFeedback() || this.feedbackPage() >= this.feedbackTotalPages()) {
+      return;
+    }
+
+    const nextPage = this.feedbackPage() + 1;
+    this.loadingMoreFeedback.set(true);
+
+    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, nextPage).subscribe({
+      next: (result) => {
+        this.feedbackBytes.update((items) => {
+          const existingIds = new Set(items.map((item) => item.id));
+          const olderItems = result.items.filter((item) => !existingIds.has(item.id));
+          return [...items, ...olderItems];
+        });
+        this.feedbackPage.set(result.page);
+        this.feedbackTotalPages.set(result.totalPages);
+        this.feedbackTotal.set(result.total);
+        this.loadingMoreFeedback.set(false);
+      },
+      error: () => {
+        this.errorMessage.set('Failed to load older feedback.');
+        this.loadingMoreFeedback.set(false);
       },
     });
   }
@@ -84,15 +117,19 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
           return;
         }
 
+        let added = false;
         this.feedbackBytes.update((items) => {
           if (items.some((item) => item.id === feedbackByte.id)) {
             return items;
           }
 
-          return [...items, feedbackByte].sort(
-            (a, b) => a.timestampSeconds - b.timestampSeconds,
-          );
+          added = true;
+          return [feedbackByte, ...items];
         });
+
+        if (added) {
+          this.feedbackTotal.update((total) => total + 1);
+        }
       }),
     );
 
@@ -109,7 +146,7 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
     this.socketSubscriptions.add(
       this.sessionSocket.onReconnect().subscribe(() => {
         this.sessionSocket.joinSession(this.sessionId);
-        this.loadPage();
+        this.loadPage(1);
       }),
     );
   }

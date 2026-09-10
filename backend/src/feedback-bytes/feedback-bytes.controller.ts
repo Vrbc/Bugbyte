@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { FeedbackBytesService } from './feedback-bytes.service';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
@@ -7,6 +15,7 @@ import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decora
 import { CreateFeedbackByteDto } from './dto/create-feedback-byte.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller('sessions/:sessionId/feedback-bytes')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -28,10 +37,12 @@ export class FeedbackBytesController {
   findFeedbackBytesForSession(
     @CurrentUser() user: CurrentUserPayload,
     @Param('sessionId') sessionId: string,
+    @Query() query: PaginationQueryDto,
   ) {
     return this.feedbackBytesService.findFeedbackBytesForSession(
       user,
       sessionId,
+      query,
     );
   }
 }
