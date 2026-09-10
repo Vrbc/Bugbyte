@@ -79,11 +79,11 @@ export class EditCampaignComponent {
 
     forkJoin({
       campaign: this.campaignsService.getCampaign(this.campaignId),
-      games: this.gamesService.getMyGames(),
+      games: this.gamesService.getMyGames(1, 100),
     }).subscribe({
       next: ({ campaign, games }) => {
         this.campaign.set(campaign);
-        this.games.set(games.filter((game) => game.status !== 'ARCHIVED'));
+        this.games.set(games.items.filter((game) => game.status !== 'ARCHIVED'));
 
         this.gameId = campaign.gameId;
         this.buildId = campaign.buildId;

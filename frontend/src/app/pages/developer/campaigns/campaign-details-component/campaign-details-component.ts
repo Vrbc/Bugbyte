@@ -22,6 +22,10 @@ export class CampaignDetailsComponent implements OnInit {
   actionMessage = signal<string | null>(null);
   updatingApplicationId = signal<string | null>(null);
 
+  page = signal(1);
+  totalPages = signal(1);
+  total = signal(0);
+
   private campaignId = '';
 
   constructor(
@@ -32,20 +36,23 @@ export class CampaignDetailsComponent implements OnInit {
 
   ngOnInit() : void {
     this.campaignId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadPage();
+    this.loadPage(1);
   }
 
-  loadPage() : void {
+  loadPage(page: number) : void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
     forkJoin({
       campaign: this.campaignsService.getCampaign(this.campaignId),
-      applications: this.applicationService.getApplicationsForCampaign(this.campaignId),
+      applications: this.applicationService.getApplicationsForCampaign(this.campaignId, page),
     }).subscribe({
       next: ({campaign, applications}) => {
         this.campaign.set(campaign);
-        this.applications.set(applications);
+        this.applications.set(applications.items);
+        this.page.set(applications.page);
+        this.totalPages.set(applications.totalPages);
+        this.total.set(applications.total);
         this.loading.set(false);
       },
       error: (error) => {
@@ -87,8 +94,13 @@ export class CampaignDetailsComponent implements OnInit {
     })
   }
   private reloadApplications(): void {
-    this.applicationService.getApplicationsForCampaign(this.campaignId).subscribe({
-      next: (applications) => this.applications.set(applications),
+    this.applicationService.getApplicationsForCampaign(this.campaignId, this.page()).subscribe({
+      next: (applications) => {
+        this.applications.set(applications.items);
+        this.page.set(applications.page);
+        this.totalPages.set(applications.totalPages);
+        this.total.set(applications.total);
+      },
       error: () => this.errorMessage.set('Failed to reload applications.'),
     });
   }

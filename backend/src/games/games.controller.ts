@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -17,6 +18,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller('games')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,8 +27,11 @@ export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
   @Get('my')
-  findMyGames(@CurrentUser() user: CurrentUserPayload) {
-    return this.gamesService.findMyGames(user);
+  findMyGames(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.gamesService.findMyGames(user, query);
   }
 
   @Get(':id')

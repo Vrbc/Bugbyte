@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -17,6 +18,8 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
 
 @Controller('campaigns')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,8 +28,8 @@ export class CampaignsController {
 
   @Get('public')
   @Roles(UserRole.TESTER)
-  async findPublicCampaigns() {
-    return this.campaignsService.findPublicCampaigns();
+  async findPublicCampaigns(@Query() query: PublicCampaignsQueryDto) {
+    return this.campaignsService.findPublicCampaigns(query);
   }
 
   @Get('public/:id')
@@ -37,8 +40,11 @@ export class CampaignsController {
 
   @Get('my')
   @Roles(UserRole.DEVELOPER)
-  findMyCampaigns(@CurrentUser() user: CurrentUserPayload) {
-    return this.campaignsService.findMyCampaigns(user);
+  findMyCampaigns(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.campaignsService.findMyCampaigns(user, query);
   }
 
   @Get(':id')

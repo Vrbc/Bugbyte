@@ -19,6 +19,10 @@ export class TesterApplicationsComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   startingApplicationId = signal<string | null>(null);
 
+  page = signal(1);
+  totalPages = signal(1);
+  total = signal(0);
+
   constructor(
     private readonly applicationsService: ApplicationsService,
     private readonly sessionsService: SessionsService,
@@ -26,16 +30,19 @@ export class TesterApplicationsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadApplications();
+    this.loadApplications(1);
   }
 
-  loadApplications(): void {
+  loadApplications(page: number): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.applicationsService.getMyApplications().subscribe({
-      next: (applications) => {
-        this.applications.set(applications);
+    this.applicationsService.getMyApplications(page).subscribe({
+      next: (result) => {
+        this.applications.set(result.items);
+        this.page.set(result.page);
+        this.totalPages.set(result.totalPages);
+        this.total.set(result.total);
         this.loading.set(false);
       },
       error: () => {

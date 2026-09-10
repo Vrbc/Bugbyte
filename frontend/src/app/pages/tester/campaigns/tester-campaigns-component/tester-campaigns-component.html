@@ -37,7 +37,7 @@
     </div>
   }
 
-  @if (!loading() && filteredCampaigns().length === 0) {
+  @if (!loading() && campaigns().length === 0) {
     <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
       <h2 class="text-xl font-semibold">No campaigns found</h2>
       <p class="mt-2 text-slate-400">
@@ -47,7 +47,7 @@
   }
 
   <div class="grid gap-5 xl:grid-cols-2">
-    @for (campaign of filteredCampaigns(); track campaign.id) {
+    @for (campaign of campaigns(); track campaign.id) {
       <article class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 transition hover:border-sky-400/60">
         <div class="h-44 bg-slate-950">
           @if (campaign.game.coverImageUrl) {
@@ -127,4 +127,26 @@
       </article>
     }
   </div>
+
+  @if (totalPages() > 1) {
+    <div class="mt-6 flex items-center justify-center gap-3">
+      <button
+        type="button"
+        class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
+        [disabled]="page() <= 1"
+        (click)="loadCampaigns(page() - 1)"
+      >
+        Previous
+      </button>
+      <span class="text-sm text-slate-400">Page {{ page() }} of {{ totalPages() }}</span>
+      <button
+        type="button"
+        class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
+        [disabled]="page() >= totalPages()"
+        (click)="loadCampaigns(page() + 1)"
+      >
+        Next
+      </button>
+    </div>
+  }
 </section>

@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ApplyCampaignDto } from './dto/apply-campaign.dto';
 import { ApplicationStatus, CampaignStatus, Prisma } from '@prisma/client';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { buildPaginatedResult } from 'src/common/paginate.util';
 
 @Injectable()
 export class ApplicationsService {
@@ -91,12 +93,52 @@ export class ApplicationsService {
     });
   }
 
-  async findMyApplications(user: CurrentUserPayload) {
-    return this.prisma.campaignApplication.findMany({
+  async findMyApplications(
+    user: CurrentUserPayload,
+    query: PaginationQueryDto,
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.CampaignApplicationWhereInput = {
+      testerId: user.id,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.campaignApplication.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: this.applicationForTesterInclude(),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.campaignApplication.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
+  }
+
+  async findMyApplicationForCampaign(
+    user: CurrentUserPayload,
+    campaignId: string,
+  ) {
+    return this.prisma.campaignApplication.findUnique({
       where: {
-        testerId: user.id,
+        campaignId_testerId: {
+          campaignId,
+          testerId: user.id,
+        },
       },
-      include: this.applicationForTesterInclude(),
+      select: {
+        id: true,
+        campaignId: true,
+        testerId: true,
+        message: true,
+        status: true,
+        createdAt: true,
+      },
     });
   }
 
@@ -105,31 +147,47 @@ export class ApplicationsService {
   async findApplicationsForCampaign(
     user: CurrentUserPayload,
     campaignId: string,
+    query: PaginationQueryDto,
   ) {
     await this.ensureCampaignOwnership(user, campaignId);
 
-    return this.prisma.campaignApplication.findMany({
-      where: {
-        campaignId,
-      },
-      include: {
-        tester: {
-          select: {
-            id: true,
-            username: true,
-            testerProfile: {
-              select: {
-                rating: true,
-                level: true,
-                experienceLevel: true,
-                platforms: true,
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.CampaignApplicationWhereInput = {
+      campaignId,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.campaignApplication.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          tester: {
+            select: {
+              id: true,
+              username: true,
+              testerProfile: {
+                select: {
+                  rating: true,
+                  level: true,
+                  experienceLevel: true,
+                  platforms: true,
+                },
               },
             },
           },
+          testSession: true,
         },
-        testSession: true,
-      },
-    });
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.campaignApplication.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
   }
 
   async updateApplicationStatus(

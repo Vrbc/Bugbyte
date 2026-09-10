@@ -37,18 +37,14 @@ export class TesterCampaignsDetailsComponent {
 
     forkJoin({
       campaign: this.campaignsService.getPublicCampaign(this.campaignId),
-      applications: this.applicationsService.getMyApplications(),
+      application: this.applicationsService.getMyApplicationForCampaign(this.campaignId),
     }).subscribe({
-      next: ({ campaign, applications }) => {
+      next: ({ campaign, application }) => {
         this.campaign.set(campaign);
 
-        const existingApplication = applications.find(
-          (application) => application.campaignId === this.campaignId,
-        );
-
-        if (existingApplication) {
+        if (application) {
           this.alreadyApplied.set(true);
-          this.message = existingApplication.message || '';
+          this.message = application.message || '';
           this.successMessage.set('You already applied for this campaign.');
         }
 

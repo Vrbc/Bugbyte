@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameStatus, Prisma } from '@prisma/client';
 import { UpdateGameDto } from './dto/update-game.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { buildPaginatedResult } from 'src/common/paginate.util';
 
 @Injectable()
 export class GamesService {
@@ -31,23 +33,35 @@ export class GamesService {
     });
   }
 
-  async findMyGames(user: CurrentUserPayload) {
-    return this.prisma.game.findMany({
-      where: {
-        developerId: user.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        _count: {
-          select: {
-            builds: true,
-            campaigns: true,
+  async findMyGames(user: CurrentUserPayload, query: PaginationQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.GameWhereInput = {
+      developerId: user.id,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.game.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          _count: {
+            select: {
+              builds: true,
+              campaigns: true,
+            },
           },
         },
-      },
-    });
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.game.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
   }
 
   async findOneGame(user: CurrentUserPayload, id: string) {

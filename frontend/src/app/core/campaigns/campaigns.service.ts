@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CreateCampaignRequest, PlaytestCampaign, PublicCampaign, PublicCampaignDetails, UpdateCampaignRequest } from './campaigns.models';
+import { PaginatedResult } from '../shared/pagination.models';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +13,10 @@ export class CampaignsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}`;
 
-  getMyCampaigns(): Observable<PlaytestCampaign[]> {
-    return this.http.get<PlaytestCampaign[]>(`${this.apiUrl}/campaigns/my`);
+  getMyCampaigns(page = 1, limit = 20): Observable<PaginatedResult<PlaytestCampaign>> {
+    return this.http.get<PaginatedResult<PlaytestCampaign>>(`${this.apiUrl}/campaigns/my`, {
+      params: { page, limit },
+    });
   }
 
   getCampaign(id: string): Observable<PlaytestCampaign> {
@@ -38,8 +41,23 @@ export class CampaignsService {
     return this.http.delete<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}`);
   }
 
-  getPublicCampaigns(): Observable<PublicCampaign[]> {
-    return this.http.get<PublicCampaign[]>(`${this.apiUrl}/campaigns/public`);
+  getPublicCampaigns(
+    page = 1,
+    limit = 20,
+    search?: string,
+    platform?: string,
+  ): Observable<PaginatedResult<PublicCampaign>> {
+    const params: Record<string, string | number> = { page, limit };
+    if (search) {
+      params['search'] = search;
+    }
+    if (platform) {
+      params['platform'] = platform;
+    }
+
+    return this.http.get<PaginatedResult<PublicCampaign>>(`${this.apiUrl}/campaigns/public`, {
+      params,
+    });
   }
 
   getPublicCampaign(id: string): Observable<PublicCampaignDetails> {

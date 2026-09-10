@@ -112,7 +112,7 @@
         </div>
       </div>
 
-      @if (applications().length === 0) {
+      @if (total() === 0) {
         <div class="rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
           <p class="text-slate-400">No applications yet.</p>
         </div>
@@ -205,6 +205,28 @@
           </article>
         }
       </div>
+
+      @if (totalPages() > 1) {
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
+            [disabled]="page() <= 1"
+            (click)="loadPage(page() - 1)"
+          >
+            Previous
+          </button>
+          <span class="text-sm text-slate-400">Page {{ page() }} of {{ totalPages() }}</span>
+          <button
+            type="button"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
+            [disabled]="page() >= totalPages()"
+            (click)="loadPage(page() + 1)"
+          >
+            Next
+          </button>
+        </div>
+      }
     </div>
   }
 </section>

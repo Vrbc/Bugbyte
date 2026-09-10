@@ -53,9 +53,9 @@ export class CreateCampaignComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.gamesService.getMyGames().subscribe({
-      next: (games) => {
-        this.games.set(games.filter((game) => game.status !== 'ARCHIVED'));
+    this.gamesService.getMyGames(1, 100).subscribe({
+      next: (result) => {
+        this.games.set(result.items.filter((game) => game.status !== 'ARCHIVED'));
         this.loadingGames.set(false);
       }, error: () => {
         this.errorMessage.set('Failed to load games.');

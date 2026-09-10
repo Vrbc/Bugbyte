@@ -16,19 +16,26 @@ export class DeveloperCampaignsComponent implements OnInit {
   loading = signal(true);
   errorMessage = signal<string | null>(null);
 
+  page = signal(1);
+  totalPages = signal(1);
+  total = signal(0);
+
   constructor(private readonly campaignsService: CampaignsService) {}
 
   ngOnInit(): void {
-    this.loadCampaigns();
+    this.loadCampaigns(1);
   }
 
-  loadCampaigns(): void {
+  loadCampaigns(page: number): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.campaignsService.getMyCampaigns().subscribe({
-      next: (campaigns) => {
-        this.campaigns.set(campaigns);
+    this.campaignsService.getMyCampaigns(page).subscribe({
+      next: (result) => {
+        this.campaigns.set(result.items);
+        this.page.set(result.page);
+        this.totalPages.set(result.totalPages);
+        this.total.set(result.total);
         this.loading.set(false);
       },
       error: () => {
@@ -46,7 +53,7 @@ export class DeveloperCampaignsComponent implements OnInit {
     }
 
     this.campaignsService.archiveCampaign(campaign.id).subscribe({
-      next: () => this.loadCampaigns(),
+      next: () => this.loadCampaigns(this.page()),
       error: () => this.errorMessage.set('Failed to archive campaign.'),
     });
   }

@@ -16,19 +16,26 @@ export class DeveloperGamesComponent implements OnInit {
   loading = signal(true);
   errorMessage = signal<string | null>(null);
 
+  page = signal(1);
+  totalPages = signal(1);
+  total = signal(0);
+
   constructor(private readonly gamesService: GamesService) {}
 
   ngOnInit(): void {
-    this.loadGames();
+    this.loadGames(1);
   }
 
-  loadGames(): void {
+  loadGames(page: number): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.gamesService.getMyGames().subscribe({
-      next: (games) => {
-        this.games.set(games);
+    this.gamesService.getMyGames(page).subscribe({
+      next: (result) => {
+        this.games.set(result.items);
+        this.page.set(result.page);
+        this.totalPages.set(result.totalPages);
+        this.total.set(result.total);
         this.loading.set(false);
       },
       error: () => {
@@ -44,7 +51,7 @@ export class DeveloperGamesComponent implements OnInit {
     if(!confirmed) return;
 
     this.gamesService.archiveGame(game.id).subscribe({
-      next: () => this.loadGames(),
+      next: () => this.loadGames(this.page()),
       error: () => this.errorMessage.set(`Failed to archive game`),
     })
   }

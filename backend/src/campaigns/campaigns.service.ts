@@ -8,18 +8,36 @@ import { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
+import { buildPaginatedResult } from 'src/common/paginate.util';
 
 @Injectable()
 export class CampaignsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMyCampaigns(user: CurrentUserPayload) {
-    return await this.prisma.playtestCampaign.findMany({
-      where: {
-        developerId: user.id,
-      },
-      include: this.campaignInclude(),
-    });
+  async findMyCampaigns(user: CurrentUserPayload, query: PaginationQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.PlaytestCampaignWhereInput = {
+      developerId: user.id,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.playtestCampaign.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: this.campaignInclude(),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.playtestCampaign.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
   }
 
   async findOneCampaign(user: CurrentUserPayload, id: string) {
@@ -289,13 +307,48 @@ export class CampaignsService {
 
   // Public / Tester
 
-  async findPublicCampaigns() {
-    return this.prisma.playtestCampaign.findMany({
-      where: {
-        status: CampaignStatus.ACTIVE,
-      },
-      select: this.publicCampaignListSelect(),
-    });
+  async findPublicCampaigns(query: PublicCampaignsQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.PlaytestCampaignWhereInput = {
+      status: CampaignStatus.ACTIVE,
+      ...(query.platform ? { requiredPlatforms: { has: query.platform } } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              {
+                title: { contains: query.search, mode: 'insensitive' },
+              },
+              {
+                game: {
+                  title: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+              {
+                game: {
+                  genre: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.playtestCampaign.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: this.publicCampaignListSelect(),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.playtestCampaign.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
   }
 
   async findPublicCampaign(id: string) {

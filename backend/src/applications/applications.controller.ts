@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -16,6 +17,7 @@ import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decora
 import { UserRole } from '@prisma/client';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 import { ApplyCampaignDto } from './dto/apply-campaign.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,10 +34,25 @@ export class ApplicationsController {
     return this.applicationsService.applyToCampaign(user, campaignId, dto);
   }
 
+  @Get('campaigns/:campaignId/my-application')
+  @Roles(UserRole.TESTER)
+  findMyApplicationForCampaign(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('campaignId') campaignId: string,
+  ) {
+    return this.applicationsService.findMyApplicationForCampaign(
+      user,
+      campaignId,
+    );
+  }
+
   @Get('applications/my')
   @Roles(UserRole.TESTER)
-  findMyApplications(@CurrentUser() user: CurrentUserPayload) {
-    return this.applicationsService.findMyApplications(user);
+  findMyApplications(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.applicationsService.findMyApplications(user, query);
   }
 
   @Get('campaigns/:campaignId/applications')
@@ -43,10 +60,12 @@ export class ApplicationsController {
   findApplicationsForCampaign(
     @CurrentUser() user: CurrentUserPayload,
     @Param('campaignId') campaignId: string,
+    @Query() query: PaginationQueryDto,
   ) {
     return this.applicationsService.findApplicationsForCampaign(
       user,
       campaignId,
+      query,
     );
   }
 
