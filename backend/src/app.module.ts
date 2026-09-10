@@ -14,6 +14,7 @@ import { FeedbackBytesModule } from './feedback-bytes/feedback-bytes.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     ReviewsModule,
     DashboardModule,
     RealtimeModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
