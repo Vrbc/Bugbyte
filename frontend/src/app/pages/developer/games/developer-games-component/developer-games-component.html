@@ -46,7 +46,7 @@
         <div class="h-40 bg-slate-950">
           @if (game.coverImageUrl) {
             <img
-              [src]="game.coverImageUrl"
+              [src]="game.coverImageUrl | resolveUploadUrl"
               [alt]="game.title"
               class="h-full w-full object-cover"
             />

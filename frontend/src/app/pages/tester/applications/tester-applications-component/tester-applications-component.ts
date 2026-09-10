@@ -4,10 +4,11 @@ import { CampaignApplication } from '../../../../core/applications/applications.
 import { ApplicationsService } from '../../../../core/applications/applications.service';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { Router } from '@angular/router';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-tester-applications-component',
-  imports: [CommonModule],
+  imports: [CommonModule, ResolveUploadUrlPipe],
   templateUrl: './tester-applications-component.html',
   styleUrl: './tester-applications-component.scss',
 })

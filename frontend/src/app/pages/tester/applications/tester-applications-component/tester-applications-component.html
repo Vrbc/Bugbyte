@@ -34,7 +34,7 @@
             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-950">
               @if (application.campaign?.game?.coverImageUrl) {
                 <img
-                  [src]="application.campaign?.game?.coverImageUrl"
+                  [src]="application.campaign?.game?.coverImageUrl | resolveUploadUrl"
                   [alt]="application.campaign?.game?.title"
                   class="h-full w-full object-cover"
                 />

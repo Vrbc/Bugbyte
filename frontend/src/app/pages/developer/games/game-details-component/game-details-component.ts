@@ -7,10 +7,11 @@ import { BuildsService } from '../../../../core/builds/builds.service';
 import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-game-details-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './game-details-component.html',
   styleUrl: './game-details-component.scss',
 })

@@ -6,10 +6,11 @@ import { PublicCampaignDetails } from '../../../../core/campaigns/campaigns.mode
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-tester-campaigns-details-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './tester-campaigns-details-component.html',
   styleUrl: './tester-campaigns-details-component.scss',
 })

@@ -1,17 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Observable, of, switchMap } from 'rxjs';
 import { Game, GameStatus } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
+import { UploadImageResponse, UploadsService } from '../../../../core/uploads/uploads.service';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { extractImageFromClipboard } from '../../../../core/uploads/clipboard-image.util';
 
 @Component({
   selector: 'app-edit-game-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './edit-game-component.html',
   styleUrl: './edit-game-component.scss',
 })
-export class EditGameComponent implements OnInit {
+export class EditGameComponent implements OnInit, OnDestroy {
   game = signal<Game | null>(null);
 
   title = '';
@@ -23,6 +27,9 @@ export class EditGameComponent implements OnInit {
   availablePlatforms = ['PC', 'Web', 'Android', 'iOS'];
   selectedPlatforms: string[] = [];
 
+  selectedCoverFile: File | null = null;
+  coverPreviewUrl = signal<string | null>(null);
+
   loading = signal(true);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
@@ -33,11 +40,19 @@ export class EditGameComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly gamesService: GamesService,
+    private readonly uploadsService: UploadsService,
   ) {}
 
   ngOnInit(): void {
     this.gameId = this.route.snapshot.paramMap.get('id') || '';
     this.loadGame();
+  }
+
+  ngOnDestroy(): void {
+    const previewUrl = this.coverPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
   }
 
   loadGame(): void {
@@ -73,6 +88,36 @@ export class EditGameComponent implements OnInit {
     this.selectedPlatforms = [...this.selectedPlatforms, platform];
   }
 
+  onCoverFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.setCoverFile(file);
+  }
+
+  onCoverPaste(event: ClipboardEvent): void {
+    const file = extractImageFromClipboard(event);
+    if (!file) {
+      return;
+    }
+
+    event.preventDefault();
+    this.setCoverFile(file);
+  }
+
+  private setCoverFile(file: File): void {
+    const previewUrl = this.coverPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    this.selectedCoverFile = file;
+    this.coverPreviewUrl.set(URL.createObjectURL(file));
+  }
+
   submit(): void {
     this.errorMessage.set(null);
 
@@ -98,14 +143,22 @@ export class EditGameComponent implements OnInit {
 
     this.saving.set(true);
 
-    this.gamesService.updateGame(this.gameId, {
-      title: this.title,
-      description: this.description,
-      genre: this.genre,
-      platforms: this.selectedPlatforms,
-      coverImageUrl: this.coverImageUrl || undefined,
-      status: this.status,
-    }).subscribe({
+    const upload$: Observable<UploadImageResponse | null> = this.selectedCoverFile
+      ? this.uploadsService.uploadImage(this.selectedCoverFile)
+      : of(null);
+
+    upload$.pipe(
+      switchMap((uploadResult) =>
+        this.gamesService.updateGame(this.gameId, {
+          title: this.title,
+          description: this.description,
+          genre: this.genre,
+          platforms: this.selectedPlatforms,
+          coverImageUrl: uploadResult?.url ?? (this.coverImageUrl || undefined),
+          status: this.status,
+        }),
+      ),
+    ).subscribe({
       next: () => {
         this.saving.set(false);
         this.router.navigate(['/developer/games', this.gameId]);

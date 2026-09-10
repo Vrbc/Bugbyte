@@ -52,7 +52,7 @@
         <div class="h-44 bg-slate-950">
           @if (campaign.game.coverImageUrl) {
             <img
-              [src]="campaign.game.coverImageUrl"
+              [src]="campaign.game.coverImageUrl | resolveUploadUrl"
               [alt]="campaign.game.title"
               class="h-full w-full object-cover"
             />

@@ -75,7 +75,7 @@
         <div class="h-40 bg-slate-950">
           @if (session.campaign?.game?.coverImageUrl) {
             <img
-              [src]="session.campaign?.game?.coverImageUrl"
+              [src]="session.campaign?.game?.coverImageUrl | resolveUploadUrl"
               [alt]="session.campaign?.game?.title"
               class="h-full w-full object-cover"
             />

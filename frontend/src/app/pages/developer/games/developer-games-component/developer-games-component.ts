@@ -3,10 +3,11 @@ import { Game } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-developer-games-component',
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './developer-games-component.html',
   styleUrl: './developer-games-component.scss',
 })

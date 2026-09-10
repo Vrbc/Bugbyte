@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { PublicCampaign } from '../../../../core/campaigns/campaigns.models';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-tester-campaigns-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './tester-campaigns-component.html',
   styleUrl: './tester-campaigns-component.scss',
 })

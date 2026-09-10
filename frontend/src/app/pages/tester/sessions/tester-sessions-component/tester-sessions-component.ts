@@ -3,12 +3,13 @@ import { TestSession } from '../../../../core/sessions/sessions.models';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 type SessionFilter = 'ALL' | 'LIVE' | 'COMPLETED';
 
 @Component({
   selector: 'app-tester-sessions-component',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './tester-sessions-component.html',
   styleUrl: './tester-sessions-component.scss',
 })

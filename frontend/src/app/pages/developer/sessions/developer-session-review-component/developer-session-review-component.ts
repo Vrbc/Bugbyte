@@ -9,10 +9,11 @@ import { forkJoin, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
+import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 
 @Component({
   selector: 'app-developer-session-review-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
   templateUrl: './developer-session-review-component.html',
   styleUrl: './developer-session-review-component.scss',
 })
