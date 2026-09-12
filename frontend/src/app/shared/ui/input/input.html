@@ -32,5 +32,7 @@
   </div>
   @if (error()) {
     <span class="text-xs text-bug">{{ error() }}</span>
+  } @else if (hint()) {
+    <span class="text-xs text-on-surface-variant">{{ hint() }}</span>
   }
 </label>

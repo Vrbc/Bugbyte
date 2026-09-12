@@ -3,10 +3,14 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { Logo } from '../../../shared/ui/logo/logo';
+import { Card } from '../../../shared/ui/card/card';
+import { Input } from '../../../shared/ui/input/input';
+import { Button } from '../../../shared/ui/button/button';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Logo, Card, Input, Button],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

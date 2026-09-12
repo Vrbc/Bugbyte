@@ -11,7 +11,7 @@ export class Card {
   padded = input(true);
 
   protected readonly classes = computed(() => {
-    const base = `rounded-card border border-border bg-level-1 overflow-hidden transition-all duration-300 ${this.padded() ? 'p-bb-sm' : ''}`;
+    const base = `relative rounded-card border border-border bg-level-1 overflow-hidden transition-all duration-300 ${this.padded() ? 'p-bb-sm' : ''}`;
     return this.hoverable() ? `${base} hover:-translate-y-0.5 hover:border-cyan` : base;
   });
 }

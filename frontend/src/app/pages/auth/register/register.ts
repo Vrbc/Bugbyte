@@ -3,13 +3,19 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserRole } from '../../../core/auth/auth.models';
+import { Logo } from '../../../shared/ui/logo/logo';
+import { Card } from '../../../shared/ui/card/card';
+import { Input } from '../../../shared/ui/input/input';
+import { Select } from '../../../shared/ui/select/select';
+import { Button } from '../../../shared/ui/button/button';
+import { ToggleChipGroup } from '../../../shared/ui/toggle-chip-group/toggle-chip-group';
 
 type ExperienceLevel = 'BEGINNER' | 'CASUAL' | 'EXPERIENCED' | 'QA_ORIENTED';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Logo, Card, Input, Select, Button, ToggleChipGroup],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })

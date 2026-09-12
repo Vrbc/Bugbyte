@@ -1,47 +1,47 @@
-<main class="flex min-h-screen items-center justify-center p-6">
-  <section class="w-full max-w-sm">
-    <h1 class="text-2xl font-semibold">Welcome back</h1>
-    <p class="mt-2">Sign in and continue your playtest loop.</p>
+<main
+  class="flex min-h-screen items-center justify-center p-margin-mobile"
+  style="background-image: linear-gradient(rgba(38, 50, 74, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(38, 50, 74, 0.4) 1px, transparent 1px); background-size: 40px 40px; background-position: -1px -1px;"
+>
+  <section class="flex w-full max-w-sm flex-col items-center gap-bb-md">
+    <div class="flex flex-col items-center gap-bb-xs text-center">
+      <app-logo [size]="64" />
+      <h1 class="font-display text-display-lg-mobile">Welcome back</h1>
+      <p class="font-body text-body-md text-on-surface-variant">Sign in and continue your playtest loop.</p>
+    </div>
 
-    <form class="mt-6 space-y-4" (ngSubmit)="submit()">
-      <div>
-        <label class="mb-1 block">Email</label>
-        <input
-          class="w-full border px-3 py-2"
+    <app-card class="w-full">
+      <div class="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-cyan to-purple"></div>
+      <form class="flex flex-col gap-bb-sm" (ngSubmit)="submit()">
+        <app-input
+          label="Email Address"
+          icon="mail"
           type="email"
           [(ngModel)]="email"
           name="email"
-          required
+          [required]="true"
+          placeholder="sysadmin@bugbyte.io"
         />
-      </div>
-
-      <div>
-        <label class="mb-1 block">Password</label>
-        <input
-          class="w-full border px-3 py-2"
+        <app-input
+          label="Password"
+          icon="lock"
           type="password"
           [(ngModel)]="password"
           name="password"
-          required
+          [required]="true"
+          placeholder="••••••••"
         />
-      </div>
 
-      @if (errorMessage()) {
-        <div class="text-sm">
-          {{ errorMessage() }}
-        </div>
-      }
+        @if (errorMessage()) {
+          <p class="text-bug">{{ errorMessage() }}</p>
+        }
 
-      <button
-        class="w-full border px-4 py-2 disabled:opacity-50"
-        type="submit"
-        [disabled]="loading()"
-      >
-        {{ loading() ? 'Signing in...' : 'Login' }}
-      </button>
-    </form>
+        <app-button type="submit" [fullWidth]="true" [disabled]="loading()">
+          {{ loading() ? 'Signing in...' : 'Login' }}
+        </app-button>
+      </form>
+    </app-card>
 
-    <a class="mt-4 block text-center underline" routerLink="/auth/register">
+    <a routerLink="/auth/register" class="font-body text-body-md text-cyan hover:text-purple">
       Create account
     </a>
   </section>

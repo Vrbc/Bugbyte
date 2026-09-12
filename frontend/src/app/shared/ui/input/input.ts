@@ -23,6 +23,7 @@ export class Input implements ControlValueAccessor {
   placeholder = input('');
   required = input(false);
   error = input<string>();
+  hint = input<string>();
   multiline = input(false);
   rows = input(3);
 
