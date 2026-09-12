@@ -1,0 +1,23 @@
+<label class="flex flex-col gap-xs">
+  @if (label()) {
+    <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">{{ label() }}</span>
+  }
+  <div class="relative">
+    @if (icon()) {
+      <span class="material-symbols-outlined absolute left-xs top-1/2 -translate-y-1/2 text-sm text-on-surface-variant">{{ icon() }}</span>
+    }
+    <input
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      [disabled]="disabled()"
+      [value]="value()"
+      (input)="onInput($event)"
+      (blur)="onBlur()"
+      [class]="inputClasses()"
+    />
+  </div>
+  @if (error()) {
+    <span class="text-xs text-bug">{{ error() }}</span>
+  }
+</label>
