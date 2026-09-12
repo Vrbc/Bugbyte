@@ -5,13 +5,16 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { GamesService } from '../../../../core/games/games.service';
 import { BuildsService } from '../../../../core/builds/builds.service';
 import { forkJoin } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Input } from '../../../../shared/ui/input/input';
 
 @Component({
   selector: 'app-game-details-component',
-  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Input],
   templateUrl: './game-details-component.html',
   styleUrl: './game-details-component.scss',
 })
@@ -28,6 +31,8 @@ export class GameDetailsComponent implements OnInit {
   changelog = '';
 
   creatingBuild = signal(false);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   private gameId = '';
 

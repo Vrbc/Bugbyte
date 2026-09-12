@@ -23,6 +23,8 @@ export class Input implements ControlValueAccessor {
   placeholder = input('');
   required = input(false);
   error = input<string>();
+  multiline = input(false);
+  rows = input(3);
 
   protected value = signal('');
   protected disabled = signal(false);
@@ -47,7 +49,7 @@ export class Input implements ControlValueAccessor {
   }
 
   protected onInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
+    const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
     this.value.set(value);
     this.onChange(value);
   }

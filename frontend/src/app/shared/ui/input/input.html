@@ -6,16 +6,29 @@
     @if (icon()) {
       <span class="material-symbols-outlined absolute left-bb-xs top-1/2 -translate-y-1/2 text-sm text-on-surface-variant">{{ icon() }}</span>
     }
-    <input
-      [type]="type()"
-      [placeholder]="placeholder()"
-      [required]="required()"
-      [disabled]="disabled()"
-      [value]="value()"
-      (input)="onInput($event)"
-      (blur)="onBlur()"
-      [class]="inputClasses()"
-    />
+    @if (multiline()) {
+      <textarea
+        [rows]="rows()"
+        [placeholder]="placeholder()"
+        [required]="required()"
+        [disabled]="disabled()"
+        [value]="value()"
+        (input)="onInput($event)"
+        (blur)="onBlur()"
+        [class]="inputClasses()"
+      ></textarea>
+    } @else {
+      <input
+        [type]="type()"
+        [placeholder]="placeholder()"
+        [required]="required()"
+        [disabled]="disabled()"
+        [value]="value()"
+        (input)="onInput($event)"
+        (blur)="onBlur()"
+        [class]="inputClasses()"
+      />
+    }
   </div>
   @if (error()) {
     <span class="text-xs text-bug">{{ error() }}</span>

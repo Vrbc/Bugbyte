@@ -3,14 +3,17 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
 import { PublicCampaignDetails } from '../../../../core/campaigns/campaigns.models';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Input } from '../../../../shared/ui/input/input';
 
 @Component({
   selector: 'app-tester-campaigns-details-component',
-  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Input],
   templateUrl: './tester-campaigns-details-component.html',
   styleUrl: './tester-campaigns-details-component.scss',
 })
@@ -23,6 +26,8 @@ export class TesterCampaignsDetailsComponent {
 
   message = '';
   alreadyApplied = signal(false);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   private campaignId = '';
 

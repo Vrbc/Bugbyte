@@ -1,15 +1,18 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, Signal, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
 import { CampaignApplication } from '../../../../core/applications/applications.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
 import { forkJoin } from 'rxjs';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Pagination } from '../../../../shared/ui/pagination/pagination';
 
 @Component({
   selector: 'app-campaign-details-component',
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination],
   templateUrl: './campaign-details-component.html',
   styleUrl: './campaign-details-component.scss',
 })
@@ -25,6 +28,9 @@ export class CampaignDetailsComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   total = signal(0);
+
+  protected readonly primaryLinkClasses = buttonClasses('primary');
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   private campaignId = '';
 
