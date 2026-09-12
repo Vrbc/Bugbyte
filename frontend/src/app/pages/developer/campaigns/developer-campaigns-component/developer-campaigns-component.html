@@ -1,157 +1,117 @@
-<section>
-  <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+<section class="flex flex-col gap-bb-md">
+  <div class="flex flex-col justify-between gap-bb-sm md:flex-row md:items-center">
     <div>
-      <p class="text-sm font-medium text-sky-300">Campaigns</p>
-      <h1 class="mt-2 text-3xl font-bold tracking-tight">Playtest campaigns</h1>
-      <p class="mt-2 text-slate-400">
+      <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">Campaigns</p>
+      <h1 class="mt-1 font-display text-display-lg-mobile">Playtest campaigns</h1>
+      <p class="mt-1 font-body text-body-md text-on-surface-variant">
         Create campaigns and invite testers to play your games.
       </p>
     </div>
 
-    <a
-      routerLink="/developer/campaigns/new"
-      class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90"
-    >
-      + New Campaign
-    </a>
+    <div class="hidden md:block">
+      <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses">
+        <span class="material-symbols-outlined text-base">add</span>
+        New Campaign
+      </a>
+    </div>
   </div>
 
   @if (loading()) {
-    <p class="text-slate-400">Loading campaigns...</p>
+    <p class="font-body text-body-md text-on-surface-variant">Loading campaigns...</p>
   }
 
   @if (errorMessage()) {
-    <div class="mb-5 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
-      {{ errorMessage() }}
-    </div>
+    <app-card>
+      <p class="text-bug">{{ errorMessage() }}</p>
+    </app-card>
   }
 
   @if (!loading() && campaigns().length === 0) {
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
-      <h2 class="text-xl font-semibold">No campaigns yet</h2>
-      <p class="mt-2 text-slate-400">
-        Create a campaign after you have at least one game and one build.
-      </p>
-
-      <a
-        routerLink="/developer/campaigns/new"
-        class="mt-5 inline-flex rounded-xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:opacity-90"
-      >
-        Create campaign
-      </a>
-    </div>
+    <app-card>
+      <div class="flex flex-col items-center gap-bb-sm py-bb-lg text-center">
+        <span class="material-symbols-outlined text-4xl text-on-surface-variant">campaign</span>
+        <h2 class="font-display text-headline-md">No campaigns yet</h2>
+        <p class="font-body text-body-md text-on-surface-variant">
+          Create a campaign after you have at least one game and one build.
+        </p>
+        <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses">
+          <span class="material-symbols-outlined text-base">add</span>
+          Create campaign
+        </a>
+      </div>
+    </app-card>
   }
 
-  <div class="grid gap-5 xl:grid-cols-2">
+  <div class="grid gap-bb-sm xl:grid-cols-2">
     @for (campaign of campaigns(); track campaign.id) {
-      <article class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 transition hover:border-sky-400/60">
-        <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+      <app-card [hoverable]="true">
+        <div class="flex flex-col justify-between gap-bb-sm md:flex-row md:items-start">
           <div>
-            <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-xl font-semibold">{{ campaign.title }}</h2>
-
-              <span
-                class="rounded-full border px-3 py-1 text-xs"
-                [ngClass]="{
-                  'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': campaign.status === 'ACTIVE',
-                  'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': campaign.status === 'DRAFT',
-                  'border-sky-400/40 bg-sky-400/10 text-sky-300': campaign.status === 'PAUSED',
-                  'border-violet-400/40 bg-violet-400/10 text-violet-300': campaign.status === 'COMPLETED',
-                  'border-slate-600 bg-slate-800 text-slate-400': campaign.status === 'ARCHIVED'
-                }"
-              >
-                {{ campaign.status }}
-              </span>
+            <div class="flex flex-wrap items-center gap-bb-xs">
+              <h2 class="font-display text-headline-md">{{ campaign.title }}</h2>
+              <app-status-badge [status]="campaign.status" />
             </div>
 
-            <p class="mt-2 text-sm text-slate-400">
+            <p class="mt-1 font-body text-body-md text-on-surface-variant">
               {{ campaign.game?.title }} · {{ campaign.build?.version }} · {{ campaign.type }}
             </p>
           </div>
 
-          <div class="flex gap-2">
-          <a
-            [routerLink]="['/developer/campaigns', campaign.id]"
-            class="rounded-xl bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:opacity-90"
-          >
-            Open
-          </a>
-          <a
-            [routerLink]="['/developer/campaigns', campaign.id, 'edit']"
-            class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-sky-400/60 hover:text-sky-300"
-          >
-            Edit
-          </a>
-          @if (campaign.status !== 'ARCHIVED') {
-            <button
-              type="button"
-              class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-rose-400/60 hover:text-rose-300"
-              (click)="archiveCampaign(campaign)"
-            >
-              Archive
-            </button>
-          }
-</div>
+          <div class="flex flex-wrap gap-bb-xs">
+            <a [routerLink]="['/developer/campaigns', campaign.id]" [class]="primaryLinkClasses">Open</a>
+            <a [routerLink]="['/developer/campaigns', campaign.id, 'edit']" [class]="secondaryLinkClasses">Edit</a>
+            @if (campaign.status !== 'ARCHIVED') {
+              <app-button variant="danger" type="button" (click)="archiveCampaign(campaign)">Archive</app-button>
+            }
+          </div>
         </div>
 
         @if (campaign.description) {
-          <p class="mt-4 line-clamp-2 text-sm text-slate-400">
+          <p class="mt-bb-sm line-clamp-2 font-body text-body-md text-on-surface-variant">
             {{ campaign.description }}
           </p>
         }
 
-        <div class="mt-5 flex flex-wrap gap-2">
+        <div class="mt-bb-sm flex flex-wrap gap-1">
           @for (platform of campaign.requiredPlatforms; track platform) {
-            <span class="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+            <span class="rounded-sm border border-border px-2 py-0.5 font-label-sm text-label-sm text-on-surface-variant">
               {{ platform }}
             </span>
           }
         </div>
 
-        <div class="mt-5 grid gap-3 sm:grid-cols-4 text-white">
-          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
-            <p class="text-xs text-slate-500">Needed</p>
-            <p class="mt-1 font-semibold">{{ campaign.requiredTesters }}</p>
+        <div class="mt-bb-sm grid grid-cols-2 gap-bb-xs sm:grid-cols-4">
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+            <p class="font-label-sm text-label-sm text-on-surface-variant">Needed</p>
+            <p class="mt-1 font-body text-body-md font-semibold">{{ campaign.requiredTesters }}</p>
           </div>
 
-          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
-            <p class="text-xs text-slate-500">Applications</p>
-            <p class="mt-1 font-semibold">{{ campaign._count?.applications ?? 0 }}</p>
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+            <p class="font-label-sm text-label-sm text-on-surface-variant">Applications</p>
+            <p class="mt-1 font-body text-body-md font-semibold">{{ campaign._count?.applications ?? 0 }}</p>
           </div>
 
-          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
-            <p class="text-xs text-slate-500">Sessions</p>
-            <p class="mt-1 font-semibold">{{ campaign._count?.sessions ?? 0 }}</p>
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+            <p class="font-label-sm text-label-sm text-on-surface-variant">Sessions</p>
+            <p class="mt-1 font-body text-body-md font-semibold">{{ campaign._count?.sessions ?? 0 }}</p>
           </div>
 
-          <div class="rounded-xl border border-slate-800 bg-slate-950 p-3">
-            <p class="text-xs text-slate-500">Minutes</p>
-            <p class="mt-1 font-semibold">{{ campaign.estimatedMinutes }}</p>
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+            <p class="font-label-sm text-label-sm text-on-surface-variant">Minutes</p>
+            <p class="mt-1 font-body text-body-md font-semibold">{{ campaign.estimatedMinutes }}</p>
           </div>
         </div>
-      </article>
+      </app-card>
     }
   </div>
 
-  @if (totalPages() > 1) {
-    <div class="mt-6 flex items-center justify-center gap-3">
-      <button
-        type="button"
-        class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
-        [disabled]="page() <= 1"
-        (click)="loadCampaigns(page() - 1)"
-      >
-        Previous
-      </button>
-      <span class="text-sm text-slate-400">Page {{ page() }} of {{ totalPages() }}</span>
-      <button
-        type="button"
-        class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
-        [disabled]="page() >= totalPages()"
-        (click)="loadCampaigns(page() + 1)"
-      >
-        Next
-      </button>
-    </div>
-  }
+  <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="loadCampaigns($event)" />
 </section>
+
+<a
+  routerLink="/developer/campaigns/new"
+  aria-label="New campaign"
+  class="fixed bottom-24 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-cyan to-purple shadow-[0_0_20px_rgba(56,189,248,0.4)] transition-transform active:scale-90 md:hidden"
+>
+  <span class="material-symbols-outlined text-white" data-weight="fill">add</span>
+</a>

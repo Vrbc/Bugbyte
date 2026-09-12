@@ -1,13 +1,16 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { Game } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
-import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Pagination } from '../../../../shared/ui/pagination/pagination';
 
 @Component({
   selector: 'app-developer-games-component',
-  imports: [NgClass, RouterLink, ResolveUploadUrlPipe],
+  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination],
   templateUrl: './developer-games-component.html',
   styleUrl: './developer-games-component.scss',
 })
@@ -19,6 +22,9 @@ export class DeveloperGamesComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   total = signal(0);
+
+  protected readonly primaryLinkClasses = buttonClasses('primary');
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   constructor(private readonly gamesService: GamesService) {}
 

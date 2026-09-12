@@ -1,14 +1,17 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { CampaignApplication } from '../../../../core/applications/applications.models';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { Router } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button } from '../../../../shared/ui/button/button';
+import { Pagination } from '../../../../shared/ui/pagination/pagination';
 
 @Component({
   selector: 'app-tester-applications-component',
-  imports: [CommonModule, ResolveUploadUrlPipe],
+  imports: [ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination],
   templateUrl: './tester-applications-component.html',
   styleUrl: './tester-applications-component.scss',
 })

@@ -1,13 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Pagination } from '../../../../shared/ui/pagination/pagination';
 
 @Component({
   selector: 'app-developer-campaigns-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination],
   templateUrl: './developer-campaigns-component.html',
   styleUrl: './developer-campaigns-component.scss',
 })
@@ -19,6 +21,9 @@ export class DeveloperCampaignsComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   total = signal(0);
+
+  protected readonly primaryLinkClasses = buttonClasses('primary');
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   constructor(private readonly campaignsService: CampaignsService) {}
 

@@ -8,11 +8,10 @@ import { Component, computed, input } from '@angular/core';
 })
 export class Card {
   hoverable = input(false);
+  padded = input(true);
 
   protected readonly classes = computed(() => {
-    const base = 'rounded-card border border-border bg-level-1 p-bb-sm transition-all duration-300';
-    return this.hoverable()
-      ? `${base} hover:-translate-y-0.5 hover:border-cyan`
-      : base;
+    const base = `rounded-card border border-border bg-level-1 overflow-hidden transition-all duration-300 ${this.padded() ? 'p-bb-sm' : ''}`;
+    return this.hoverable() ? `${base} hover:-translate-y-0.5 hover:border-cyan` : base;
   });
 }
