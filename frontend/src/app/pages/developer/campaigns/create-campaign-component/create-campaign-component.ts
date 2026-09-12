@@ -7,11 +7,15 @@ import { BuildsService } from '../../../../core/builds/builds.service';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Card } from '../../../../shared/ui/card/card';
+import { Input } from '../../../../shared/ui/input/input';
+import { Select } from '../../../../shared/ui/select/select';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
 
 @Component({
   selector: 'app-create-campaign-component',
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, RouterLink, Card, Input, Select, Button, ToggleChipGroup],
   templateUrl: './create-campaign-component.html',
   styleUrl: './create-campaign-component.scss',
 })
@@ -22,6 +26,8 @@ export class CreateCampaignComponent implements OnInit {
   loadingBuilds = signal(false);
   submitting = signal(false);
   errorMessage = signal<string | null>(null);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   gameId = '';
   buildId = '';

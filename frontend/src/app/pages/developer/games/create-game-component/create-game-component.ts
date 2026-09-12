@@ -3,14 +3,18 @@ import { GameStatus } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { Observable, of, switchMap } from 'rxjs';
 import { UploadImageResponse, UploadsService } from '../../../../core/uploads/uploads.service';
 import { extractImageFromClipboard } from '../../../../core/uploads/clipboard-image.util';
+import { Card } from '../../../../shared/ui/card/card';
+import { Input } from '../../../../shared/ui/input/input';
+import { Select } from '../../../../shared/ui/select/select';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
 
 @Component({
   selector: 'app-create-game-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Card, Input, Select, Button, ToggleChipGroup],
   templateUrl: './create-game-component.html',
   styleUrl: './create-game-component.scss',
 })
@@ -28,6 +32,8 @@ export class CreateGameComponent implements OnDestroy {
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   constructor(
     private readonly gamesService: GamesService,

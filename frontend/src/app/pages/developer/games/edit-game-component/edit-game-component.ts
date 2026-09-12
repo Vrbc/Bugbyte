@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -8,10 +7,15 @@ import { GamesService } from '../../../../core/games/games.service';
 import { UploadImageResponse, UploadsService } from '../../../../core/uploads/uploads.service';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { extractImageFromClipboard } from '../../../../core/uploads/clipboard-image.util';
+import { Card } from '../../../../shared/ui/card/card';
+import { Input } from '../../../../shared/ui/input/input';
+import { Select } from '../../../../shared/ui/select/select';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
 
 @Component({
   selector: 'app-edit-game-component',
-  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, Input, Select, Button, ToggleChipGroup],
   templateUrl: './edit-game-component.html',
   styleUrl: './edit-game-component.scss',
 })
@@ -33,6 +37,8 @@ export class EditGameComponent implements OnInit, OnDestroy {
   loading = signal(true);
   saving = signal(false);
   errorMessage = signal<string | null>(null);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   gameId = '';
 

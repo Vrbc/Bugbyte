@@ -1,0 +1,18 @@
+<label class="flex flex-col gap-bb-xs">
+  @if (label()) {
+    <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">{{ label() }}</span>
+  }
+  <select
+    #selectEl
+    [disabled]="disabled()"
+    [value]="value()"
+    (change)="onSelectChange($event)"
+    (blur)="onBlur()"
+    class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none disabled:opacity-50"
+  >
+    <ng-content />
+  </select>
+  @if (hint()) {
+    <span class="text-xs text-warning">{{ hint() }}</span>
+  }
+</label>

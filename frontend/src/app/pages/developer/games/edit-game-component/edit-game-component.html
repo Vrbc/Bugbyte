@@ -1,168 +1,88 @@
-<section class="mx-auto max-w-3xl">
-  <div class="mb-8">
+<section class="mx-auto flex max-w-3xl flex-col gap-bb-md">
+  <div>
     <a
       [routerLink]="['/developer/games', gameId]"
-      class="text-sm text-sky-300 hover:text-sky-200"
+      class="inline-flex w-fit items-center gap-1 font-body text-body-md text-on-surface-variant transition-colors hover:text-cyan"
     >
-      ← Back to game
+      <span class="material-symbols-outlined text-base">arrow_back</span>
+      Back to game
     </a>
-
-    <h1 class="mt-4 text-3xl font-bold tracking-tight">Edit game</h1>
-    <p class="mt-2 text-slate-400">
+    <h1 class="mt-bb-sm font-display text-display-lg-mobile">Edit game</h1>
+    <p class="mt-1 font-body text-body-md text-on-surface-variant">
       Update game information used in playtest campaigns.
     </p>
   </div>
 
   @if (loading()) {
-    <p class="text-slate-400">Loading game...</p>
+    <p class="font-body text-body-md text-on-surface-variant">Loading game...</p>
   }
 
   @if (errorMessage()) {
-    <div class="mb-5 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
-      {{ errorMessage() }}
-    </div>
+    <app-card>
+      <p class="text-bug">{{ errorMessage() }}</p>
+    </app-card>
   }
 
   @if (!loading() && game()) {
-    <form
-      class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
-      (ngSubmit)="submit()"
-    >
-      <div class="space-y-5">
-        <div>
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Game title
-          </label>
+    <app-card>
+      <form class="flex flex-col gap-bb-sm" (ngSubmit)="submit()">
+        <app-input label="Game title" [(ngModel)]="title" name="title" [required]="true" />
+        <app-input label="Description" [multiline]="true" [rows]="4" [(ngModel)]="description" name="description" [required]="true" />
 
-          <input
-            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-            name="title"
-            [(ngModel)]="title"
-            required
-          />
+        <div class="grid gap-bb-sm md:grid-cols-2">
+          <app-input label="Genre" [(ngModel)]="genre" name="genre" [required]="true" />
+          <app-select label="Status" [(ngModel)]="status" name="status">
+            <option value="DRAFT">Draft</option>
+            <option value="TESTING">Testing</option>
+            <option value="ARCHIVED">Archived</option>
+          </app-select>
         </div>
 
-        <div>
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Description
-          </label>
-
-          <textarea
-            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-            name="description"
-            rows="4"
-            [(ngModel)]="description"
-            required
-          ></textarea>
-        </div>
-
-        <div class="grid gap-5 md:grid-cols-2">
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-300">
-              Genre
-            </label>
-
-            <input
-              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-              name="genre"
-              [(ngModel)]="genre"
-              required
-            />
-          </div>
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-300">
-              Status
-            </label>
-
-            <select
-              class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-              name="status"
-              [(ngModel)]="status"
-            >
-              <option value="DRAFT">Draft</option>
-              <option value="TESTING">Testing</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Cover image
-          </label>
-
+        <div class="flex flex-col gap-bb-xs">
+          <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Cover image</span>
           <input
             type="file"
             accept="image/*"
-            class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-sky-400/10 file:px-3 file:py-2 file:text-sky-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+            class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:outline-none file:mr-3 file:rounded-sm file:border-0 file:bg-cyan/10 file:px-3 file:py-2 file:text-cyan"
             name="coverImage"
             (change)="onCoverFileSelected($event)"
             (paste)="onCoverPaste($event)"
           />
-          <p class="mt-1 text-xs text-slate-500">
+          <p class="font-body text-body-md text-on-surface-variant">
             Click above, then paste an image (Ctrl+V) or choose a file.
           </p>
         </div>
 
         @if (coverPreviewUrl(); as previewUrl) {
-          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
-            <img
-              [src]="previewUrl"
-              alt="Game cover preview"
-              class="h-48 w-full object-cover"
-            />
-          </div>
+          <app-card [padded]="false">
+            <img [src]="previewUrl" alt="Game cover preview" class="h-48 w-full object-cover" />
+          </app-card>
         } @else if (coverImageUrl) {
-          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950">
-            <img
-              [src]="coverImageUrl | resolveUploadUrl"
-              alt="Game cover preview"
-              class="h-48 w-full object-cover"
-            />
-          </div>
+          <app-card [padded]="false">
+            <img [src]="coverImageUrl | resolveUploadUrl" alt="Game cover preview" class="h-48 w-full object-cover" />
+          </app-card>
         }
 
-        <div>
-          <label class="mb-2 block text-sm font-medium text-slate-300">
-            Platforms
-          </label>
-
-          <div class="flex flex-wrap gap-2">
-            @for (platform of availablePlatforms; track platform) {
-              <button
-                type="button"
-                class="rounded-full border px-4 py-2 text-sm transition"
-                [ngClass]="
-                  selectedPlatforms.includes(platform)
-                    ? 'border-sky-400 bg-sky-400/10 text-sky-200'
-                    : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/70'
-                "
-                (click)="togglePlatform(platform)"
-              >
-                {{ platform }}
-              </button>
-            }
-          </div>
+        <div class="flex flex-col gap-bb-xs">
+          <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Platforms</span>
+          <app-toggle-chip-group
+            [options]="availablePlatforms"
+            [selected]="selectedPlatforms"
+            (toggleOption)="togglePlatform($event)"
+          />
         </div>
 
-        <div class="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            class="rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
-            [disabled]="saving()"
-          >
+        @if (errorMessage()) {
+          <p class="text-bug">{{ errorMessage() }}</p>
+        }
+
+        <div class="flex flex-wrap gap-bb-sm">
+          <app-button type="submit" [disabled]="saving()">
             {{ saving() ? 'Saving...' : 'Save changes' }}
-          </button>
-
-          <a
-            [routerLink]="['/developer/games', gameId]"
-            class="rounded-xl border border-slate-700 px-5 py-3 text-sm text-slate-300 hover:border-slate-500"
-          >
-            Cancel
-          </a>
+          </app-button>
+          <a [routerLink]="['/developer/games', gameId]" [class]="secondaryLinkClasses">Cancel</a>
         </div>
-      </div>
-    </form>
+      </form>
+    </app-card>
   }
 </section>

@@ -7,17 +7,23 @@ import { GamesService } from '../../../../core/games/games.service';
 import { BuildsService } from '../../../../core/builds/builds.service';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { forkJoin } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Card } from '../../../../shared/ui/card/card';
+import { Input } from '../../../../shared/ui/input/input';
+import { Select } from '../../../../shared/ui/select/select';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
 
 @Component({
   selector: 'app-edit-campaign-component',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Card, Input, Select, Button, ToggleChipGroup],
   templateUrl: './edit-campaign-component.html',
   styleUrl: './edit-campaign-component.scss',
 })
 export class EditCampaignComponent {
    campaign = signal<PlaytestCampaign | null>(null);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   games = signal<Game[]>([]);
   builds = signal<GameBuild[]>([]);
