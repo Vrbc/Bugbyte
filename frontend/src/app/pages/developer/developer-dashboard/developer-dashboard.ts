@@ -3,10 +3,13 @@ import { DashboardService } from '../../../core/dashboard/dashboard.service';
 import {
   DeveloperDashboard as DeveloperDashboardModel,
 } from '../../../core/dashboard/dashboard.models';
+import { Card } from '../../../shared/ui/card/card';
+import { StatTile } from '../../../shared/ui/stat-tile/stat-tile';
+import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 
 @Component({
   selector: 'app-developer-dashboard',
-  imports: [],
+  imports: [Card, StatTile, StatusBadge],
   templateUrl: './developer-dashboard.html',
   styleUrl: './developer-dashboard.scss',
 })

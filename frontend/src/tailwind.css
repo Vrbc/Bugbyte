@@ -27,11 +27,14 @@
   --color-primary: #8ed5ff;
   --color-secondary: #cebdff;
 
-  --spacing-xs: 8px;
-  --spacing-sm: 16px;
-  --spacing-md: 24px;
-  --spacing-lg: 40px;
-  --spacing-xl: 64px;
+  /* bb- prefix: Tailwind's own width/max-width scale already reserves bare
+     xs/sm/md/lg/xl on --spacing-*, so plain names here would silently
+     override max-w-sm and friends everywhere else in the app. */
+  --spacing-bb-xs: 8px;
+  --spacing-bb-sm: 16px;
+  --spacing-bb-md: 24px;
+  --spacing-bb-lg: 40px;
+  --spacing-bb-xl: 64px;
   --spacing-margin-mobile: 16px;
   --spacing-margin-desktop: 32px;
 

@@ -1,51 +1,80 @@
-<div class="min-h-screen bg-white text-black">
-  <aside class="fixed inset-y-0 left-0 w-56 border-r border-black bg-white">
-    <div class="px-5 py-5">
-      <h1 class="text-lg font-semibold">Bugbyte</h1>
-      <p class="text-sm text-gray-600">Dashboard</p>
+<div class="min-h-screen bg-level-0 text-on-background">
+  <!-- Desktop sidebar -->
+  <aside class="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-level-1">
+    <div class="flex h-16 shrink-0 items-center gap-2 border-b border-border px-bb-md">
+      <span class="material-symbols-outlined text-cyan" style="font-variation-settings: 'FILL' 1">bug_report</span>
+      <span class="font-display text-headline-md font-bold">Bugbyte</span>
     </div>
 
     @if (authService.currentUser(); as user) {
-      <nav class="space-y-1 px-3">
-        @if (user.role === 'DEVELOPER') {
-          <a routerLink="/developer/dashboard" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Dashboard</a>
-          <a routerLink="/developer/games" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">My Games</a>
-          <a routerLink="/developer/campaigns" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Campaigns</a>
-        }
-        @if (user.role === 'TESTER') {
-          <a routerLink="/tester/dashboard" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Dashboard</a>
-          <a routerLink="/tester/campaigns" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">Discover Tests</a>
-          <a routerLink="/tester/applications" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100">My Applications</a>
-          <a routerLink="/tester/sessions" routerLinkActive="bg-black text-white" class="block px-3 py-2 text-sm hover:bg-gray-100"> My Sessions </a>
+      <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-bb-sm py-bb-sm">
+        @for (item of navItems(); track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-cyan/10 text-cyan"
+            class="flex items-center gap-bb-sm rounded-sm px-bb-sm py-bb-xs font-body text-body-md text-on-surface-variant transition-colors hover:bg-level-2 hover:text-on-background"
+          >
+            <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
         }
       </nav>
+
+      <div class="shrink-0 border-t border-border p-bb-sm">
+        <p class="truncate font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
+          Signed in as
+        </p>
+        <p class="mb-bb-xs truncate font-body text-body-md font-semibold">
+          {{ user.username }}
+          <span class="font-normal text-on-surface-variant">({{ user.role }})</span>
+        </p>
+        <app-button variant="secondary" type="button" [fullWidth]="true" (click)="logout()">
+          <span class="material-symbols-outlined text-base">logout</span>
+          <span>Logout</span>
+        </app-button>
+      </div>
     }
   </aside>
 
-  <div class="pl-56">
-    <header class="border-b border-black px-8 py-4">
-      <div class="flex items-center justify-between">
-        @if (authService.currentUser(); as user) {
-          <div>
-            <p class="text-xs text-gray-600">Signed in as</p>
-            <p class="text-sm font-medium">
-              {{ user.username }}
-              <span class="font-normal text-gray-600">({{ user.role }})</span>
-            </p>
-          </div>
-        }
-        <button
-          type="button"
-          class="border border-black px-4 py-2 text-sm hover:bg-black hover:text-white"
-          (click)="logout()"
-        >
-          Logout
-        </button>
-      </div>
-    </header>
+  <!-- Mobile top bar -->
+  <header
+    class="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-level-0 px-margin-mobile md:hidden"
+  >
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-cyan" style="font-variation-settings: 'FILL' 1">bug_report</span>
+      <span class="font-display text-headline-md font-bold">Bugbyte</span>
+    </div>
+    <button
+      type="button"
+      (click)="logout()"
+      aria-label="Logout"
+      class="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-level-1 hover:text-bug"
+    >
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </header>
 
-    <main class="p-8">
+  <div class="pb-24 pt-16 md:pb-0 md:pl-56 md:pt-0">
+    <main class="mx-auto max-w-[1600px] p-margin-mobile md:p-margin-desktop">
       <router-outlet />
     </main>
   </div>
+
+  <!-- Mobile bottom nav -->
+  @if (authService.currentUser()) {
+    <nav
+      class="fixed inset-x-0 bottom-0 z-40 flex h-20 items-center justify-around border-t border-border bg-level-1/90 px-bb-xs backdrop-blur-md md:hidden"
+    >
+      @for (item of navItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-cyan text-on-cyan"
+          class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1 text-center text-on-surface-variant transition-transform active:scale-90"
+        >
+          <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
+          <span class="text-[10px] font-label-sm leading-tight">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  }
 </div>

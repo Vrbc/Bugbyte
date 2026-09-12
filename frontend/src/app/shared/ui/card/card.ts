@@ -10,7 +10,7 @@ export class Card {
   hoverable = input(false);
 
   protected readonly classes = computed(() => {
-    const base = 'rounded-card border border-border bg-level-1 p-sm transition-all duration-300';
+    const base = 'rounded-card border border-border bg-level-1 p-bb-sm transition-all duration-300';
     return this.hoverable()
       ? `${base} hover:-translate-y-0.5 hover:border-cyan`
       : base;

@@ -20,9 +20,10 @@ export class Button {
   variant = input<ButtonVariant>('primary');
   disabled = input(false);
   type = input<'button' | 'submit' | 'reset'>('button');
+  fullWidth = input(false);
 
   protected readonly classes = computed(
     () =>
-      `inline-flex items-center justify-center gap-xs rounded-sm px-sm py-xs font-body text-body-md font-semibold transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50 ${VARIANT_CLASSES[this.variant()]}`,
+      `inline-flex items-center justify-center gap-bb-xs rounded-sm px-bb-sm py-bb-xs font-body text-body-md font-semibold transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50 ${this.fullWidth() ? 'w-full' : ''} ${VARIANT_CLASSES[this.variant()]}`,
   );
 }
