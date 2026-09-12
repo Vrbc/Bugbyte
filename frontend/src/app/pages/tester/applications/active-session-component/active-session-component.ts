@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { TestSession } from '../../../../core/sessions/sessions.models';
-import { CommonModule } from '@angular/common';
 import { FeedbackByte, FeedbackSeverity, FeedbackType } from '../../../../core/feedback-bytes/feedback-bytes.models';
 import { interval, Observable, of, Subscription, switchMap } from 'rxjs';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
@@ -10,14 +9,48 @@ import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { UploadImageResponse, UploadsService } from '../../../../core/uploads/uploads.service';
 import { extractImageFromClipboard } from '../../../../core/uploads/clipboard-image.util';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
+import { Input } from '../../../../shared/ui/input/input';
+import { Select } from '../../../../shared/ui/select/select';
+import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedback-byte-item';
+
+export interface FeedbackTypeMeta {
+  icon: string;
+  classes: string;
+}
+
+export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
+  BUG: { icon: 'bug_report', classes: 'border-bug/40 bg-bug/10 text-bug hover:border-bug' },
+  CONFUSION: {
+    icon: 'help_center',
+    classes: 'border-confused/40 bg-confused/10 text-confused hover:border-confused',
+  },
+  SUGGESTION: { icon: 'lightbulb', classes: 'border-purple/40 bg-purple/10 text-purple hover:border-purple' },
+  POSITIVE: {
+    icon: 'thumb_up',
+    classes: 'border-positive/40 bg-positive/10 text-positive hover:border-positive',
+  },
+  DIFFICULTY_SPIKE: {
+    icon: 'trending_up',
+    classes: 'border-warning/40 bg-warning/10 text-warning hover:border-warning',
+  },
+  COMMENT: {
+    icon: 'chat_bubble',
+    classes: 'border-border bg-level-1 text-on-surface-variant hover:border-cyan',
+  },
+};
 
 @Component({
   selector: 'app-active-session-component',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem],
   templateUrl: './active-session-component.html',
   styleUrl: './active-session-component.scss',
 })
 export class ActiveSessionComponent implements OnInit, OnDestroy {
+  protected readonly feedbackTypeMeta = FEEDBACK_TYPE_META;
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
   session = signal<TestSession | null>(null);
   feedbackBytes = signal<FeedbackByte[]>([])
 

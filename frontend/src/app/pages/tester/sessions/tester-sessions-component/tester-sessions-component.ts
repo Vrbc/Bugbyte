@@ -1,15 +1,17 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { TestSession } from '../../../../core/sessions/sessions.models';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { buttonClasses } from '../../../../shared/ui/button/button';
 
 type SessionFilter = 'ALL' | 'LIVE' | 'COMPLETED';
 
 @Component({
   selector: 'app-tester-sessions-component',
-  imports: [CommonModule, RouterLink, ResolveUploadUrlPipe],
+  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge],
   templateUrl: './tester-sessions-component.html',
   styleUrl: './tester-sessions-component.scss',
 })
@@ -19,6 +21,9 @@ export class TesterSessionsComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   selectedFilter = signal<SessionFilter>('ALL');
+  filters: SessionFilter[] = ['ALL', 'LIVE', 'COMPLETED'];
+
+  protected readonly primaryLinkClasses = buttonClasses('primary');
 
   filteredSessions = computed(() => {
     const filter = this.selectedFilter();

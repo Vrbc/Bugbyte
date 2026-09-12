@@ -6,14 +6,17 @@ import { ReviewsService } from '../../../../core/reviews/reviews.service';
 import { FeedbackByte } from '../../../../core/feedback-bytes/feedback-bytes.models';
 import { TestSession } from '../../../../core/sessions/sessions.models';
 import { forkJoin, Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
-import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
+import { Card } from '../../../../shared/ui/card/card';
+import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
+import { Button } from '../../../../shared/ui/button/button';
+import { Input } from '../../../../shared/ui/input/input';
+import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedback-byte-item';
 
 @Component({
   selector: 'app-developer-session-review-component',
-  imports: [CommonModule, FormsModule, RouterLink, ResolveUploadUrlPipe],
+  imports: [FormsModule, RouterLink, Card, StatusBadge, Button, Input, FeedbackByteItem],
   templateUrl: './developer-session-review-component.html',
   styleUrl: './developer-session-review-component.scss',
 })

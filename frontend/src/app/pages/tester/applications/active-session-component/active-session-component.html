@@ -1,373 +1,268 @@
-<section>
+<section class="flex flex-col gap-bb-md">
   @if (loading()) {
-    <p class="text-slate-400">Loading session...</p>
+    <p class="font-body text-body-md text-on-surface-variant">Loading session...</p>
   }
 
   @if (errorMessage()) {
-    <div class="mb-5 rounded-xl border border-rose-400/50 bg-rose-500/10 p-4 text-rose-200">
-      {{ errorMessage() }}
-    </div>
+    <app-card>
+      <p class="text-bug">{{ errorMessage() }}</p>
+    </app-card>
   }
 
   @if (successMessage()) {
-    <div class="mb-5 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-4 text-emerald-200">
-      {{ successMessage() }}
-    </div>
+    <app-card>
+      <p class="text-positive">{{ successMessage() }}</p>
+    </app-card>
   }
 
   @if (session(); as sessionData) {
-    <div class="mb-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
-      <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+    <app-card>
+      <div class="flex flex-col justify-between gap-bb-sm md:flex-row md:items-start">
         <div>
-          <p class="text-sm font-medium text-sky-300">Active Test Session</p>
-          <h1 class="mt-2 text-3xl font-bold tracking-tight">
-            {{ sessionData.campaign?.game?.title }}
-          </h1>
-          <p class="mt-2 text-slate-400">
-            {{ sessionData.campaign?.title }}
-            · Build {{ sessionData.campaign?.build?.version }}
+          <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">Active Test Session</p>
+          <h1 class="mt-1 font-display text-display-lg-mobile">{{ sessionData.campaign?.game?.title }}</h1>
+          <p class="mt-1 font-body text-body-md text-on-surface-variant">
+            {{ sessionData.campaign?.title }} · Build {{ sessionData.campaign?.build?.version }}
           </p>
         </div>
 
-        <div class="text-right">
-          <span class="inline-flex rounded-full border border-emerald-400/40 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
-            {{ sessionData.status }}
-          </span>
-
-          <p class="mt-3 font-mono text-3xl font-bold text-sky-300">
-            {{ formatTime(elapsedSeconds()) }}
-          </p>
+        <div class="flex flex-col items-start gap-bb-xs md:items-end">
+          <app-status-badge [status]="sessionData.status" />
+          <p class="font-mono text-display-lg-mobile text-cyan">{{ formatTime(elapsedSeconds()) }}</p>
         </div>
       </div>
 
-      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-5">
-        <p class="text-sm font-medium text-slate-300">Instructions</p>
-        <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-400">
+      <div class="mt-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm">
+        <p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Instructions</p>
+        <p class="mt-1 whitespace-pre-line font-body text-body-md text-on-surface-variant">
           {{ sessionData.campaign?.instructions }}
         </p>
       </div>
 
       @if (sessionData.campaign?.build?.buildUrl) {
-        <a
-          [href]="sessionData.campaign?.build?.buildUrl"
-          target="_blank"
-          class="mt-6 inline-flex rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 hover:opacity-90"
-        >
+        <a [href]="sessionData.campaign?.build?.buildUrl" target="_blank" [class]="secondaryLinkClasses + ' mt-bb-sm'">
+          <span class="material-symbols-outlined text-base">open_in_new</span>
           Open build
         </a>
       }
-    </div>
+    </app-card>
 
-    <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+    <div class="grid gap-bb-md xl:grid-cols-[0.9fr_1.1fr]">
+      <div class="flex flex-col gap-bb-md">
         @if (sessionData.status === 'LIVE') {
-          <form
-            class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
-            (ngSubmit)="submitFeedback()"
-          >
-            <h2 class="text-xl font-semibold">Submit feedback byte</h2>
-            <p class="mt-2 text-sm text-slate-400">
-              Mark the current moment in your playtest session.
-            </p>
+          <app-card>
+            <form class="flex flex-col gap-bb-sm" (ngSubmit)="submitFeedback()">
+              <div>
+                <h2 class="font-display text-headline-md">Submit feedback byte</h2>
+                <p class="mt-1 font-body text-body-md text-on-surface-variant">
+                  Mark the current moment in your playtest session.
+                </p>
+              </div>
 
-            <div class="mt-5 grid gap-2 sm:grid-cols-2">
-              @for (type of feedbackTypes; track type) {
-                <button
-                  type="button"
-                  class="rounded-xl border px-4 py-3 text-left text-sm transition"
-                  [ngClass]="
-                    selectedType() === type
-                      ? 'border-sky-400 bg-sky-400/10 text-sky-200'
-                      : 'border-slate-700 bg-slate-950 text-slate-400 hover:border-sky-400/60'
-                  "
-                  (click)="selectType(type)"
-                >
-                  {{ type }}
-                </button>
-              }
-            </div>
+              <div class="grid grid-cols-2 gap-bb-xs sm:grid-cols-3">
+                @for (type of feedbackTypes; track type) {
+                  <button
+                    type="button"
+                    class="flex flex-col items-center gap-1 rounded-card border p-bb-sm transition-colors"
+                    [class]="feedbackTypeMeta[type].classes"
+                    (click)="selectType(type)"
+                  >
+                    <span
+                      class="material-symbols-outlined text-2xl"
+                      [attr.data-weight]="selectedType() === type ? 'fill' : null"
+                    >
+                      {{ feedbackTypeMeta[type].icon }}
+                    </span>
+                    <span class="font-label-sm text-label-sm uppercase tracking-wider">{{ type }}</span>
+                  </button>
+                }
+              </div>
 
-            @if (selectedType() === 'BUG') {
-              <div class="mt-5">
-                <label class="mb-2 block text-sm font-medium text-slate-300">
-                  Severity
-                </label>
-
-                <select
-                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                  name="severity"
-                  [(ngModel)]="severity"
-                >
+              @if (selectedType() === 'BUG') {
+                <app-select label="Severity" [(ngModel)]="severity" name="severity">
                   @for (item of severities; track item) {
                     <option [value]="item">{{ item }}</option>
                   }
-                </select>
-              </div>
-            }
+                </app-select>
+              }
 
-            <div class="mt-5">
-              <label class="mb-2 block text-sm font-medium text-slate-300">
-                Comment
-              </label>
-
-              <textarea
-                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                name="comment"
-                rows="4"
+              <app-input
+                label="Comment"
+                [multiline]="true"
+                [rows]="4"
                 [(ngModel)]="comment"
+                name="comment"
                 placeholder="Describe what happened..."
-              ></textarea>
-            </div>
-
-            @if (selectedType() === 'BUG') {
-              <div class="mt-5">
-                <label class="mb-2 block text-sm font-medium text-slate-300">
-                  Reproduction steps
-                </label>
-
-                <textarea
-                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                  name="reproductionSteps"
-                  rows="3"
-                  [(ngModel)]="reproductionSteps"
-                  placeholder="What should the developer do to reproduce this bug?"
-                ></textarea>
-              </div>
-            }
-
-            <div class="mt-5">
-              <label class="mb-2 block text-sm font-medium text-slate-300">
-                Screenshot optional
-              </label>
-
-              <input
-                type="file"
-                accept="image/*"
-                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none file:mr-3 file:rounded-lg file:border-0 file:bg-sky-400/10 file:px-3 file:py-2 file:text-sky-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                name="screenshot"
-                (change)="onScreenshotFileSelected($event)"
-                (paste)="onScreenshotPaste($event)"
               />
-              <p class="mt-1 text-xs text-slate-500">
-                Click above, then paste an image (Ctrl+V) or choose a file.
-              </p>
-            </div>
 
-            @if (screenshotPreviewUrl(); as previewUrl) {
-              <div class="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
-                <img
-                  [src]="previewUrl"
-                  alt="Screenshot preview"
-                  class="max-h-48 w-full object-contain"
+              @if (selectedType() === 'BUG') {
+                <app-input
+                  label="Reproduction steps"
+                  [multiline]="true"
+                  [rows]="3"
+                  [(ngModel)]="reproductionSteps"
+                  name="reproductionSteps"
+                  placeholder="What should the developer do to reproduce this bug?"
                 />
-              </div>
-            }
+              }
 
-            <button
-              type="submit"
-              class="mt-5 w-full rounded-xl bg-linear-to-r from-sky-400 to-violet-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90 disabled:opacity-60"
-              [disabled]="sending()"
-            >
-              {{ sending() ? 'Submitting...' : 'Submit feedback byte' }}
-            </button>
-          </form>
+              <div class="flex flex-col gap-bb-xs">
+                <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">
+                  Screenshot optional
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:outline-none file:mr-3 file:rounded-sm file:border-0 file:bg-cyan/10 file:px-3 file:py-2 file:text-cyan"
+                  name="screenshot"
+                  (change)="onScreenshotFileSelected($event)"
+                  (paste)="onScreenshotPaste($event)"
+                />
+                <p class="font-body text-body-md text-on-surface-variant">
+                  Click above, then paste an image (Ctrl+V) or choose a file.
+                </p>
+              </div>
+
+              @if (screenshotPreviewUrl(); as previewUrl) {
+                <app-card [padded]="false">
+                  <img [src]="previewUrl" alt="Screenshot preview" class="max-h-48 w-full object-contain" />
+                </app-card>
+              }
+
+              <app-button type="submit" [fullWidth]="true" [disabled]="sending()">
+                {{ sending() ? 'Submitting...' : 'Submit feedback byte' }}
+              </app-button>
+            </form>
+          </app-card>
         }
 
-      <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
-        <h2 class="text-xl font-semibold">Session log</h2>
-        <p class="mt-2 text-sm text-slate-400">
+        @if (sessionData.status === 'LIVE') {
+          <app-card>
+            <form class="flex flex-col gap-bb-sm" (ngSubmit)="endSession()">
+              <div>
+                <p class="font-mono text-label-mono uppercase tracking-widest text-bug">End Session</p>
+                <h2 class="mt-1 font-display text-headline-md">Final playtest survey</h2>
+                <p class="mt-1 font-body text-body-md text-on-surface-variant">
+                  Finish the test session and send final ratings to the developer.
+                </p>
+              </div>
+
+              <div class="grid gap-bb-sm md:grid-cols-3">
+                <label class="flex flex-col gap-bb-xs">
+                  <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Fun rating</span>
+                  <select
+                    class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none"
+                    name="finalFunRating"
+                    [(ngModel)]="finalFunRating"
+                  >
+                    <option [ngValue]="1">1 - Not fun</option>
+                    <option [ngValue]="2">2</option>
+                    <option [ngValue]="3">3</option>
+                    <option [ngValue]="4">4</option>
+                    <option [ngValue]="5">5 - Very fun</option>
+                  </select>
+                </label>
+
+                <label class="flex flex-col gap-bb-xs">
+                  <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Difficulty rating</span>
+                  <select
+                    class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none"
+                    name="finalDifficultyRating"
+                    [(ngModel)]="finalDifficultyRating"
+                  >
+                    <option [ngValue]="1">1 - Too easy</option>
+                    <option [ngValue]="2">2</option>
+                    <option [ngValue]="3">3 - Balanced</option>
+                    <option [ngValue]="4">4</option>
+                    <option [ngValue]="5">5 - Too hard</option>
+                  </select>
+                </label>
+
+                <label class="flex flex-col gap-bb-xs">
+                  <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Clarity rating</span>
+                  <select
+                    class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none"
+                    name="finalClarityRating"
+                    [(ngModel)]="finalClarityRating"
+                  >
+                    <option [ngValue]="1">1 - Confusing</option>
+                    <option [ngValue]="2">2</option>
+                    <option [ngValue]="3">3</option>
+                    <option [ngValue]="4">4</option>
+                    <option [ngValue]="5">5 - Very clear</option>
+                  </select>
+                </label>
+              </div>
+
+              <app-input
+                label="Final comment"
+                [multiline]="true"
+                [rows]="4"
+                [(ngModel)]="finalComment"
+                name="finalComment"
+                placeholder="Overall thoughts about the game, build and testing experience..."
+              />
+
+              <app-button variant="danger" type="submit" [disabled]="ending()">
+                {{ ending() ? 'Ending session...' : 'End session' }}
+              </app-button>
+            </form>
+          </app-card>
+        }
+
+        @if (sessionData.status === 'COMPLETED') {
+          <app-card>
+            <p class="font-mono text-label-mono uppercase tracking-widest text-positive">Session completed</p>
+            <h2 class="mt-1 font-display text-headline-md">Final survey submitted</h2>
+
+            <div class="mt-bb-sm grid grid-cols-3 gap-bb-xs">
+              <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Fun</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalFunRating }}/5</p>
+              </div>
+              <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Difficulty</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalDifficultyRating }}/5</p>
+              </div>
+              <div class="rounded-sm border border-border bg-level-0 p-bb-xs">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Clarity</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalClarityRating }}/5</p>
+              </div>
+            </div>
+
+            @if (sessionData.finalComment) {
+              <p class="mt-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm font-body text-body-md text-on-surface-variant">
+                {{ sessionData.finalComment }}
+              </p>
+            }
+          </app-card>
+        }
+      </div>
+
+      <app-card>
+        <h2 class="font-display text-headline-md">Session log</h2>
+        <p class="mt-1 font-body text-body-md text-on-surface-variant">
           Feedback bytes submitted during this test run.
         </p>
 
         @if (feedbackTotal() === 0) {
-          <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
-            <p class="text-slate-400">No feedback submitted yet.</p>
-          </div>
+          <p class="mt-bb-sm font-body text-body-md text-on-surface-variant">No feedback submitted yet.</p>
         }
 
-        <div class="mt-6 space-y-3">
-          @for (byte of feedbackBytes(); track byte.id) {
-            <article class="rounded-xl border border-slate-800 bg-slate-950 p-4">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-sm text-sky-300">
-                      {{ formatTime(byte.timestampSeconds) }}
-                    </span>
-
-                    <span
-                      class="rounded-full border px-2 py-1 text-xs"
-                      [ngClass]="{
-                        'border-rose-400/40 bg-rose-400/10 text-rose-300': byte.type === 'BUG',
-                        'border-yellow-400/40 bg-yellow-400/10 text-yellow-300': byte.type === 'CONFUSION',
-                        'border-violet-400/40 bg-violet-400/10 text-violet-300': byte.type === 'SUGGESTION',
-                        'border-emerald-400/40 bg-emerald-400/10 text-emerald-300': byte.type === 'POSITIVE',
-                        'border-orange-400/40 bg-orange-400/10 text-orange-300': byte.type === 'DIFFICULTY_SPIKE',
-                        'border-slate-600 bg-slate-800 text-slate-300': byte.type === 'COMMENT'
-                      }"
-                    >
-                      {{ byte.type }}
-                    </span>
-
-                    @if (byte.severity) {
-                      <span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">
-                        {{ byte.severity }}
-                      </span>
-                    }
-                  </div>
-
-                  <p class="mt-3 text-sm leading-6 text-slate-300">
-                    {{ byte.comment }}
-                  </p>
-
-                  @if (byte.reproductionSteps) {
-                    <p class="mt-3 rounded-lg border border-slate-800 bg-slate-900 p-3 text-sm text-slate-400">
-                      {{ byte.reproductionSteps }}
-                    </p>
-                  }
-                </div>
-              </div>
-            </article>
+        <div class="mt-bb-sm flex flex-col">
+          @for (byte of feedbackBytes(); track byte.id; let last = $last) {
+            <app-feedback-byte-item [byte]="byte" [isLast]="last" />
           }
         </div>
 
         @if (feedbackPage() < feedbackTotalPages()) {
-          <div class="mt-4 flex justify-center">
-            <button
-              type="button"
-              class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 disabled:opacity-40"
-              [disabled]="loadingMoreFeedback()"
-              (click)="loadMoreFeedbackBytes()"
-            >
+          <div class="mt-bb-sm flex justify-center">
+            <app-button variant="secondary" type="button" [disabled]="loadingMoreFeedback()" (click)="loadMoreFeedbackBytes()">
               {{ loadingMoreFeedback() ? 'Loading...' : 'Load older feedback' }}
-            </button>
+            </app-button>
           </div>
         }
-
+      </app-card>
     </div>
-    @if (sessionData.status === 'LIVE') {
-          <form
-            class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/80 p-6"
-            (ngSubmit)="endSession()"
-          >
-            <div class="mb-6">
-              <p class="text-sm font-medium text-rose-300">End Session</p>
-              <h2 class="mt-2 text-2xl font-bold tracking-tight">Final playtest survey</h2>
-              <p class="mt-2 text-sm text-slate-400">
-                Finish the test session and send final ratings to the developer.
-              </p>
-            </div>
-        
-            <div class="grid gap-5 md:grid-cols-3">
-              <div>
-                <label class="mb-2 block text-sm font-medium text-slate-300">
-                  Fun rating
-                </label>
-            
-                <select
-                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                  name="finalFunRating"
-                  [(ngModel)]="finalFunRating"
-                >
-                  <option [ngValue]="1">1 - Not fun</option>
-                  <option [ngValue]="2">2</option>
-                  <option [ngValue]="3">3</option>
-                  <option [ngValue]="4">4</option>
-                  <option [ngValue]="5">5 - Very fun</option>
-                </select>
-              </div>
-          
-              <div>
-                <label class="mb-2 block text-sm font-medium text-slate-300">
-                  Difficulty rating
-                </label>
-            
-                <select
-                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                  name="finalDifficultyRating"
-                  [(ngModel)]="finalDifficultyRating"
-                >
-                  <option [ngValue]="1">1 - Too easy</option>
-                  <option [ngValue]="2">2</option>
-                  <option [ngValue]="3">3 - Balanced</option>
-                  <option [ngValue]="4">4</option>
-                  <option [ngValue]="5">5 - Too hard</option>
-                </select>
-              </div>
-          
-              <div>
-                <label class="mb-2 block text-sm font-medium text-slate-300">
-                  Clarity rating
-                </label>
-            
-                <select
-                  class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                  name="finalClarityRating"
-                  [(ngModel)]="finalClarityRating"
-                >
-                  <option [ngValue]="1">1 - Confusing</option>
-                  <option [ngValue]="2">2</option>
-                  <option [ngValue]="3">3</option>
-                  <option [ngValue]="4">4</option>
-                  <option [ngValue]="5">5 - Very clear</option>
-                </select>
-              </div>
-            </div>
-        
-            <div class="mt-5">
-              <label class="mb-2 block text-sm font-medium text-slate-300">
-                Final comment
-              </label>
-          
-              <textarea
-                class="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
-                name="finalComment"
-                rows="4"
-                [(ngModel)]="finalComment"
-                placeholder="Overall thoughts about the game, build and testing experience..."
-              ></textarea>
-            </div>
-        
-            <button
-              type="submit"
-              class="mt-5 rounded-xl border border-rose-400/60 bg-rose-500/10 px-5 py-3 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-60"
-              [disabled]="ending()"
-            >
-              {{ ending() ? 'Ending session...' : 'End session' }}
-            </button>
-          </form>
-        }
-
-        @if (sessionData.status === 'COMPLETED') {
-          <div class="mt-8 rounded-2xl border border-emerald-400/40 bg-emerald-500 p-6">
-            <p class="text-sm font-medium text-emerald-300">Session completed</p>
-            <h2 class="mt-2 text-2xl font-bold text-emerald-100">
-              Final survey submitted
-            </h2>
-        
-            <div class="mt-5 grid gap-4 md:grid-cols-3">
-              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
-                <p class="text-xs text-slate-400">Fun</p>
-                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalFunRating }}/5</p>
-              </div>
-          
-              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
-                <p class="text-xs text-slate-400">Difficulty</p>
-                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalDifficultyRating }}/5</p>
-              </div>
-          
-              <div class="rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4">
-                <p class="text-xs text-slate-400">Clarity</p>
-                <p class="mt-1 text-2xl font-bold">{{ sessionData.finalClarityRating }}/5</p>
-              </div>
-            </div>
-        
-            @if (sessionData.finalComment) {
-              <p class="mt-5 rounded-xl border border-emerald-400/20 bg-slate-950/60 p-4 text-sm text-slate-300">
-                {{ sessionData.finalComment }}
-              </p>
-            }
-          </div>
-        }
-  </div>
   }
 </section>
