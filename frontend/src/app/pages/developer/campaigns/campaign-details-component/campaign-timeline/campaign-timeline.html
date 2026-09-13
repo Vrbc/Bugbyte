@@ -1,0 +1,60 @@
+<div>
+  <h2 class="font-display text-headline-md">Combined tester timeline</h2>
+  <p class="mt-1 font-body text-body-md text-on-surface-variant">
+    Percentage of still-active testers reporting each feedback type, plotted against playtime.
+  </p>
+
+  @if (stats(); as timeline) {
+    <p class="mt-bb-sm flex flex-wrap gap-2 font-mono text-label-mono text-on-surface-variant">
+      <span>Testers: {{ timeline.summary.testersReporting }}</span>
+      <span>·</span>
+      <span>Sessions: {{ timeline.summary.sessionsCompleted }}/{{ timeline.summary.sessionsTotal }}</span>
+      <span>·</span>
+      <span>Feedback: {{ timeline.summary.totalFeedbackCount }}</span>
+      <span>·</span>
+      <span>Avg. playtime: {{ formatDuration(timeline.summary.avgDurationSeconds) }}</span>
+      <span>·</span>
+      <span>Avg. fun: {{ formatRating(timeline.summary.avgFunRating) }}</span>
+      <span>·</span>
+      <span>Avg. difficulty: {{ formatRating(timeline.summary.avgDifficultyRating) }}</span>
+      <span>·</span>
+      <span>Avg. clarity: {{ formatRating(timeline.summary.avgClarityRating) }}</span>
+    </p>
+
+    @if (timeline.buckets.length === 0) {
+      <p class="mt-bb-sm font-body text-body-md text-on-surface-variant">
+        No feedback yet — the timeline fills in once testers start reporting.
+      </p>
+    } @else {
+      <div class="mt-bb-sm overflow-x-auto">
+        <div class="grid min-w-fit gap-px" [style.grid-template-columns]="gridTemplateColumns()">
+          <div></div>
+          @for (bucket of timeline.buckets; track bucket.bucketStart) {
+            <div class="flex items-end justify-center pb-1 font-mono text-label-mono text-cyan">
+              {{ formatBucketTime(bucket.bucketStart) }}
+            </div>
+          }
+
+          @for (type of feedbackTypes; track type) {
+            <div class="flex items-center py-0.5">
+              <app-status-badge [status]="type" />
+            </div>
+            @for (bucket of timeline.buckets; track bucket.bucketStart) {
+              <div
+                class="h-6 rounded-sm"
+                [class]="cellBgClass(type)"
+                [style.opacity]="cellOpacity(bucket, type)"
+                [title]="cellTooltip(bucket, type)"
+              ></div>
+            }
+          }
+        </div>
+      </div>
+      <p class="mt-1 font-mono text-label-mono text-on-surface-variant">
+        Each column is {{ formatDuration(timeline.bucketSeconds) }} of playtime · color intensity = % of testers still active at that point who reported that type
+      </p>
+    }
+  } @else {
+    <p class="mt-bb-sm font-body text-body-md text-on-surface-variant">Loading timeline...</p>
+  }
+</div>

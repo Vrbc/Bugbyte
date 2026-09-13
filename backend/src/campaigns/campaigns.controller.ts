@@ -56,6 +56,15 @@ export class CampaignsController {
     return this.campaignsService.findOneCampaign(user, id);
   }
 
+  @Get(':id/timeline')
+  @Roles(UserRole.DEVELOPER)
+  getCampaignTimeline(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.getCampaignTimeline(user, id);
+  }
+
   @Post()
   @Roles(UserRole.DEVELOPER)
   createCampaign(

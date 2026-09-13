@@ -14,6 +14,7 @@ import { UserRole } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { PrismaService } from 'src/prisma/prisma.service';
 import type { JoinSessionDto } from './dto/join-session.dto';
+import type { JoinCampaignTimelineDto } from './dto/join-campaign-timeline.dto';
 
 type JwtPayload = {
   sub: string;
@@ -56,11 +57,6 @@ export class SessionRealtimeGateway
   ) {}
 
   handleConnection(client: AppSocket): void {
-    // Assigned synchronously (before any await) so that a message handler
-    // firing right after 'connect' - which happens on every reconnect,
-    // since the frontend rejoins its room as soon as the socket reconnects -
-    // always finds this promise in place and awaits the *same* in-flight
-    // authentication instead of racing ahead of it.
     client.data.authPromise = this.authenticateSocket(client);
     void client.data.authPromise.then((user) => {
       if (!user) {
@@ -150,6 +146,48 @@ export class SessionRealtimeGateway
     await client.leave(this.roomName(dto.sessionId));
   }
 
+  @SubscribeMessage('joinCampaignTimeline')
+  async handleJoinCampaignTimeline(
+    @MessageBody() dto: JoinCampaignTimelineDto,
+    @ConnectedSocket() client: AppSocket,
+  ): Promise<JoinSessionResponse> {
+    if (!dto?.campaignId || typeof dto.campaignId !== 'string') {
+      return { success: false, message: 'A valid campaignId is required.' };
+    }
+
+    const user = await client.data.authPromise;
+    if (!user) {
+      return { success: false, message: 'Not authenticated.' };
+    }
+
+    const campaign = await this.prisma.playtestCampaign.findFirst({
+      where: { id: dto.campaignId, developerId: user.id },
+      select: { id: true },
+    });
+
+    if (!campaign) {
+      return {
+        success: false,
+        message: 'You do not have access to this campaign.',
+      };
+    }
+
+    await client.join(this.campaignRoomName(dto.campaignId));
+    return { success: true };
+  }
+
+  @SubscribeMessage('leaveCampaignTimeline')
+  async handleLeaveCampaignTimeline(
+    @MessageBody() dto: JoinCampaignTimelineDto,
+    @ConnectedSocket() client: AppSocket,
+  ): Promise<void> {
+    if (!dto?.campaignId || typeof dto.campaignId !== 'string') {
+      return;
+    }
+
+    await client.leave(this.campaignRoomName(dto.campaignId));
+  }
+
   broadcastNewFeedback(
     sessionId: string,
     feedbackByte: Record<string, unknown>,
@@ -166,7 +204,17 @@ export class SessionRealtimeGateway
     this.server.to(this.roomName(sessionId)).emit('session:updated', session);
   }
 
+  broadcastCampaignTimelineChanged(campaignId: string): void {
+    this.server
+      .to(this.campaignRoomName(campaignId))
+      .emit('campaignTimeline:changed');
+  }
+
   private roomName(sessionId: string): string {
     return `session:${sessionId}`;
+  }
+
+  private campaignRoomName(campaignId: string): string {
+    return `campaign:${campaignId}`;
   }
 }

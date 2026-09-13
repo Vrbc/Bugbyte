@@ -1,24 +1,27 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { CampaignTimelineStats, PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
 import { CampaignApplication } from '../../../../core/applications/applications.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
-import { forkJoin } from 'rxjs';
+import { debounceTime, forkJoin, Subscription } from 'rxjs';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
+import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
+import { CampaignTimeline } from './campaign-timeline/campaign-timeline';
 
 @Component({
   selector: 'app-campaign-details-component',
-  imports: [RouterLink, Card, StatusBadge, Button, Pagination],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination, CampaignTimeline],
   templateUrl: './campaign-details-component.html',
   styleUrl: './campaign-details-component.scss',
 })
-export class CampaignDetailsComponent implements OnInit {
+export class CampaignDetailsComponent implements OnInit, OnDestroy {
   campaign = signal<PlaytestCampaign | null>(null);
   applications = signal<CampaignApplication[]>([]);
+  timeline = signal<CampaignTimelineStats | null>(null);
 
   loading = signal(true);
   errorMessage = signal<string | null>(null);
@@ -33,16 +36,49 @@ export class CampaignDetailsComponent implements OnInit {
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   private campaignId = '';
+  private readonly socketSubscriptions = new Subscription();
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly campaignsService: CampaignsService,
     private readonly applicationService: ApplicationsService,
+    private readonly sessionSocket: SessionSocketService,
   ) {}
 
   ngOnInit() : void {
     this.campaignId = this.route.snapshot.paramMap.get('id') || '';
     this.loadPage(1);
+    this.connectToLiveUpdates();
+  }
+
+  ngOnDestroy(): void {
+    this.socketSubscriptions.unsubscribe();
+    this.sessionSocket.leaveCampaignTimeline(this.campaignId);
+  }
+
+  private connectToLiveUpdates(): void {
+    this.sessionSocket.joinCampaignTimeline(this.campaignId);
+
+    this.socketSubscriptions.add(
+      this.sessionSocket
+        .onCampaignTimelineChanged()
+        .pipe(debounceTime(2500))
+        .subscribe(() => this.reloadTimeline()),
+    );
+
+    this.socketSubscriptions.add(
+      this.sessionSocket.onReconnect().subscribe(() => {
+        this.sessionSocket.joinCampaignTimeline(this.campaignId);
+        this.reloadTimeline();
+      }),
+    );
+  }
+
+  private reloadTimeline(): void {
+    this.campaignsService.getCampaignTimeline(this.campaignId).subscribe({
+      next: (timeline) => this.timeline.set(timeline),
+      error: () => this.errorMessage.set('Failed to refresh campaign timeline.'),
+    });
   }
 
   loadPage(page: number) : void {
@@ -52,13 +88,15 @@ export class CampaignDetailsComponent implements OnInit {
     forkJoin({
       campaign: this.campaignsService.getCampaign(this.campaignId),
       applications: this.applicationService.getApplicationsForCampaign(this.campaignId, page),
+      timeline: this.campaignsService.getCampaignTimeline(this.campaignId),
     }).subscribe({
-      next: ({campaign, applications}) => {
+      next: ({campaign, applications, timeline}) => {
         this.campaign.set(campaign);
         this.applications.set(applications.items);
         this.page.set(applications.page);
         this.totalPages.set(applications.totalPages);
         this.total.set(applications.total);
+        this.timeline.set(timeline);
         this.loading.set(false);
       },
       error: (error) => {

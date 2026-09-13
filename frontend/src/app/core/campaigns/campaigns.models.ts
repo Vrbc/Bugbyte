@@ -1,5 +1,6 @@
 import { GameBuild } from "../builds/builds.models";
 import { Game } from "../games/games.models";
+import { FeedbackSeverity, FeedbackType } from "../feedback-bytes/feedback-bytes.models";
 
 export type CampaignType =
   | 'FIRST_IMPRESSION'
@@ -68,6 +69,30 @@ export interface UpdateCampaignRequest {
   requiredPlatforms?: string[];
   estimatedMinutes?: number;
   status?: CampaignStatus;
+}
+
+export interface CampaignTimelineBucket {
+  bucketStart: number;
+  feedbackCount: number;
+  byType: Partial<Record<FeedbackType, number>>;
+  bySeverity: Partial<Record<FeedbackSeverity, number>>;
+  byTypeTesterCount: Partial<Record<FeedbackType, number>>;
+  activeTesterCount: number;
+}
+
+export interface CampaignTimelineStats {
+  bucketSeconds: number;
+  buckets: CampaignTimelineBucket[];
+  summary: {
+    testersReporting: number;
+    sessionsTotal: number;
+    sessionsCompleted: number;
+    avgFunRating: number | null;
+    avgDifficultyRating: number | null;
+    avgClarityRating: number | null;
+    avgDurationSeconds: number | null;
+    totalFeedbackCount: number;
+  };
 }
 
 export interface PublicCampaign {

@@ -3,7 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CampaignStatus, Prisma } from '@prisma/client';
+import {
+  CampaignStatus,
+  FeedbackSeverity,
+  FeedbackType,
+  Prisma,
+  SessionStatus,
+} from '@prisma/client';
 import { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
@@ -11,6 +17,31 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
 import { buildPaginatedResult } from 'src/common/paginate.util';
+
+export interface CampaignTimelineResult {
+  bucketSeconds: number;
+  buckets: Array<{
+    bucketStart: number;
+    feedbackCount: number;
+    byType: Partial<Record<FeedbackType, number>>;
+    bySeverity: Partial<Record<FeedbackSeverity, number>>;
+    byTypeTesterCount: Partial<Record<FeedbackType, number>>;
+    activeTesterCount: number;
+  }>;
+  summary: {
+    testersReporting: number;
+    sessionsTotal: number;
+    sessionsCompleted: number;
+    avgFunRating: number | null;
+    avgDifficultyRating: number | null;
+    avgClarityRating: number | null;
+    avgDurationSeconds: number | null;
+    totalFeedbackCount: number;
+  };
+}
+
+const TIMELINE_BUCKET_COUNT = 20;
+const MIN_BUCKET_SECONDS = 30;
 
 @Injectable()
 export class CampaignsService {
@@ -91,6 +122,155 @@ export class CampaignsService {
     }
 
     return campaign;
+  }
+
+  async getCampaignTimeline(
+    user: CurrentUserPayload,
+    id: string,
+  ): Promise<CampaignTimelineResult> {
+    await this.ensureCampaignOwnership(user, id);
+
+    const [feedbackBytes, sessions, testerGroups, sessionsTotal, sessionStats] =
+      await Promise.all([
+        this.prisma.feedbackByte.findMany({
+          where: { session: { campaignId: id } },
+          select: {
+            timestampSeconds: true,
+            type: true,
+            severity: true,
+            testerId: true,
+          },
+        }),
+        this.prisma.testSession.findMany({
+          where: { campaignId: id },
+          select: { startedAt: true, durationSeconds: true },
+        }),
+        this.prisma.feedbackByte.groupBy({
+          by: ['testerId'],
+          where: { session: { campaignId: id } },
+        }),
+        this.prisma.testSession.count({ where: { campaignId: id } }),
+        this.prisma.testSession.aggregate({
+          where: { campaignId: id, status: SessionStatus.COMPLETED },
+          _avg: {
+            finalFunRating: true,
+            finalDifficultyRating: true,
+            finalClarityRating: true,
+            durationSeconds: true,
+          },
+          _count: true,
+        }),
+      ]);
+
+    const now = Date.now();
+
+    const maxFeedbackTimestamp = feedbackBytes.reduce(
+      (max, byte) => Math.max(max, byte.timestampSeconds),
+      0,
+    );
+    const maxCompletedDuration = sessions.reduce(
+      (max, session) => Math.max(max, session.durationSeconds ?? 0),
+      0,
+    );
+    const maxTimestampSeconds = Math.max(
+      maxFeedbackTimestamp,
+      maxCompletedDuration,
+    );
+
+    const elapsedSecondsBySession = sessions.map((session) => {
+      if (session.durationSeconds != null) {
+        return session.durationSeconds;
+      }
+
+      const wallClockElapsed = Math.max(
+        0,
+        Math.floor((now - session.startedAt.getTime()) / 1000),
+      );
+      return Math.min(wallClockElapsed, maxTimestampSeconds);
+    });
+
+    const bucketSeconds = Math.max(
+      MIN_BUCKET_SECONDS,
+      Math.ceil((maxTimestampSeconds + 1) / TIMELINE_BUCKET_COUNT),
+    );
+    const bucketCount =
+      sessions.length === 0 && feedbackBytes.length === 0
+        ? 0
+        : Math.ceil((maxTimestampSeconds + 1) / bucketSeconds);
+
+    type TimelineBucket = CampaignTimelineResult['buckets'][number];
+
+    const buckets: TimelineBucket[] = Array.from(
+      { length: bucketCount },
+      (_, index): TimelineBucket => {
+        const bucketStart = index * bucketSeconds;
+        return {
+          bucketStart,
+          feedbackCount: 0,
+          byType: {},
+          bySeverity: {},
+          byTypeTesterCount: {},
+          activeTesterCount: elapsedSecondsBySession.filter(
+            (elapsed) => elapsed >= bucketStart,
+          ).length,
+        };
+      },
+    );
+
+    const testersByBucketAndType = new Map<
+      number,
+      Map<FeedbackType, Set<string>>
+    >();
+
+    for (const byte of feedbackBytes) {
+      const bucketIndex = Math.min(
+        bucketCount - 1,
+        Math.floor(byte.timestampSeconds / bucketSeconds),
+      );
+      const bucket = buckets[bucketIndex];
+
+      bucket.feedbackCount += 1;
+      bucket.byType[byte.type] = (bucket.byType[byte.type] ?? 0) + 1;
+      if (byte.severity) {
+        bucket.bySeverity[byte.severity] =
+          (bucket.bySeverity[byte.severity] ?? 0) + 1;
+      }
+
+      let typesForBucket = testersByBucketAndType.get(bucketIndex);
+      if (!typesForBucket) {
+        typesForBucket = new Map();
+        testersByBucketAndType.set(bucketIndex, typesForBucket);
+      }
+
+      let testersForType = typesForBucket.get(byte.type);
+      if (!testersForType) {
+        testersForType = new Set();
+        typesForBucket.set(byte.type, testersForType);
+      }
+
+      testersForType.add(byte.testerId);
+    }
+
+    for (const [bucketIndex, typesForBucket] of testersByBucketAndType) {
+      for (const [type, testers] of typesForBucket) {
+        buckets[bucketIndex].byTypeTesterCount[type] = testers.size;
+      }
+    }
+
+    return {
+      bucketSeconds,
+      buckets,
+      summary: {
+        testersReporting: testerGroups.length,
+        sessionsTotal,
+        sessionsCompleted: sessionStats._count,
+        avgFunRating: sessionStats._avg.finalFunRating,
+        avgDifficultyRating: sessionStats._avg.finalDifficultyRating,
+        avgClarityRating: sessionStats._avg.finalClarityRating,
+        avgDurationSeconds: sessionStats._avg.durationSeconds,
+        totalFeedbackCount: feedbackBytes.length,
+      },
+    };
   }
 
   async createCampaign(user: CurrentUserPayload, dto: CreateCampaignDto) {

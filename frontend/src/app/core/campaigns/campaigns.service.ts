@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateCampaignRequest, PlaytestCampaign, PublicCampaign, PublicCampaignDetails, UpdateCampaignRequest } from './campaigns.models';
+import { CampaignTimelineStats, CreateCampaignRequest, PlaytestCampaign, PublicCampaign, PublicCampaignDetails, UpdateCampaignRequest } from './campaigns.models';
 import { PaginatedResult } from '../shared/pagination.models';
 
 @Injectable({
@@ -35,6 +35,10 @@ export class CampaignsService {
       `${this.apiUrl}/campaigns/${id}`,
       data,
     );
+  }
+
+  getCampaignTimeline(id: string): Observable<CampaignTimelineStats> {
+    return this.http.get<CampaignTimelineStats>(`${this.apiUrl}/campaigns/${id}/timeline`);
   }
 
   archiveCampaign(id: string): Observable<PlaytestCampaign> {

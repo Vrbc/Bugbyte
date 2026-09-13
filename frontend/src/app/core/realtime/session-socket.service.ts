@@ -44,6 +44,26 @@ export class SessionSocketService {
     return fromEvent<void>(this.ensureConnected(), 'connect');
   }
 
+  joinCampaignTimeline(campaignId: string): void {
+    this.ensureConnected().emit(
+      'joinCampaignTimeline',
+      { campaignId },
+      (response: JoinSessionResponse) => {
+        if (!response?.success) {
+          console.warn('Failed to join campaign timeline room:', response?.message);
+        }
+      },
+    );
+  }
+
+  leaveCampaignTimeline(campaignId: string): void {
+    this.socket?.emit('leaveCampaignTimeline', { campaignId });
+  }
+
+  onCampaignTimelineChanged(): Observable<void> {
+    return fromEvent<void>(this.ensureConnected(), 'campaignTimeline:changed');
+  }
+
   private ensureConnected(): Socket {
     if (!this.socket) {
       this.socket = io(environment.wsUrl, {

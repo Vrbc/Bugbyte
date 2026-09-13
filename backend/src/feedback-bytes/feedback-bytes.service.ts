@@ -33,6 +33,7 @@ export class FeedbackBytesService {
         id: true,
         testerId: true,
         status: true,
+        campaignId: true,
       },
     });
     if (!session) {
@@ -64,6 +65,7 @@ export class FeedbackBytesService {
     });
 
     this.realtimeGateway.broadcastNewFeedback(sessionId, feedbackByte);
+    this.realtimeGateway.broadcastCampaignTimelineChanged(session.campaignId);
 
     return feedbackByte;
   }

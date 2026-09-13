@@ -162,6 +162,9 @@ export class SessionsService {
     });
 
     this.realtimeGateway.broadcastSessionStatus(id, updatedSession);
+    this.realtimeGateway.broadcastCampaignTimelineChanged(
+      updatedSession.campaignId,
+    );
 
     return updatedSession;
   }
