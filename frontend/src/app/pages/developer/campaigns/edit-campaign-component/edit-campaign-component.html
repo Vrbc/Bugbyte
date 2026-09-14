@@ -23,7 +23,18 @@
     </app-card>
   }
 
-  @if (!loading() && campaign()) {
+  @if (!loading() && campaign() && isLocked()) {
+    <app-card>
+      <p class="font-body text-body-md text-on-surface-variant">
+        This campaign is {{ campaign()?.status?.toLowerCase() }} and can no longer be edited.
+      </p>
+      <a [routerLink]="['/developer/campaigns', campaignId]" [class]="secondaryLinkClasses + ' mt-bb-sm inline-flex'">
+        Back to campaign
+      </a>
+    </app-card>
+  }
+
+  @if (!loading() && campaign() && !isLocked()) {
     <app-card>
       <form class="flex flex-col gap-bb-sm" (ngSubmit)="submit()">
         <div class="grid gap-bb-sm md:grid-cols-2">

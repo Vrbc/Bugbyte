@@ -53,6 +53,10 @@ export class EditCampaignComponent {
   ];
 
   protected readonly isDraft = computed(() => this.campaign()?.status === 'DRAFT');
+  protected readonly isLocked = computed(() => {
+    const status = this.campaign()?.status;
+    return status === 'COMPLETED' || status === 'ARCHIVED';
+  });
 
   loading = signal(true);
   loadingBuilds = signal(false);

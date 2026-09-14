@@ -317,6 +317,15 @@ export class CampaignsService {
     const campaign = await this.ensureCampaignOwnership(user, id);
 
     if (
+      campaign.status === CampaignStatus.COMPLETED ||
+      campaign.status === CampaignStatus.ARCHIVED
+    ) {
+      throw new BadRequestException(
+        'A completed or archived campaign can no longer be edited.',
+      );
+    }
+
+    if (
       (dto.gameId !== undefined ||
         dto.buildId !== undefined ||
         dto.minTesterRating !== undefined) &&
