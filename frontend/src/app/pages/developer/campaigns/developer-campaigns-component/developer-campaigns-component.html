@@ -8,8 +8,15 @@
       </p>
     </div>
 
-    <div class="hidden md:block">
-      <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses">
+    <div class="flex items-center gap-bb-sm">
+      <app-button variant="secondary" type="button" (click)="toggleShowArchived()">
+        <span class="material-symbols-outlined text-base" [attr.data-weight]="showArchived() ? 'fill' : null">
+          {{ showArchived() ? 'check_box' : 'check_box_outline_blank' }}
+        </span>
+        Show archived
+      </app-button>
+
+      <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses + ' hidden md:inline-flex'">
         <span class="material-symbols-outlined text-base">add</span>
         New Campaign
       </a>
@@ -30,14 +37,18 @@
     <app-card>
       <div class="flex flex-col items-center gap-bb-sm py-bb-lg text-center">
         <span class="material-symbols-outlined text-4xl text-on-surface-variant">campaign</span>
-        <h2 class="font-display text-headline-md">No campaigns yet</h2>
-        <p class="font-body text-body-md text-on-surface-variant">
-          Create a campaign after you have at least one game and one build.
-        </p>
-        <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses">
-          <span class="material-symbols-outlined text-base">add</span>
-          Create campaign
-        </a>
+        @if (showArchived()) {
+          <h2 class="font-display text-headline-md">No campaigns found</h2>
+        } @else {
+          <h2 class="font-display text-headline-md">No campaigns yet</h2>
+          <p class="font-body text-body-md text-on-surface-variant">
+            Create a campaign after you have at least one game and one build.
+          </p>
+          <a routerLink="/developer/campaigns/new" [class]="primaryLinkClasses">
+            <span class="material-symbols-outlined text-base">add</span>
+            Create campaign
+          </a>
+        }
       </div>
     </app-card>
   }

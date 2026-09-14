@@ -19,6 +19,7 @@ export class DeveloperCampaignsComponent implements OnInit {
   loading = signal(true);
   errorMessage = signal<string | null>(null);
   pendingArchive = signal<PlaytestCampaign | null>(null);
+  showArchived = signal(false);
 
   page = signal(1);
   totalPages = signal(1);
@@ -37,7 +38,7 @@ export class DeveloperCampaignsComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.campaignsService.getMyCampaigns(page).subscribe({
+    this.campaignsService.getMyCampaigns(page, 20, this.showArchived()).subscribe({
       next: (result) => {
         this.campaigns.set(result.items);
         this.page.set(result.page);
@@ -50,6 +51,11 @@ export class DeveloperCampaignsComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  toggleShowArchived(): void {
+    this.showArchived.update((value) => !value);
+    this.loadCampaigns(1);
   }
 
   archiveCampaign(campaign: PlaytestCampaign): void {

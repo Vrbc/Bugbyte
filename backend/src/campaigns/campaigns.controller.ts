@@ -17,7 +17,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { MyCampaignsQueryDto } from './dto/my-campaigns-query.dto';
 import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
 
 @Controller('campaigns')
@@ -41,7 +41,7 @@ export class CampaignsController {
   @Roles(UserRole.DEVELOPER)
   findMyCampaigns(
     @CurrentUser() user: CurrentUserPayload,
-    @Query() query: PaginationQueryDto,
+    @Query() query: MyCampaignsQueryDto,
   ) {
     return this.campaignsService.findMyCampaigns(user, query);
   }

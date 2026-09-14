@@ -14,7 +14,7 @@ import { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { MyCampaignsQueryDto } from './dto/my-campaigns-query.dto';
 import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
 import { buildPaginatedResult } from 'src/common/paginate.util';
 import { SessionsService } from 'src/sessions/sessions.service';
@@ -51,12 +51,15 @@ export class CampaignsService {
     private readonly sessionsService: SessionsService,
   ) {}
 
-  async findMyCampaigns(user: CurrentUserPayload, query: PaginationQueryDto) {
+  async findMyCampaigns(user: CurrentUserPayload, query: MyCampaignsQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
 
     const where: Prisma.PlaytestCampaignWhereInput = {
       developerId: user.id,
+      ...(query.includeArchived
+        ? {}
+        : { status: { not: CampaignStatus.ARCHIVED } }),
     };
 
     const [items, total] = await Promise.all([

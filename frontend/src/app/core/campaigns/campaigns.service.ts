@@ -13,9 +13,13 @@ export class CampaignsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}`;
 
-  getMyCampaigns(page = 1, limit = 20): Observable<PaginatedResult<PlaytestCampaign>> {
+  getMyCampaigns(
+    page = 1,
+    limit = 20,
+    includeArchived = false,
+  ): Observable<PaginatedResult<PlaytestCampaign>> {
     return this.http.get<PaginatedResult<PlaytestCampaign>>(`${this.apiUrl}/campaigns/my`, {
-      params: { page, limit },
+      params: { page, limit, includeArchived },
     });
   }
 
