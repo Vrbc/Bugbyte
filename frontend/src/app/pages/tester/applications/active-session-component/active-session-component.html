@@ -47,6 +47,15 @@
       }
     </app-card>
 
+    @if (sessionData.status === 'CANCELLED') {
+      <app-card>
+        <p class="font-mono text-label-mono uppercase tracking-widest text-warning">Session ended by developer</p>
+        <p class="mt-1 font-body text-body-md text-on-surface-variant">
+          This session was ended by the developer. You can still submit your final feedback below.
+        </p>
+      </app-card>
+    }
+
     <div class="grid gap-bb-md xl:grid-cols-[0.9fr_1.1fr]">
       <div class="flex flex-col gap-bb-md">
         @if (sessionData.status === 'LIVE') {
@@ -136,7 +145,7 @@
           </app-card>
         }
 
-        @if (sessionData.status === 'LIVE') {
+        @if (sessionData.status === 'LIVE' || sessionData.status === 'CANCELLED') {
           <app-card>
             <form class="flex flex-col gap-bb-sm" (ngSubmit)="endSession()">
               <div>
@@ -204,7 +213,11 @@
               />
 
               <app-button variant="danger" type="submit" [disabled]="ending()">
-                {{ ending() ? 'Ending session...' : 'End session' }}
+                @if (ending()) {
+                  {{ sessionData.status === 'CANCELLED' ? 'Submitting...' : 'Ending session...' }}
+                } @else {
+                  {{ sessionData.status === 'CANCELLED' ? 'Submit final survey' : 'End session' }}
+                }
               </app-button>
             </form>
           </app-card>
@@ -264,5 +277,19 @@
         }
       </app-card>
     </div>
+
+    <app-confirm-dialog
+      [open]="confirmingEndSession()"
+      [title]="sessionData.status === 'CANCELLED' ? 'Submit final survey' : 'End session'"
+      [message]="
+        sessionData.status === 'CANCELLED'
+          ? 'Submit your final survey? You will not be able to change it afterward.'
+          : 'End this test session? You will not be able to send more feedback.'
+      "
+      [confirmLabel]="sessionData.status === 'CANCELLED' ? 'Submit' : 'End session'"
+      variant="danger"
+      (confirmed)="confirmEndSession()"
+      (cancelled)="confirmingEndSession.set(false)"
+    />
   }
 </section>

@@ -15,6 +15,7 @@ import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Input } from '../../../../shared/ui/input/input';
 import { Select } from '../../../../shared/ui/select/select';
 import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedback-byte-item';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 
 export interface FeedbackTypeMeta {
   icon: string;
@@ -44,7 +45,7 @@ export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
 
 @Component({
   selector: 'app-active-session-component',
-  imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem],
+  imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem, ConfirmDialog],
   templateUrl: './active-session-component.html',
   styleUrl: './active-session-component.scss',
 })
@@ -71,6 +72,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   elapsedSeconds = signal(0);
 
   ending = signal(false);
+  confirmingEndSession = signal(false);
 
   finalFunRating = 4;
   finalDifficultyRating = 3;
@@ -316,18 +318,17 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
 
   endSession(): void {
-  this.errorMessage.set(null);
-  this.successMessage.set(null);
-
-  const confirmed = confirm('End this test session? You will not be able to send more feedback.');
-
-  if (!confirmed) {
-    return;
+    this.confirmingEndSession.set(true);
   }
 
-  this.ending.set(true);
+  confirmEndSession(): void {
+    this.confirmingEndSession.set(false);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
 
-  this.sessionsService.endSession(this.sessionId, {
+    this.ending.set(true);
+
+    this.sessionsService.endSession(this.sessionId, {
       finalFunRating: Number(this.finalFunRating),
       finalDifficultyRating: Number(this.finalDifficultyRating),
       finalClarityRating: Number(this.finalClarityRating),
