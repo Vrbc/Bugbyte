@@ -34,8 +34,35 @@
           </p>
         </div>
 
-        <div class="flex items-center gap-bb-sm">
+        <div class="flex flex-wrap items-center gap-bb-sm">
           <app-status-badge [status]="campaignData.status" />
+
+          @if (campaignData.status === 'DRAFT') {
+            <app-button type="button" [disabled]="campaignActionInProgress()" (click)="publishCampaign()">
+              Publish
+            </app-button>
+          }
+          @if (campaignData.status === 'ACTIVE') {
+            <app-button variant="secondary" type="button" [disabled]="campaignActionInProgress()" (click)="pauseCampaign()">
+              Pause
+            </app-button>
+          }
+          @if (campaignData.status === 'PAUSED') {
+            <app-button type="button" [disabled]="campaignActionInProgress()" (click)="resumeCampaign()">
+              Resume
+            </app-button>
+          }
+          @if (campaignData.status === 'ACTIVE' || campaignData.status === 'PAUSED') {
+            <app-button variant="secondary" type="button" [disabled]="campaignActionInProgress()" (click)="completeCampaign()">
+              Complete
+            </app-button>
+          }
+          @if (campaignData.status === 'DRAFT' || campaignData.status === 'COMPLETED') {
+            <app-button variant="danger" type="button" [disabled]="campaignActionInProgress()" (click)="archiveCampaign()">
+              Archive
+            </app-button>
+          }
+
           <a [routerLink]="['/developer/campaigns', campaignData.id, 'edit']" [class]="secondaryLinkClasses">
             Edit campaign
           </a>

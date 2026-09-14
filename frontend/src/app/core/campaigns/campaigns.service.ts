@@ -41,8 +41,24 @@ export class CampaignsService {
     return this.http.get<CampaignTimelineStats>(`${this.apiUrl}/campaigns/${id}/timeline`);
   }
 
+  publishCampaign(id: string): Observable<PlaytestCampaign> {
+    return this.http.patch<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}/publish`, {});
+  }
+
+  pauseCampaign(id: string): Observable<PlaytestCampaign> {
+    return this.http.patch<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}/pause`, {});
+  }
+
+  resumeCampaign(id: string): Observable<PlaytestCampaign> {
+    return this.http.patch<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}/resume`, {});
+  }
+
+  completeCampaign(id: string): Observable<PlaytestCampaign> {
+    return this.http.patch<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}/complete`, {});
+  }
+
   archiveCampaign(id: string): Observable<PlaytestCampaign> {
-    return this.http.delete<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}`);
+    return this.http.patch<PlaytestCampaign>(`${this.apiUrl}/campaigns/${id}/archive`, {});
   }
 
   getPublicCampaigns(

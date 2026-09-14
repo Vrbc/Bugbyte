@@ -4,7 +4,7 @@ import { CampaignTimelineStats, PlaytestCampaign } from '../../../../core/campai
 import { CampaignApplication } from '../../../../core/applications/applications.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
-import { debounceTime, forkJoin, Subscription } from 'rxjs';
+import { debounceTime, forkJoin, Observable, Subscription } from 'rxjs';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
@@ -27,6 +27,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
   actionMessage = signal<string | null>(null);
   updatingApplicationId = signal<string | null>(null);
+  campaignActionInProgress = signal(false);
 
   page = signal(1);
   totalPages = signal(1);
@@ -102,6 +103,58 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.errorMessage.set('Failed to load campaign details');
         this.loading.set(false);
+      },
+    });
+  }
+
+  publishCampaign(): void {
+    this.runCampaignAction(this.campaignsService.publishCampaign(this.campaignId), 'Campaign published.');
+  }
+
+  pauseCampaign(): void {
+    this.runCampaignAction(this.campaignsService.pauseCampaign(this.campaignId), 'Campaign paused.');
+  }
+
+  resumeCampaign(): void {
+    this.runCampaignAction(this.campaignsService.resumeCampaign(this.campaignId), 'Campaign resumed.');
+  }
+
+  completeCampaign(): void {
+    const confirmed = confirm(
+      'Complete this campaign? Any live sessions will be ended immediately.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.runCampaignAction(this.campaignsService.completeCampaign(this.campaignId), 'Campaign completed.');
+  }
+
+  archiveCampaign(): void {
+    const confirmed = confirm('Archive this campaign?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.runCampaignAction(this.campaignsService.archiveCampaign(this.campaignId), 'Campaign archived.');
+  }
+
+  private runCampaignAction(action$: Observable<PlaytestCampaign>, successMessage: string): void {
+    this.errorMessage.set(null);
+    this.actionMessage.set(null);
+    this.campaignActionInProgress.set(true);
+
+    action$.subscribe({
+      next: () => {
+        this.campaignActionInProgress.set(false);
+        this.actionMessage.set(successMessage);
+        this.loadPage(this.page());
+      },
+      error: (error) => {
+        this.campaignActionInProgress.set(false);
+        this.errorMessage.set(error?.error?.message || 'Failed to update campaign.');
       },
     });
   }

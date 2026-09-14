@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { CampaignStatus, CampaignType, PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { Component, computed, signal } from '@angular/core';
+import { CampaignType, PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
 import { Game } from '../../../../core/games/games.models';
 import { GameBuild } from '../../../../core/builds/builds.models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -39,7 +39,6 @@ export class EditCampaignComponent {
   requiredTesters = 5;
   minTesterRating = 0;
   estimatedMinutes = 30;
-  status: CampaignStatus = 'DRAFT';
 
   availablePlatforms = ['PC', 'Web', 'Android', 'iOS'];
   selectedPlatforms: string[] = [];
@@ -53,13 +52,7 @@ export class EditCampaignComponent {
     'UX_FEEDBACK',
   ];
 
-  campaignStatuses: CampaignStatus[] = [
-    'DRAFT',
-    'ACTIVE',
-    'PAUSED',
-    'COMPLETED',
-    'ARCHIVED',
-  ];
+  protected readonly isDraft = computed(() => this.campaign()?.status === 'DRAFT');
 
   loading = signal(true);
   loadingBuilds = signal(false);
@@ -100,7 +93,6 @@ export class EditCampaignComponent {
         this.requiredTesters = campaign.requiredTesters;
         this.minTesterRating = campaign.minTesterRating;
         this.estimatedMinutes = campaign.estimatedMinutes;
-        this.status = campaign.status;
         this.selectedPlatforms = [...campaign.requiredPlatforms];
 
         this.loading.set(false);
@@ -159,17 +151,20 @@ export class EditCampaignComponent {
     this.saving.set(true);
 
     this.campaignsService.updateCampaign(this.campaignId, {
-      gameId: this.gameId,
-      buildId: this.buildId,
+      ...(this.isDraft()
+        ? {
+            gameId: this.gameId,
+            buildId: this.buildId,
+            minTesterRating: Number(this.minTesterRating),
+          }
+        : {}),
       title: this.title,
       type: this.type,
       description: this.description || undefined,
       instructions: this.instructions,
       requiredTesters: Number(this.requiredTesters),
-      minTesterRating: Number(this.minTesterRating),
       requiredPlatforms: this.selectedPlatforms,
       estimatedMinutes: Number(this.estimatedMinutes),
-      status: this.status,
     }).subscribe({
       next: () => {
         this.saving.set(false);

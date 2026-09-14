@@ -9,7 +9,7 @@
     </a>
     <h1 class="mt-bb-sm font-display text-display-lg-mobile">Edit campaign</h1>
     <p class="mt-1 font-body text-body-md text-on-surface-variant">
-      Update playtest requirements, instructions and campaign status.
+      Update playtest requirements and instructions.
     </p>
   </div>
 
@@ -27,14 +27,25 @@
     <app-card>
       <form class="flex flex-col gap-bb-sm" (ngSubmit)="submit()">
         <div class="grid gap-bb-sm md:grid-cols-2">
-          <app-select label="Game" [(ngModel)]="gameId" (ngModelChange)="onGameChange()" name="gameId">
+          <app-select
+            label="Game"
+            [(ngModel)]="gameId"
+            (ngModelChange)="onGameChange()"
+            name="gameId"
+            [disabled]="!isDraft()"
+          >
             <option value="">Select game</option>
             @for (game of games(); track game.id) {
               <option [value]="game.id">{{ game.title }}</option>
             }
           </app-select>
 
-          <app-select label="Build" [(ngModel)]="buildId" name="buildId" [disabled]="!gameId || loadingBuilds()">
+          <app-select
+            label="Build"
+            [(ngModel)]="buildId"
+            name="buildId"
+            [disabled]="!isDraft() || !gameId || loadingBuilds()"
+          >
             <option value="">{{ loadingBuilds() ? 'Loading builds...' : 'Select build' }}</option>
             @for (build of builds(); track build.id) {
               <option [value]="build.id">{{ build.version }} - {{ build.status }}</option>
@@ -42,21 +53,19 @@
           </app-select>
         </div>
 
+        @if (!isDraft()) {
+          <p class="font-body text-body-md text-on-surface-variant">
+            Game, build and minimum tester rating can only be changed while the campaign is a draft.
+          </p>
+        }
+
         <app-input label="Campaign title" [(ngModel)]="title" name="title" [required]="true" />
 
-        <div class="grid gap-bb-sm md:grid-cols-2">
-          <app-select label="Campaign type" [(ngModel)]="type" name="type">
-            @for (campaignType of campaignTypes; track campaignType) {
-              <option [value]="campaignType">{{ campaignType }}</option>
-            }
-          </app-select>
-
-          <app-select label="Status" [(ngModel)]="status" name="status">
-            @for (campaignStatus of campaignStatuses; track campaignStatus) {
-              <option [value]="campaignStatus">{{ campaignStatus }}</option>
-            }
-          </app-select>
-        </div>
+        <app-select label="Campaign type" [(ngModel)]="type" name="type">
+          @for (campaignType of campaignTypes; track campaignType) {
+            <option [value]="campaignType">{{ campaignType }}</option>
+          }
+        </app-select>
 
         <app-input label="Description" [multiline]="true" [rows]="3" [(ngModel)]="description" name="description" />
         <app-input
@@ -70,7 +79,13 @@
 
         <div class="grid gap-bb-sm md:grid-cols-3">
           <app-input label="Required testers" type="number" [(ngModel)]="requiredTesters" name="requiredTesters" />
-          <app-input label="Min tester rating" type="number" [(ngModel)]="minTesterRating" name="minTesterRating" />
+          <app-input
+            label="Min tester rating"
+            type="number"
+            [(ngModel)]="minTesterRating"
+            name="minTesterRating"
+            [disabled]="!isDraft()"
+          />
           <app-input label="Estimated minutes" type="number" [(ngModel)]="estimatedMinutes" name="estimatedMinutes" />
         </div>
 

@@ -60,7 +60,7 @@
           <div class="flex flex-wrap gap-bb-xs">
             <a [routerLink]="['/developer/campaigns', campaign.id]" [class]="primaryLinkClasses">Open</a>
             <a [routerLink]="['/developer/campaigns', campaign.id, 'edit']" [class]="secondaryLinkClasses">Edit</a>
-            @if (campaign.status !== 'ARCHIVED') {
+            @if (campaign.status === 'DRAFT' || campaign.status === 'COMPLETED') {
               <app-button variant="danger" type="button" (click)="archiveCampaign(campaign)">Archive</app-button>
             }
           </div>

@@ -68,7 +68,6 @@ export interface UpdateCampaignRequest {
   minTesterRating?: number;
   requiredPlatforms?: string[];
   estimatedMinutes?: number;
-  status?: CampaignStatus;
 }
 
 export interface CampaignTimelineBucket {
