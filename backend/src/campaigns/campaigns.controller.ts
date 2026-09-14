@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -84,7 +83,34 @@ export class CampaignsController {
     return this.campaignsService.updateCampaign(user, id, dto);
   }
 
-  @Delete(':id')
+  @Patch(':id/publish')
+  @Roles(UserRole.DEVELOPER)
+  publishCampaign(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.publishCampaign(user, id);
+  }
+
+  @Patch(':id/pause')
+  @Roles(UserRole.DEVELOPER)
+  pauseCampaign(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.pauseCampaign(user, id);
+  }
+
+  @Patch(':id/resume')
+  @Roles(UserRole.DEVELOPER)
+  resumeCampaign(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.resumeCampaign(user, id);
+  }
+
+  @Patch(':id/archive')
   @Roles(UserRole.DEVELOPER)
   archiveCampaign(
     @CurrentUser() user: CurrentUserPayload,

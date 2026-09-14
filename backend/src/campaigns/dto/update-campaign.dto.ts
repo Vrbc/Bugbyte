@@ -1,4 +1,4 @@
-import { CampaignStatus, CampaignType } from '@prisma/client';
+import { CampaignType } from '@prisma/client';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -60,8 +60,4 @@ export class UpdateCampaignDto {
   @IsInt()
   @Min(1)
   estimatedMinutes?: number;
-
-  @IsOptional()
-  @IsEnum(CampaignStatus)
-  status?: CampaignStatus;
 }

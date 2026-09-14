@@ -312,6 +312,17 @@ export class CampaignsService {
   ) {
     const campaign = await this.ensureCampaignOwnership(user, id);
 
+    if (
+      (dto.gameId !== undefined ||
+        dto.buildId !== undefined ||
+        dto.minTesterRating !== undefined) &&
+      campaign.status !== CampaignStatus.DRAFT
+    ) {
+      throw new BadRequestException(
+        'Game, build and minimum tester rating can only be changed while the campaign is a draft.',
+      );
+    }
+
     const nextGameId = dto.gameId ?? campaign.gameId;
     const nextBuildId = dto.buildId ?? campaign.buildId;
 
@@ -364,10 +375,6 @@ export class CampaignsService {
       data.estimatedMinutes = dto.estimatedMinutes;
     }
 
-    if (dto.status !== undefined) {
-      data.status = dto.status;
-    }
-
     if (dto.gameId !== undefined) {
       data.game = {
         connect: {
@@ -393,8 +400,46 @@ export class CampaignsService {
     });
   }
 
+  async publishCampaign(user: CurrentUserPayload, id: string) {
+    const campaign = await this.ensureCampaignOwnership(user, id);
+    this.assertTransition(campaign.status, [CampaignStatus.DRAFT], 'publish');
+
+    return this.prisma.playtestCampaign.update({
+      where: { id },
+      data: { status: CampaignStatus.ACTIVE },
+      include: this.campaignInclude(),
+    });
+  }
+
+  async pauseCampaign(user: CurrentUserPayload, id: string) {
+    const campaign = await this.ensureCampaignOwnership(user, id);
+    this.assertTransition(campaign.status, [CampaignStatus.ACTIVE], 'pause');
+
+    return this.prisma.playtestCampaign.update({
+      where: { id },
+      data: { status: CampaignStatus.PAUSED },
+      include: this.campaignInclude(),
+    });
+  }
+
+  async resumeCampaign(user: CurrentUserPayload, id: string) {
+    const campaign = await this.ensureCampaignOwnership(user, id);
+    this.assertTransition(campaign.status, [CampaignStatus.PAUSED], 'resume');
+
+    return this.prisma.playtestCampaign.update({
+      where: { id },
+      data: { status: CampaignStatus.ACTIVE },
+      include: this.campaignInclude(),
+    });
+  }
+
   async archiveCampaign(user: CurrentUserPayload, id: string) {
-    await this.ensureCampaignOwnership(user, id);
+    const campaign = await this.ensureCampaignOwnership(user, id);
+    this.assertTransition(
+      campaign.status,
+      [CampaignStatus.DRAFT, CampaignStatus.COMPLETED],
+      'archive',
+    );
 
     return this.prisma.playtestCampaign.update({
       where: {
@@ -417,6 +462,7 @@ export class CampaignsService {
         id: true,
         gameId: true,
         buildId: true,
+        status: true,
       },
     });
 
@@ -425,6 +471,18 @@ export class CampaignsService {
     }
 
     return campaign;
+  }
+
+  private assertTransition(
+    current: CampaignStatus,
+    allowed: CampaignStatus[],
+    action: string,
+  ) {
+    if (!allowed.includes(current)) {
+      throw new BadRequestException(
+        `Cannot ${action} a campaign that is ${current}.`,
+      );
+    }
   }
 
   private async ensureGameAndBuildOwnership(
