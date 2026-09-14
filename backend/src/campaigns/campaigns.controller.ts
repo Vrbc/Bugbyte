@@ -110,6 +110,15 @@ export class CampaignsController {
     return this.campaignsService.resumeCampaign(user, id);
   }
 
+  @Patch(':id/complete')
+  @Roles(UserRole.DEVELOPER)
+  completeCampaign(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.completeCampaign(user, id);
+  }
+
   @Patch(':id/archive')
   @Roles(UserRole.DEVELOPER)
   archiveCampaign(

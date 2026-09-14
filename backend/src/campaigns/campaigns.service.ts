@@ -17,6 +17,7 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
 import { buildPaginatedResult } from 'src/common/paginate.util';
+import { SessionsService } from 'src/sessions/sessions.service';
 
 export interface CampaignTimelineResult {
   bucketSeconds: number;
@@ -45,7 +46,10 @@ const MIN_BUCKET_SECONDS = 30;
 
 @Injectable()
 export class CampaignsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sessionsService: SessionsService,
+  ) {}
 
   async findMyCampaigns(user: CurrentUserPayload, query: PaginationQueryDto) {
     const page = query.page ?? 1;
@@ -431,6 +435,25 @@ export class CampaignsService {
       data: { status: CampaignStatus.ACTIVE },
       include: this.campaignInclude(),
     });
+  }
+
+  async completeCampaign(user: CurrentUserPayload, id: string) {
+    const campaign = await this.ensureCampaignOwnership(user, id);
+    this.assertTransition(
+      campaign.status,
+      [CampaignStatus.ACTIVE, CampaignStatus.PAUSED],
+      'complete',
+    );
+
+    const updated = await this.prisma.playtestCampaign.update({
+      where: { id },
+      data: { status: CampaignStatus.COMPLETED },
+      include: this.campaignInclude(),
+    });
+
+    await this.sessionsService.forceEndLiveSessionsForCampaign(id);
+
+    return updated;
   }
 
   async archiveCampaign(user: CurrentUserPayload, id: string) {

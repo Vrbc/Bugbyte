@@ -8,5 +8,6 @@ import { RealtimeModule } from 'src/realtime/realtime.module';
   imports: [AuthModule, RealtimeModule],
   controllers: [SessionsController],
   providers: [SessionsService],
+  exports: [SessionsService],
 })
 export class SessionsModule {}

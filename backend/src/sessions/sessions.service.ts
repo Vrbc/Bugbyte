@@ -113,6 +113,8 @@ export class SessionsService {
         id: true,
         applicationId: true,
         startedAt: true,
+        endedAt: true,
+        durationSeconds: true,
         status: true,
       },
     });
@@ -121,16 +123,24 @@ export class SessionsService {
       throw new NotFoundException('Session not found.');
     }
 
-    if (session.status !== SessionStatus.LIVE) {
+    if (
+      session.status !== SessionStatus.LIVE &&
+      session.status !== SessionStatus.CANCELLED
+    ) {
       throw new BadRequestException('Only live sessions can be ended.');
     }
 
-    const endedAt = new Date();
-
-    const duration = Math.max(
-      0,
-      Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
-    );
+    const endedAt =
+      session.status === SessionStatus.LIVE ? new Date() : session.endedAt!;
+    const duration =
+      session.status === SessionStatus.LIVE
+        ? Math.max(
+            0,
+            Math.floor(
+              (endedAt.getTime() - session.startedAt.getTime()) / 1000,
+            ),
+          )
+        : session.durationSeconds!;
 
     const updatedSession = await this.prisma.$transaction(async (tx) => {
       const updatedSession = await tx.testSession.update({
@@ -167,6 +177,49 @@ export class SessionsService {
     );
 
     return updatedSession;
+  }
+
+  async forceEndLiveSessionsForCampaign(campaignId: string): Promise<void> {
+    const sessions = await this.prisma.testSession.findMany({
+      where: {
+        campaignId,
+        status: { in: [SessionStatus.LIVE, SessionStatus.PAUSED] },
+      },
+      select: { id: true, applicationId: true, startedAt: true },
+    });
+
+    for (const session of sessions) {
+      const endedAt = new Date();
+      const duration = Math.max(
+        0,
+        Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
+      );
+
+      const updatedSession = await this.prisma.$transaction(async (tx) => {
+        const updated = await tx.testSession.update({
+          where: { id: session.id },
+          data: {
+            endedAt,
+            durationSeconds: duration,
+            status: SessionStatus.CANCELLED,
+          },
+          include: this.sessionDetailsInclude(),
+        });
+
+        await tx.campaignApplication.update({
+          where: { id: session.applicationId },
+          data: { status: ApplicationStatus.COMPLETED },
+        });
+
+        return updated;
+      });
+
+      this.realtimeGateway.broadcastSessionStatus(session.id, updatedSession);
+    }
+
+    if (sessions.length > 0) {
+      this.realtimeGateway.broadcastCampaignTimelineChanged(campaignId);
+    }
   }
 
   private sessionListInclude() {
