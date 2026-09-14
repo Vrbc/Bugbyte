@@ -11,10 +11,13 @@ import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { CampaignTimeline } from './campaign-timeline/campaign-timeline';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
+
+type PendingCampaignAction = 'complete' | 'archive';
 
 @Component({
   selector: 'app-campaign-details-component',
-  imports: [RouterLink, Card, StatusBadge, Button, Pagination, CampaignTimeline],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination, CampaignTimeline, ConfirmDialog],
   templateUrl: './campaign-details-component.html',
   styleUrl: './campaign-details-component.scss',
 })
@@ -28,6 +31,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   actionMessage = signal<string | null>(null);
   updatingApplicationId = signal<string | null>(null);
   campaignActionInProgress = signal(false);
+  pendingAction = signal<PendingCampaignAction | null>(null);
 
   page = signal(1);
   totalPages = signal(1);
@@ -120,25 +124,22 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   }
 
   completeCampaign(): void {
-    const confirmed = confirm(
-      'Complete this campaign? Any live sessions will be ended immediately.',
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    this.runCampaignAction(this.campaignsService.completeCampaign(this.campaignId), 'Campaign completed.');
+    this.pendingAction.set('complete');
   }
 
   archiveCampaign(): void {
-    const confirmed = confirm('Archive this campaign?');
+    this.pendingAction.set('archive');
+  }
 
-    if (!confirmed) {
-      return;
+  confirmPendingAction(): void {
+    const action = this.pendingAction();
+    this.pendingAction.set(null);
+
+    if (action === 'complete') {
+      this.runCampaignAction(this.campaignsService.completeCampaign(this.campaignId), 'Campaign completed.');
+    } else if (action === 'archive') {
+      this.runCampaignAction(this.campaignsService.archiveCampaign(this.campaignId), 'Campaign archived.');
     }
-
-    this.runCampaignAction(this.campaignsService.archiveCampaign(this.campaignId), 'Campaign archived.');
   }
 
   private runCampaignAction(action$: Observable<PlaytestCampaign>, successMessage: string): void {

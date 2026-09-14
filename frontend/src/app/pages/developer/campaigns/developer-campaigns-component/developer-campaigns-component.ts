@@ -6,10 +6,11 @@ import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
+import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-developer-campaigns-component',
-  imports: [RouterLink, Card, StatusBadge, Button, Pagination],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination, ConfirmDialog],
   templateUrl: './developer-campaigns-component.html',
   styleUrl: './developer-campaigns-component.scss',
 })
@@ -17,6 +18,7 @@ export class DeveloperCampaignsComponent implements OnInit {
   campaigns = signal<PlaytestCampaign[]>([]);
   loading = signal(true);
   errorMessage = signal<string | null>(null);
+  pendingArchive = signal<PlaytestCampaign | null>(null);
 
   page = signal(1);
   totalPages = signal(1);
@@ -51,11 +53,16 @@ export class DeveloperCampaignsComponent implements OnInit {
   }
 
   archiveCampaign(campaign: PlaytestCampaign): void {
-    const confirmed = confirm(`Archive "${campaign.title}"?`);
+    this.pendingArchive.set(campaign);
+  }
 
-    if (!confirmed) {
+  confirmArchive(): void {
+    const campaign = this.pendingArchive();
+    if (!campaign) {
       return;
     }
+
+    this.pendingArchive.set(null);
 
     this.campaignsService.archiveCampaign(campaign.id).subscribe({
       next: () => this.loadCampaigns(this.page()),

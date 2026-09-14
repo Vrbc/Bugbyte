@@ -1,0 +1,19 @@
+@if (open()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-level-0/80 p-bb-sm backdrop-blur-sm">
+    <div
+      class="w-full max-w-sm rounded-card border border-border bg-level-2 p-bb-sm shadow-[0px_0px_15px_rgba(56,189,248,0.1)]"
+    >
+      <h2 class="font-display text-headline-md">{{ title() }}</h2>
+      <p class="mt-1 font-body text-body-md text-on-surface-variant">{{ message() }}</p>
+
+      <div class="mt-bb-sm flex justify-end gap-bb-xs">
+        <app-button variant="secondary" type="button" (click)="cancelled.emit()">
+          {{ cancelLabel() }}
+        </app-button>
+        <app-button [variant]="variant()" type="button" (click)="confirmed.emit()">
+          {{ confirmLabel() }}
+        </app-button>
+      </div>
+    </div>
+  </div>
+}

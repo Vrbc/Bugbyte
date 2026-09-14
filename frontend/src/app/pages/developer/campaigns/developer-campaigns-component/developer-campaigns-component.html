@@ -106,6 +106,16 @@
   </div>
 
   <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="loadCampaigns($event)" />
+
+  <app-confirm-dialog
+    [open]="!!pendingArchive()"
+    title="Archive campaign"
+    [message]="'Archive &quot;' + (pendingArchive()?.title ?? '') + '&quot;?'"
+    confirmLabel="Archive"
+    variant="danger"
+    (confirmed)="confirmArchive()"
+    (cancelled)="pendingArchive.set(null)"
+  />
 </section>
 
 <a

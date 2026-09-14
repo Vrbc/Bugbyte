@@ -203,4 +203,18 @@
       <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="loadPage($event)" />
     </app-card>
   }
+
+  <app-confirm-dialog
+    [open]="!!pendingAction()"
+    [title]="pendingAction() === 'complete' ? 'Complete campaign' : 'Archive campaign'"
+    [message]="
+      pendingAction() === 'complete'
+        ? 'Complete this campaign? Any live sessions will be ended immediately.'
+        : 'Archive this campaign?'
+    "
+    [confirmLabel]="pendingAction() === 'complete' ? 'Complete' : 'Archive'"
+    variant="danger"
+    (confirmed)="confirmPendingAction()"
+    (cancelled)="pendingAction.set(null)"
+  />
 </section>
