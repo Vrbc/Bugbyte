@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
-import { Button } from '../../../../shared/ui/button/button';
+import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
 
@@ -27,6 +27,8 @@ export class TesterApplicationsComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   total = signal(0);
+
+  protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
   constructor(
     private readonly applicationsService: ApplicationsService,
@@ -59,8 +61,6 @@ export class TesterApplicationsComponent implements OnInit {
   goToCampaign(application: CampaignApplication): void {
     this.router.navigate(['/tester/campaigns', application.campaignId]);
   }
-
-  //TODO: Dodaj 'Open build' dugme samo na accepted prijave
 
   cancelApplication(application: CampaignApplication): void {
     this.pendingCancel.set(application);

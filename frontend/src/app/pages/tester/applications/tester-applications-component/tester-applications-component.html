@@ -71,6 +71,18 @@
           </div>
 
           <div class="flex gap-bb-xs">
+            @if (application.status === 'ACCEPTED' && application.campaign?.build?.buildUrl) {
+              <a
+                [href]="application.campaign?.build?.buildUrl"
+                target="_blank"
+                (click)="$event.stopPropagation()"
+                [class]="secondaryLinkClasses"
+              >
+                <span class="material-symbols-outlined text-base">open_in_new</span>
+                Open build
+              </a>
+            }
+
             @if (application.status === 'ACCEPTED') {
               <app-button
                 variant="primary"

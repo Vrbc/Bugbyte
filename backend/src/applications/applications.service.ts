@@ -135,7 +135,12 @@ export class ApplicationsService {
       this.prisma.campaignApplication.count({ where }),
     ]);
 
-    return buildPaginatedResult(items, total, page, limit);
+    return buildPaginatedResult(
+      items.map((item) => this.hideBuildUrlIfNotYetAccepted(item)),
+      total,
+      page,
+      limit,
+    );
   }
 
   async findMyApplicationForCampaign(
@@ -192,11 +197,41 @@ export class ApplicationsService {
       );
     }
 
-    return this.prisma.campaignApplication.update({
+    const updated = await this.prisma.campaignApplication.update({
       where: { id },
       data: { status: ApplicationStatus.CANCELLED },
       include: this.applicationForTesterInclude(),
     });
+
+    return this.hideBuildUrlIfNotYetAccepted(updated);
+  }
+
+  // The tester-facing include always fetches build.buildUrl (see applicationForTesterInclude),
+  // but a tester who's only PENDING/REJECTED/CANCELLED shouldn't be able to read it straight
+  // out of the API even though the UI only shows the download link once ACCEPTED.
+  private hideBuildUrlIfNotYetAccepted<
+    T extends {
+      status: ApplicationStatus;
+      campaign: { build: { buildUrl: string } };
+    },
+  >(application: T): T {
+    if (
+      application.status === ApplicationStatus.ACCEPTED ||
+      application.status === ApplicationStatus.COMPLETED
+    ) {
+      return application;
+    }
+
+    return {
+      ...application,
+      campaign: {
+        ...application.campaign,
+        build: {
+          ...application.campaign.build,
+          buildUrl: '',
+        },
+      },
+    };
   }
 
   //DEVELOPER
@@ -379,6 +414,7 @@ export class ApplicationsService {
               id: true,
               version: true,
               status: true,
+              buildUrl: true,
             },
           },
           developer: {

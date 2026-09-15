@@ -28,6 +28,7 @@ export interface CampaignApplication {
     build: {
       id: string;
       version: string;
+      buildUrl?: string | null;
     };
     developer?: {
       id: string;
