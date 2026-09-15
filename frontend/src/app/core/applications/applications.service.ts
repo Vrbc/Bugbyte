@@ -54,4 +54,11 @@ export class ApplicationsService {
       { params: { page, limit } },
     );
   }
+
+  cancelApplication(id: string): Observable<CampaignApplication> {
+    return this.http.patch<CampaignApplication>(
+      `${this.apiUrl}/applications/${id}/cancel`,
+      {},
+    );
+  }
 }

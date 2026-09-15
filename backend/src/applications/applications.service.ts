@@ -142,6 +142,45 @@ export class ApplicationsService {
     });
   }
 
+  async cancelApplication(user: CurrentUserPayload, id: string) {
+    const application = await this.prisma.campaignApplication.findFirst({
+      where: {
+        id,
+        testerId: user.id,
+      },
+      include: {
+        testSession: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found.');
+    }
+
+    if (
+      application.status !== ApplicationStatus.PENDING &&
+      application.status !== ApplicationStatus.ACCEPTED
+    ) {
+      throw new BadRequestException(
+        'Only pending or accepted applications can be cancelled.',
+      );
+    }
+
+    if (application.testSession) {
+      throw new BadRequestException(
+        'This application already has a test session and can no longer be cancelled.',
+      );
+    }
+
+    return this.prisma.campaignApplication.update({
+      where: { id },
+      data: { status: ApplicationStatus.CANCELLED },
+      include: this.applicationForTesterInclude(),
+    });
+  }
+
   //DEVELOPER
 
   async findApplicationsForCampaign(

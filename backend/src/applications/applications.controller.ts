@@ -78,4 +78,13 @@ export class ApplicationsController {
   ) {
     return this.applicationsService.updateApplicationStatus(user, id, dto);
   }
+
+  @Patch('applications/:id/cancel')
+  @Roles(UserRole.TESTER)
+  cancelApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.applicationsService.cancelApplication(user, id);
+  }
 }

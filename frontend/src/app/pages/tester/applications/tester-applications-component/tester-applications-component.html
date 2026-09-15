@@ -86,6 +86,15 @@
               </app-button>
             }
 
+            @if (
+              (application.status === 'PENDING' || application.status === 'ACCEPTED') &&
+              !application.testSession
+            ) {
+              <app-button variant="danger" type="button" (click)="cancelApplication(application)">
+                Cancel
+              </app-button>
+            }
+
             @if (application.status === 'PENDING') {
               <span class="rounded-sm border border-warning/40 px-3 py-1.5 font-body text-body-md text-warning">
                 Waiting approval
@@ -110,4 +119,14 @@
   </div>
 
   <app-pagination [page]="page()" [totalPages]="totalPages()" (pageChange)="loadApplications($event)" />
+
+  <app-confirm-dialog
+    [open]="!!pendingCancel()"
+    title="Cancel application"
+    [message]="'Cancel your application for &quot;' + (pendingCancel()?.campaign?.title ?? '') + '&quot;?'"
+    confirmLabel="Cancel application"
+    variant="danger"
+    (confirmed)="confirmCancel()"
+    (cancelled)="pendingCancel.set(null)"
+  />
 </section>
