@@ -31,7 +31,7 @@
 
   <div class="flex flex-col gap-bb-sm">
     @for (application of applications(); track application.id) {
-      <app-card>
+      <app-card [hoverable]="true" class="cursor-pointer" (click)="goToCampaign(application)">
         <div class="flex flex-col justify-between gap-bb-sm lg:flex-row lg:items-start">
           <div class="flex gap-bb-sm">
             <div class="h-20 w-20 shrink-0 overflow-hidden rounded-sm bg-level-0">
@@ -76,7 +76,7 @@
                 variant="primary"
                 type="button"
                 [disabled]="startingApplicationId() === application.id"
-                (click)="startSession(application)"
+                (click)="$event.stopPropagation(); startSession(application)"
               >
                 {{
                   startingApplicationId() === application.id
@@ -90,7 +90,7 @@
               (application.status === 'PENDING' || application.status === 'ACCEPTED') &&
               !application.testSession
             ) {
-              <app-button variant="danger" type="button" (click)="cancelApplication(application)">
+              <app-button variant="danger" type="button" (click)="$event.stopPropagation(); cancelApplication(application)">
                 Cancel
               </app-button>
             }

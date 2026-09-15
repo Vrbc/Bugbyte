@@ -47,7 +47,7 @@ export class TesterCampaignsDetailsComponent {
       next: ({ campaign, application }) => {
         this.campaign.set(campaign);
 
-        if (application) {
+        if (application && application.status !== 'CANCELLED') {
           this.alreadyApplied.set(true);
           this.message = application.message || '';
           this.successMessage.set('You already applied for this campaign.');

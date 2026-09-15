@@ -73,7 +73,25 @@ export class ApplicationsService {
       });
 
     if (existingApplication) {
-      throw new ConflictException('You already applied to this campaign');
+      if (existingApplication.status !== ApplicationStatus.CANCELLED) {
+        throw new ConflictException('You already applied to this campaign');
+      }
+
+      return this.prisma.campaignApplication.update({
+        where: { id: existingApplication.id },
+        data: {
+          status: ApplicationStatus.PENDING,
+          message: dto.message?.trim() || null,
+        },
+        select: {
+          id: true,
+          campaignId: true,
+          testerId: true,
+          message: true,
+          status: true,
+          createdAt: true,
+        },
+      });
     }
 
     return this.prisma.campaignApplication.create({

@@ -56,6 +56,10 @@ export class TesterApplicationsComponent implements OnInit {
       },
     });
   }
+  goToCampaign(application: CampaignApplication): void {
+    this.router.navigate(['/tester/campaigns', application.campaignId]);
+  }
+
   //TODO: Dodaj 'Open build' dugme samo na accepted prijave
 
   cancelApplication(application: CampaignApplication): void {

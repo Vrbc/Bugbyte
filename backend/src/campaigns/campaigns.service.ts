@@ -628,7 +628,7 @@ export class CampaignsService {
     const campaign = await this.prisma.playtestCampaign.findFirst({
       where: {
         id,
-        status: CampaignStatus.ACTIVE,
+        status: { not: CampaignStatus.DRAFT },
       },
       select: this.publicCampaignDetailsSelect(),
     });
@@ -691,6 +691,7 @@ export class CampaignsService {
       id: true,
       title: true,
       type: true,
+      status: true,
       description: true,
       instructions: true,
       requiredTesters: true,
