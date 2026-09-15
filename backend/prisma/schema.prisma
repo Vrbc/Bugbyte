@@ -223,7 +223,9 @@ model TestSession {
   startedAt             DateTime      @default(now())
   endedAt               DateTime?
   durationSeconds       Int?
-  status                SessionStatus @default(LIVE)
+  status                SessionStatus @default(PAUSED)
+  pausedAt              DateTime?
+  pausedDurationSeconds Int           @default(0)
   finalFunRating        Int?
   finalDifficultyRating Int?
   finalClarityRating    Int?

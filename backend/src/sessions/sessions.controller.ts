@@ -56,4 +56,22 @@ export class SessionsController {
   ) {
     return this.sessionsService.endSession(user, id, dto);
   }
+
+  @Patch('sessions/:id/pause')
+  @Roles(UserRole.TESTER)
+  pauseSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.sessionsService.pauseSession(user, id);
+  }
+
+  @Patch('sessions/:id/resume')
+  @Roles(UserRole.TESTER)
+  resumeSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.sessionsService.resumeSession(user, id);
+  }
 }

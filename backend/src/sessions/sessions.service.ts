@@ -64,10 +64,77 @@ export class SessionsService {
         applicationId,
         campaignId: application.campaignId,
         testerId: user.id,
-        status: SessionStatus.LIVE,
+        status: SessionStatus.PAUSED,
+        pausedAt: new Date(),
       },
       include: this.sessionDetailsInclude(),
     });
+  }
+
+  async pauseSession(user: CurrentUserPayload, id: string) {
+    const session = await this.prisma.testSession.findFirst({
+      where: { id, testerId: user.id },
+      select: { id: true, status: true },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session not found.');
+    }
+
+    if (session.status !== SessionStatus.LIVE) {
+      throw new BadRequestException('Only live sessions can be paused.');
+    }
+
+    const updated = await this.prisma.testSession.update({
+      where: { id },
+      data: { status: SessionStatus.PAUSED, pausedAt: new Date() },
+      include: this.sessionDetailsInclude(),
+    });
+
+    this.realtimeGateway.broadcastSessionStatus(id, updated);
+
+    return updated;
+  }
+
+  async resumeSession(user: CurrentUserPayload, id: string) {
+    const session = await this.prisma.testSession.findFirst({
+      where: { id, testerId: user.id },
+      select: {
+        id: true,
+        status: true,
+        pausedAt: true,
+        pausedDurationSeconds: true,
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session not found.');
+    }
+
+    if (session.status !== SessionStatus.PAUSED) {
+      throw new BadRequestException('Only paused sessions can be resumed.');
+    }
+
+    const additionalPause = session.pausedAt
+      ? Math.max(
+          0,
+          Math.floor((Date.now() - session.pausedAt.getTime()) / 1000),
+        )
+      : 0;
+
+    const updated = await this.prisma.testSession.update({
+      where: { id },
+      data: {
+        status: SessionStatus.LIVE,
+        pausedAt: null,
+        pausedDurationSeconds: session.pausedDurationSeconds + additionalPause,
+      },
+      include: this.sessionDetailsInclude(),
+    });
+
+    this.realtimeGateway.broadcastSessionStatus(id, updated);
+
+    return updated;
   }
 
   async findMySessions(user: CurrentUserPayload) {
@@ -116,6 +183,8 @@ export class SessionsService {
         endedAt: true,
         durationSeconds: true,
         status: true,
+        pausedAt: true,
+        pausedDurationSeconds: true,
       },
     });
 
@@ -125,22 +194,20 @@ export class SessionsService {
 
     if (
       session.status !== SessionStatus.LIVE &&
+      session.status !== SessionStatus.PAUSED &&
       session.status !== SessionStatus.CANCELLED
     ) {
       throw new BadRequestException('Only live sessions can be ended.');
     }
 
     const endedAt =
-      session.status === SessionStatus.LIVE ? new Date() : session.endedAt!;
+      session.status === SessionStatus.CANCELLED
+        ? session.endedAt!
+        : new Date();
     const duration =
-      session.status === SessionStatus.LIVE
-        ? Math.max(
-            0,
-            Math.floor(
-              (endedAt.getTime() - session.startedAt.getTime()) / 1000,
-            ),
-          )
-        : session.durationSeconds!;
+      session.status === SessionStatus.CANCELLED
+        ? session.durationSeconds!
+        : this.computeDurationSeconds(session, endedAt);
 
     const updatedSession = await this.prisma.$transaction(async (tx) => {
       const updatedSession = await tx.testSession.update({
@@ -185,15 +252,19 @@ export class SessionsService {
         campaignId,
         status: { in: [SessionStatus.LIVE, SessionStatus.PAUSED] },
       },
-      select: { id: true, applicationId: true, startedAt: true },
+      select: {
+        id: true,
+        applicationId: true,
+        startedAt: true,
+        status: true,
+        pausedAt: true,
+        pausedDurationSeconds: true,
+      },
     });
 
     for (const session of sessions) {
       const endedAt = new Date();
-      const duration = Math.max(
-        0,
-        Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
-      );
+      const duration = this.computeDurationSeconds(session, endedAt);
 
       const updatedSession = await this.prisma.$transaction(async (tx) => {
         const updated = await tx.testSession.update({
@@ -220,6 +291,31 @@ export class SessionsService {
     if (sessions.length > 0) {
       this.realtimeGateway.broadcastCampaignTimelineChanged(campaignId);
     }
+  }
+
+  private computeDurationSeconds(
+    session: {
+      startedAt: Date;
+      status: SessionStatus;
+      pausedAt: Date | null;
+      pausedDurationSeconds: number;
+    },
+    now: Date,
+  ): number {
+    const inProgressPause =
+      session.status === SessionStatus.PAUSED && session.pausedAt
+        ? Math.max(
+            0,
+            Math.floor((now.getTime() - session.pausedAt.getTime()) / 1000),
+          )
+        : 0;
+    const totalPaused = session.pausedDurationSeconds + inProgressPause;
+
+    return Math.max(
+      0,
+      Math.floor((now.getTime() - session.startedAt.getTime()) / 1000) -
+        totalPaused,
+    );
   }
 
   private sessionListInclude() {

@@ -206,9 +206,7 @@ export class ApplicationsService {
     return this.hideBuildUrlIfNotYetAccepted(updated);
   }
 
-  // The tester-facing include always fetches build.buildUrl (see applicationForTesterInclude),
-  // but a tester who's only PENDING/REJECTED/CANCELLED shouldn't be able to read it straight
-  // out of the API even though the UI only shows the download link once ACCEPTED.
+  // Sakriva buildURL ako nije accepted
   private hideBuildUrlIfNotYetAccepted<
     T extends {
       status: ApplicationStatus;
