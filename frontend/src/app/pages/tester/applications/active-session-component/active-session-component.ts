@@ -20,27 +20,42 @@ import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dial
 
 export interface FeedbackTypeMeta {
   icon: string;
-  classes: string;
+  neutralClasses: string;
+  selectedClasses: string;
 }
 
+const NEUTRAL_CLASSES = 'border-border bg-level-1 text-on-surface-variant hover:border-cyan';
+
 export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
-  BUG: { icon: 'bug_report', classes: 'border-bug/40 bg-bug/10 text-bug hover:border-bug' },
+  BUG: {
+    icon: 'bug_report',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: 'border-bug/40 bg-bug/10 text-bug hover:border-bug',
+  },
   CONFUSION: {
     icon: 'help_center',
-    classes: 'border-confused/40 bg-confused/10 text-confused hover:border-confused',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: 'border-confused/40 bg-confused/10 text-confused hover:border-confused',
   },
-  SUGGESTION: { icon: 'lightbulb', classes: 'border-purple/40 bg-purple/10 text-purple hover:border-purple' },
+  SUGGESTION: {
+    icon: 'lightbulb',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: 'border-purple/40 bg-purple/10 text-purple hover:border-purple',
+  },
   POSITIVE: {
     icon: 'thumb_up',
-    classes: 'border-positive/40 bg-positive/10 text-positive hover:border-positive',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: 'border-positive/40 bg-positive/10 text-positive hover:border-positive',
   },
   DIFFICULTY_SPIKE: {
     icon: 'trending_up',
-    classes: 'border-warning/40 bg-warning/10 text-warning hover:border-warning',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: 'border-warning/40 bg-warning/10 text-warning hover:border-warning',
   },
   COMMENT: {
     icon: 'chat_bubble',
-    classes: 'border-border bg-level-1 text-on-surface-variant hover:border-cyan',
+    neutralClasses: NEUTRAL_CLASSES,
+    selectedClasses: NEUTRAL_CLASSES,
   },
 };
 

@@ -101,7 +101,11 @@
                   <button
                     type="button"
                     class="flex flex-col items-center gap-1 rounded-card border p-bb-sm transition-colors"
-                    [class]="feedbackTypeMeta[type].classes"
+                    [class]="
+                      selectedType() === type
+                        ? feedbackTypeMeta[type].selectedClasses
+                        : feedbackTypeMeta[type].neutralClasses
+                    "
                     (click)="selectType(type)"
                   >
                     <span
