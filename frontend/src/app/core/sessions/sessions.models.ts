@@ -9,6 +9,8 @@ export interface TestSession {
   endedAt?: string | null;
   durationSeconds?: number | null;
   status: SessionStatus;
+  pausedAt?: string | null;
+  pausedDurationSeconds?: number;
 
   finalFunRating?: number | null;
   finalDifficultyRating?: number | null;

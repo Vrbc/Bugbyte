@@ -29,6 +29,9 @@
         <div class="flex flex-col items-start gap-bb-xs md:items-end">
           <app-status-badge [status]="sessionData.status" />
           <p class="font-mono text-display-lg-mobile text-cyan">{{ formatTime(elapsedSeconds()) }}</p>
+          @if (sessionData.status === 'LIVE') {
+            <app-button variant="secondary" type="button" (click)="pauseSession()">Pause</app-button>
+          }
         </div>
       </div>
 
@@ -53,6 +56,31 @@
         <p class="mt-1 font-body text-body-md text-on-surface-variant">
           This session was ended by the developer. You can still submit your final feedback below.
         </p>
+      </app-card>
+    }
+
+    @if (sessionData.status === 'PAUSED') {
+      <app-card>
+        @if (elapsedSeconds() === 0) {
+          <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">Ready to start?</p>
+          <h2 class="mt-1 font-display text-headline-md">Install the build, then start your test</h2>
+          <p class="mt-1 font-body text-body-md text-on-surface-variant">
+            The timer hasn't started yet. Take your time installing the build above, then press the
+            button below when you're ready to play.
+          </p>
+          <div class="mt-bb-sm">
+            <app-button type="button" (click)="resumeSession()">I'm ready, start test</app-button>
+          </div>
+        } @else {
+          <p class="font-mono text-label-mono uppercase tracking-widest text-warning">Session paused</p>
+          <h2 class="mt-1 font-display text-headline-md">Timer is paused</h2>
+          <p class="mt-1 font-body text-body-md text-on-surface-variant">
+            Feedback can't be submitted while paused. Resume when you're ready to continue playing.
+          </p>
+          <div class="mt-bb-sm">
+            <app-button type="button" (click)="resumeSession()">Resume</app-button>
+          </div>
+        }
       </app-card>
     }
 
@@ -145,7 +173,7 @@
           </app-card>
         }
 
-        @if (sessionData.status === 'LIVE' || sessionData.status === 'CANCELLED') {
+        @if (sessionData.status === 'LIVE' || sessionData.status === 'PAUSED' || sessionData.status === 'CANCELLED') {
           <app-card>
             <form class="flex flex-col gap-bb-sm" (ngSubmit)="endSession()">
               <div>

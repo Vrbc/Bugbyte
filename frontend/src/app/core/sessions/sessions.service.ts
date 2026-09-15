@@ -35,4 +35,12 @@ export class SessionsService {
     );
   }
 
+  pauseSession(id: string): Observable<TestSession> {
+    return this.http.patch<TestSession>(`${this.apiUrl}/sessions/${id}/pause`, {});
+  }
+
+  resumeSession(id: string): Observable<TestSession> {
+    return this.http.patch<TestSession>(`${this.apiUrl}/sessions/${id}/resume`, {});
+  }
+
 }

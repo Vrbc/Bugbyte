@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { TestSession } from '../../../../core/sessions/sessions.models';
 import { FeedbackByte, FeedbackSeverity, FeedbackType } from '../../../../core/feedback-bytes/feedback-bytes.models';
-import { interval, Observable, of, Subscription, switchMap } from 'rxjs';
+import { combineLatest, filter, interval, map, Observable, of, Subscription, switchMap } from 'rxjs';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
@@ -53,6 +54,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   protected readonly feedbackTypeMeta = FEEDBACK_TYPE_META;
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
   session = signal<TestSession | null>(null);
+  private readonly session$ = toObservable(this.session);
   feedbackBytes = signal<FeedbackByte[]>([])
 
   loading = signal(true);
@@ -111,6 +113,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
+    this.setUpTimer();
     this.loadSession();
     this.loadFeedbackBytes(1);
     this.connectToLiveUpdates();
@@ -243,7 +246,6 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
        next: (session) => {
         this.session.set(session);
         this.loading.set(false);
-        this.startTimer(session.startedAt);
       },
       error: () => {
         this.errorMessage.set('Failed to load session.');
@@ -302,9 +304,6 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
         }
 
         this.session.set(session);
-        if (session.status !== 'LIVE') {
-          this.timerSubscription?.unsubscribe();
-        }
       }),
     );
 
@@ -336,7 +335,6 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (session) => {
         this.session.set(session);
-        this.timerSubscription?.unsubscribe();
         this.ending.set(false);
         this.successMessage.set('Session completed successfully.');
       },
@@ -349,15 +347,57 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     });
   }
 
+  pauseSession(): void {
+    this.errorMessage.set(null);
 
-  private startTimer(startedAt: string): void {
-    const startedAtMs = new Date(startedAt).getTime();
-
-    this.timerSubscription = interval(1000).subscribe(() => {
-      const nowMs = Date.now();
-      const elapsed = Math.max(0, Math.floor((nowMs - startedAtMs) / 1000));
-      this.elapsedSeconds.set(elapsed);
+    this.sessionsService.pauseSession(this.sessionId).subscribe({
+      next: (session) => this.session.set(session),
+      error: (error) => {
+        this.errorMessage.set(
+          error?.error?.message || 'Failed to pause session.',
+        );
+      },
     });
+  }
+
+  resumeSession(): void {
+    this.errorMessage.set(null);
+
+    this.sessionsService.resumeSession(this.sessionId).subscribe({
+      next: (session) => this.session.set(session),
+      error: (error) => {
+        this.errorMessage.set(
+          error?.error?.message || 'Failed to resume session.',
+        );
+      },
+    });
+  }
+
+  private setUpTimer(): void {
+    this.timerSubscription = combineLatest([interval(1000), this.session$])
+      .pipe(
+        map(([, session]) => session),
+        filter((session): session is TestSession => !!session),
+      )
+      .subscribe((session) => {
+        this.elapsedSeconds.set(this.computeElapsed(session));
+      });
+  }
+
+  private computeElapsed(session: TestSession): number {
+    const paused = session.pausedDurationSeconds ?? 0;
+    const startedAtMs = new Date(session.startedAt).getTime();
+
+    if (session.status === 'LIVE') {
+      return Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000) - paused);
+    }
+
+    if (session.status === 'PAUSED' && session.pausedAt) {
+      const pausedAtMs = new Date(session.pausedAt).getTime();
+      return Math.max(0, Math.floor((pausedAtMs - startedAtMs) / 1000) - paused);
+    }
+
+    return session.durationSeconds ?? 0;
   }
 
   private revokeScreenshotPreview(): void {
