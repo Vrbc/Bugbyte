@@ -15,7 +15,7 @@ export interface FeedbackByte {
   type: FeedbackType;
   timestampSeconds: number;
   severity?: FeedbackSeverity | null;
-  comment: string;
+  comment: string | null;
   reproductionSteps?: string | null;
   screenshotUrl?: string | null;
   createdAt: string;
@@ -30,7 +30,7 @@ export interface CreateFeedbackByteRequest {
   type: FeedbackType;
   timestampSeconds: number;
   severity?: FeedbackSeverity;
-  comment: string;
+  comment?: string;
   reproductionSteps?: string;
   screenshotUrl?: string;
 }

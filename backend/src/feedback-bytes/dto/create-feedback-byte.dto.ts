@@ -20,9 +20,10 @@ export class CreateFeedbackByteDto {
   @IsEnum(FeedbackSeverity)
   severity?: FeedbackSeverity;
 
+  @IsOptional()
   @IsString()
   @MaxLength(1000)
-  comment!: string;
+  comment?: string;
 
   @IsOptional()
   @IsString()

@@ -19,7 +19,9 @@
       </div>
     </div>
 
-    <p class="font-body text-body-md text-on-background">{{ byte().comment }}</p>
+    @if (byte().comment) {
+      <p class="font-body text-body-md text-on-background">{{ byte().comment }}</p>
+    }
 
     @if (byte().reproductionSteps) {
       <p class="mt-bb-xs rounded-sm border border-border bg-level-0 p-bb-xs font-body text-body-md text-on-surface-variant">

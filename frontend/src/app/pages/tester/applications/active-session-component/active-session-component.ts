@@ -44,6 +44,8 @@ export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
   },
 };
 
+const COMMENT_REQUIRED_TYPES: FeedbackType[] = ['BUG', 'SUGGESTION', 'DIFFICULTY_SPIKE'];
+
 @Component({
   selector: 'app-active-session-component',
   imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem, ConfirmDialog],
@@ -52,6 +54,7 @@ export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
 })
 export class ActiveSessionComponent implements OnInit, OnDestroy {
   protected readonly feedbackTypeMeta = FEEDBACK_TYPE_META;
+  protected readonly commentRequiredTypes = COMMENT_REQUIRED_TYPES;
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
   session = signal<TestSession | null>(null);
   private readonly session$ = toObservable(this.session);
@@ -168,8 +171,8 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if(!this.comment.trim()){
-      this.errorMessage.set('Comment is required.');
+    if (COMMENT_REQUIRED_TYPES.includes(this.selectedType()) && !this.comment.trim()) {
+      this.errorMessage.set('Comment is required for this feedback type.');
       return;
     }
 
@@ -185,7 +188,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
           type: this.selectedType(),
           timestampSeconds: this.elapsedSeconds(),
           severity: this.selectedType() === 'BUG' ? this.severity : undefined,
-          comment: this.comment,
+          comment: this.comment.trim() || undefined,
           reproductionSteps:
           this.selectedType() === 'BUG' ? this.reproductionSteps || undefined : undefined,
           screenshotUrl: uploadResult?.url,

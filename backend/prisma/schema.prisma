@@ -249,7 +249,7 @@ model FeedbackByte {
   type              FeedbackType
   timestampSeconds  Int
   severity          FeedbackSeverity?
-  comment           String
+  comment           String?
   reproductionSteps String?
   screenshotUrl     String?
   createdAt         DateTime          @default(now())

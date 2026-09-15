@@ -12,6 +12,12 @@ import { SessionRealtimeGateway } from 'src/realtime/session-realtime.gateway';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { buildPaginatedResult } from 'src/common/paginate.util';
 
+const COMMENT_REQUIRED_TYPES: FeedbackType[] = [
+  FeedbackType.BUG,
+  FeedbackType.SUGGESTION,
+  FeedbackType.DIFFICULTY_SPIKE,
+];
+
 @Injectable()
 export class FeedbackBytesService {
   constructor(
@@ -50,6 +56,12 @@ export class FeedbackBytesService {
       throw new BadRequestException('Bug feedback requires severity.');
     }
 
+    if (COMMENT_REQUIRED_TYPES.includes(dto.type) && !dto.comment?.trim()) {
+      throw new BadRequestException(
+        'Comment is required for this feedback type.',
+      );
+    }
+
     const feedbackByte = await this.prisma.feedbackByte.create({
       data: {
         sessionId,
@@ -57,7 +69,7 @@ export class FeedbackBytesService {
         type: dto.type,
         timestampSeconds: dto.timestampSeconds,
         severity: dto.severity ?? null,
-        comment: dto.comment.trim(),
+        comment: dto.comment?.trim() || null,
         reproductionSteps: dto.reproductionSteps?.trim() || null,
         screenshotUrl: dto.screenshotUrl?.trim() || null,
       },

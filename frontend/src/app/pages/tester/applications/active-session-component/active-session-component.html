@@ -124,12 +124,16 @@
               }
 
               <app-input
-                label="Comment"
+                [label]="commentRequiredTypes.includes(selectedType()) ? 'Comment' : 'Comment (optional)'"
                 [multiline]="true"
                 [rows]="4"
                 [(ngModel)]="comment"
                 name="comment"
-                placeholder="Describe what happened..."
+                [placeholder]="
+                  commentRequiredTypes.includes(selectedType())
+                    ? 'Describe what happened...'
+                    : 'Optional comment...'
+                "
               />
 
               @if (selectedType() === 'BUG') {
