@@ -7,6 +7,7 @@ import {
 import type { CurrentUserPayload } from 'src/auth/decorators/current-user.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateFeedbackByteDto } from './dto/create-feedback-byte.dto';
+import { CampaignFeedbackBytesQueryDto } from './dto/campaign-feedback-bytes-query.dto';
 import { FeedbackType, Prisma, SessionStatus } from '@prisma/client';
 import { SessionRealtimeGateway } from 'src/realtime/session-realtime.gateway';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
@@ -94,6 +95,58 @@ export class FeedbackBytesService {
 
     const where: Prisma.FeedbackByteWhereInput = {
       sessionId,
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.feedbackByte.findMany({
+        where,
+        orderBy: [
+          {
+            timestampSeconds: 'desc',
+          },
+          {
+            createdAt: 'desc',
+          },
+        ],
+        select: this.feedbackByteSelect(),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.feedbackByte.count({ where }),
+    ]);
+
+    return buildPaginatedResult(items, total, page, limit);
+  }
+
+  async findFeedbackBytesForCampaign(
+    user: CurrentUserPayload,
+    campaignId: string,
+    query: CampaignFeedbackBytesQueryDto,
+  ) {
+    const campaign = await this.prisma.playtestCampaign.findFirst({
+      where: {
+        id: campaignId,
+        developerId: user.id,
+      },
+      select: { id: true },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign not found.');
+    }
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Prisma.FeedbackByteWhereInput = {
+      type: query.type,
+      timestampSeconds: {
+        gte: query.fromSeconds,
+        lt: query.toSeconds,
+      },
+      session: {
+        campaignId,
+      },
     };
 
     const [items, total] = await Promise.all([

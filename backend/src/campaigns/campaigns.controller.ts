@@ -19,11 +19,16 @@ import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { MyCampaignsQueryDto } from './dto/my-campaigns-query.dto';
 import { PublicCampaignsQueryDto } from './dto/public-campaigns-query.dto';
+import { FeedbackBytesService } from 'src/feedback-bytes/feedback-bytes.service';
+import { CampaignFeedbackBytesQueryDto } from 'src/feedback-bytes/dto/campaign-feedback-bytes-query.dto';
 
 @Controller('campaigns')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CampaignsController {
-  constructor(private readonly campaignsService: CampaignsService) {}
+  constructor(
+    private readonly campaignsService: CampaignsService,
+    private readonly feedbackBytesService: FeedbackBytesService,
+  ) {}
 
   @Get('public')
   @Roles(UserRole.TESTER)
@@ -62,6 +67,20 @@ export class CampaignsController {
     @Param('id') id: string,
   ) {
     return this.campaignsService.getCampaignTimeline(user, id);
+  }
+
+  @Get(':id/feedback-bytes')
+  @Roles(UserRole.DEVELOPER)
+  getCampaignFeedbackBytes(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Query() query: CampaignFeedbackBytesQueryDto,
+  ) {
+    return this.feedbackBytesService.findFeedbackBytesForCampaign(
+      user,
+      id,
+      query,
+    );
   }
 
   @Post()

@@ -8,5 +8,6 @@ import { RealtimeModule } from 'src/realtime/realtime.module';
   imports: [AuthModule, RealtimeModule],
   controllers: [FeedbackBytesController],
   providers: [FeedbackBytesService],
+  exports: [FeedbackBytesService],
 })
 export class FeedbackBytesModule {}
