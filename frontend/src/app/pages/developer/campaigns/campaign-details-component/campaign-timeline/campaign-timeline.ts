@@ -46,7 +46,7 @@ export class CampaignTimeline {
 
   protected readonly gridTemplateColumns = computed(() => {
     const bucketCount = this.stats()?.buckets.length ?? 0;
-    return `minmax(130px,auto) repeat(${bucketCount}, minmax(24px,1fr))`;
+    return `minmax(130px,auto) repeat(${bucketCount}, minmax(44px,1fr))`;
   });
 
   protected cellBgClass(type: FeedbackType): string {

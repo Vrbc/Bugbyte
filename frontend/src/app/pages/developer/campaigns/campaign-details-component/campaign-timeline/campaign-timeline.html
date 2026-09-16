@@ -27,10 +27,10 @@
       </p>
     } @else {
       <div class="mt-bb-sm overflow-x-auto">
-        <div class="grid min-w-fit gap-px" [style.grid-template-columns]="gridTemplateColumns()">
+        <div class="grid min-w-fit gap-1" [style.grid-template-columns]="gridTemplateColumns()">
           <div></div>
           @for (bucket of timeline.buckets; track bucket.bucketStart) {
-            <div class="flex items-end justify-center pb-1 font-mono text-label-mono text-cyan">
+            <div class="flex items-end justify-center overflow-hidden pb-1 font-mono text-label-mono whitespace-nowrap text-cyan">
               {{ formatBucketTime(bucket.bucketStart) }}
             </div>
           }
@@ -41,7 +41,7 @@
             </div>
             @for (bucket of timeline.buckets; track bucket.bucketStart) {
               <div
-                class="h-6 rounded-sm"
+                class="h-6 rounded-sm border border-level-0"
                 [class]="cellBgClass(type)"
                 [style.opacity]="cellOpacity(bucket, type)"
                 [title]="cellTooltip(bucket, type)"
