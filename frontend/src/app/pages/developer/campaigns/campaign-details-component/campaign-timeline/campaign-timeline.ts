@@ -1,7 +1,14 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { CampaignTimelineBucket, CampaignTimelineStats } from '../../../../../core/campaigns/campaigns.models';
 import { FeedbackType } from '../../../../../core/feedback-bytes/feedback-bytes.models';
 import { StatusBadge } from '../../../../../shared/ui/status-badge/status-badge';
+import { FeedbackByteDrilldown } from '../feedback-byte-drilldown/feedback-byte-drilldown';
+
+interface PendingDrilldown {
+  type: FeedbackType;
+  fromSeconds: number;
+  toSeconds: number;
+}
 
 const ALL_FEEDBACK_TYPES: FeedbackType[] = [
   'BUG',
@@ -35,14 +42,30 @@ const NO_DATA_OPACITY = 0.05;
 
 @Component({
   selector: 'app-campaign-timeline',
-  imports: [StatusBadge],
+  imports: [StatusBadge, FeedbackByteDrilldown],
   templateUrl: './campaign-timeline.html',
   styleUrl: './campaign-timeline.scss',
 })
 export class CampaignTimeline {
   stats = input<CampaignTimelineStats | null>(null);
+  campaignId = input.required<string>();
 
   protected readonly feedbackTypes = ALL_FEEDBACK_TYPES;
+
+  protected readonly pendingDrilldown = signal<PendingDrilldown | null>(null);
+
+  protected onCellClick(bucket: CampaignTimelineBucket, type: FeedbackType): void {
+    const bucketSeconds = this.stats()?.bucketSeconds ?? 0;
+    this.pendingDrilldown.set({
+      type,
+      fromSeconds: bucket.bucketStart,
+      toSeconds: bucket.bucketStart + bucketSeconds,
+    });
+  }
+
+  protected closeDrilldown(): void {
+    this.pendingDrilldown.set(null);
+  }
 
   protected readonly gridTemplateColumns = computed(() => {
     const bucketCount = this.stats()?.buckets.length ?? 0;

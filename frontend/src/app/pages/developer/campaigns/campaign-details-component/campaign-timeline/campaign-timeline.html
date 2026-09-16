@@ -41,20 +41,30 @@
             </div>
             @for (bucket of timeline.buckets; track bucket.bucketStart) {
               <div
-                class="h-6 rounded-sm border border-level-0"
+                class="h-6 cursor-pointer rounded-sm border border-level-0 transition-shadow duration-200 hover:ring-1 hover:ring-cyan"
                 [class]="cellBgClass(type)"
                 [style.opacity]="cellOpacity(bucket, type)"
                 [title]="cellTooltip(bucket, type)"
+                (click)="onCellClick(bucket, type)"
               ></div>
             }
           }
         </div>
       </div>
       <p class="mt-1 font-mono text-label-mono text-on-surface-variant">
-        Each column is {{ formatDuration(timeline.bucketSeconds) }} of playtime · color intensity = % of testers still active at that point who reported that type
+        Each column is {{ formatDuration(timeline.bucketSeconds) }} of playtime · color intensity = % of testers still active at that point who reported that type · click a cell to see the reports behind it
       </p>
     }
   } @else {
     <p class="mt-bb-sm font-body text-body-md text-on-surface-variant">Loading timeline...</p>
   }
+
+  <app-feedback-byte-drilldown
+    [open]="pendingDrilldown() !== null"
+    [campaignId]="campaignId()"
+    [type]="pendingDrilldown()?.type ?? null"
+    [fromSeconds]="pendingDrilldown()?.fromSeconds ?? 0"
+    [toSeconds]="pendingDrilldown()?.toSeconds ?? 0"
+    (closed)="closeDrilldown()"
+  />
 </div>

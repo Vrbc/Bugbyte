@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CampaignTimeline } from './campaign-timeline';
+import { FeedbackByteDrilldown } from './feedback-byte-drilldown';
 
-describe('CampaignTimeline', () => {
-  let component: CampaignTimeline;
-  let fixture: ComponentFixture<CampaignTimeline>;
+describe('FeedbackByteDrilldown', () => {
+  let component: FeedbackByteDrilldown;
+  let fixture: ComponentFixture<FeedbackByteDrilldown>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CampaignTimeline],
+      imports: [FeedbackByteDrilldown],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CampaignTimeline);
+    fixture = TestBed.createComponent(FeedbackByteDrilldown);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('campaignId', 'campaign-1');
     await fixture.whenStable();

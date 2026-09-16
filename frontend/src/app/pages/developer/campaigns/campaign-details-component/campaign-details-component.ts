@@ -40,7 +40,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
-  private campaignId = '';
+  campaignId = '';
   private readonly socketSubscriptions = new Subscription();
 
   constructor(

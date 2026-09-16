@@ -1,0 +1,54 @@
+@if (open()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-level-0/80 p-bb-sm backdrop-blur-sm" (click)="close()">
+    <div
+      class="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-card border border-border bg-level-2 p-bb-sm shadow-[0px_0px_15px_rgba(56,189,248,0.1)]"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-bb-sm">
+        <div>
+          <div class="flex items-center gap-bb-xs">
+            @if (type(); as feedbackType) {
+              <app-status-badge [status]="feedbackType" />
+            }
+            <span class="font-mono text-label-mono text-on-surface-variant">{{ formattedRange() }}</span>
+          </div>
+          <p class="mt-1 font-body text-body-md text-on-surface-variant">
+            {{ total() }} report{{ total() === 1 ? '' : 's' }} in this window
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-on-surface-variant transition-colors duration-300 hover:text-cyan"
+          (click)="close()"
+          aria-label="Close"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="mt-bb-sm overflow-y-auto">
+        @if (loading()) {
+          <p class="font-body text-body-md text-on-surface-variant">Loading...</p>
+        } @else if (errorMessage()) {
+          <p class="font-body text-body-md text-bug">{{ errorMessage() }}</p>
+        } @else if (items().length === 0) {
+          <p class="font-body text-body-md text-on-surface-variant">No feedback in this window.</p>
+        } @else {
+          <div class="flex flex-col gap-bb-xs">
+            @for (byte of items(); track byte.id) {
+              <app-feedback-byte-item [byte]="byte" [compact]="true" />
+            }
+          </div>
+
+          @if (page() < totalPages()) {
+            <div class="mt-bb-sm flex justify-center">
+              <app-button variant="secondary" type="button" [disabled]="loadingMore()" (click)="loadMore()">
+                {{ loadingMore() ? 'Loading...' : 'Load more' }}
+              </app-button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
