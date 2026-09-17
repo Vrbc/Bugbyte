@@ -7,7 +7,6 @@ import { PublicCampaign, campaignTypeLabel } from '../../../../core/campaigns/ca
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
-import { buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { Input } from '../../../../shared/ui/input/input';
 import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
@@ -32,7 +31,6 @@ export class TesterCampaignsComponent implements OnInit, OnDestroy {
 
   platforms = ['PC', 'Web', 'Android', 'iOS'];
 
-  protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly campaignTypeLabel = campaignTypeLabel;
 
   private readonly filterChanged = new Subject<void>();
