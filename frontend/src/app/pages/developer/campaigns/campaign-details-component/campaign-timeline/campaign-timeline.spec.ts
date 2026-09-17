@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideState, provideStore } from '@ngrx/store';
 
+import { feedbackBytesFeature } from '../../../../../core/feedback-bytes/state/feedback-bytes.reducer';
 import { CampaignTimeline } from './campaign-timeline';
 
 describe('CampaignTimeline', () => {
@@ -9,6 +11,7 @@ describe('CampaignTimeline', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CampaignTimeline],
+      providers: [provideStore(), provideState(feedbackBytesFeature)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CampaignTimeline);

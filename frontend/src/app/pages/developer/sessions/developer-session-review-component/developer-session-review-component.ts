@@ -51,7 +51,7 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
   submittingReview = signal(false);
   reviewSubmitted = signal(false);
   localErrorMessage = signal<string | null>(null);
-  errorMessage = computed(() => this.sessionError() ?? this.feedbackError() ?? this.localErrorMessage());
+  errorMessage = computed(() => this.localErrorMessage() ?? this.sessionError() ?? this.feedbackError());
   successMessage = signal<string | null>(null);
 
   rating = 5;

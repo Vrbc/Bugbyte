@@ -113,7 +113,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   localErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   errorMessage = computed(
-    () => this.sessionError() ?? this.feedbackError() ?? this.feedbackSubmitError() ?? this.localErrorMessage(),
+    () => this.localErrorMessage() ?? this.sessionError() ?? this.feedbackError() ?? this.feedbackSubmitError(),
   );
 
   selectedType = signal<FeedbackType>('COMMENT');
@@ -301,10 +301,12 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   }
 
   pauseSession(): void {
+    this.localErrorMessage.set(null);
     this.store.dispatch(sessionActions.pauseSession({ sessionId: this.sessionId }));
   }
 
   resumeSession(): void {
+    this.localErrorMessage.set(null);
     this.store.dispatch(sessionActions.resumeSession({ sessionId: this.sessionId }));
   }
 

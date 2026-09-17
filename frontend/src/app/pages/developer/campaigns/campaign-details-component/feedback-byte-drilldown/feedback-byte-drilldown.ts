@@ -1,6 +1,16 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { FeedbackByte, FeedbackType } from '../../../../../core/feedback-bytes/feedback-bytes.models';
-import { FeedbackBytesService } from '../../../../../core/feedback-bytes/feedback-bytes.service';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { FeedbackType } from '../../../../../core/feedback-bytes/feedback-bytes.models';
+import { feedbackBytesActions } from '../../../../../core/feedback-bytes/state/feedback-bytes.actions';
+import {
+  selectAllFeedbackBytes,
+  selectFeedbackBytesError,
+  selectFeedbackBytesLoading,
+  selectFeedbackBytesLoadingMore,
+  selectFeedbackBytesPage,
+  selectFeedbackBytesTotal,
+  selectFeedbackBytesTotalPages,
+} from '../../../../../core/feedback-bytes/state/feedback-bytes.selectors';
 import { Button } from '../../../../../shared/ui/button/button';
 import { FeedbackByteItem } from '../../../../../shared/ui/feedback-byte-item/feedback-byte-item';
 import { StatusBadge } from '../../../../../shared/ui/status-badge/status-badge';
@@ -12,7 +22,7 @@ import { StatusBadge } from '../../../../../shared/ui/status-badge/status-badge'
   styleUrl: './feedback-byte-drilldown.scss',
 })
 export class FeedbackByteDrilldown {
-  private readonly feedbackBytesService = inject(FeedbackBytesService);
+  private readonly store = inject(Store);
 
   open = input(false);
   campaignId = input.required<string>();
@@ -22,13 +32,13 @@ export class FeedbackByteDrilldown {
 
   closed = output<void>();
 
-  protected readonly items = signal<FeedbackByte[]>([]);
-  protected readonly page = signal(1);
-  protected readonly totalPages = signal(1);
-  protected readonly total = signal(0);
-  protected readonly loading = signal(false);
-  protected readonly loadingMore = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly items = this.store.selectSignal(selectAllFeedbackBytes);
+  protected readonly page = this.store.selectSignal(selectFeedbackBytesPage);
+  protected readonly totalPages = this.store.selectSignal(selectFeedbackBytesTotalPages);
+  protected readonly total = this.store.selectSignal(selectFeedbackBytesTotal);
+  protected readonly loading = this.store.selectSignal(selectFeedbackBytesLoading);
+  protected readonly loadingMore = this.store.selectSignal(selectFeedbackBytesLoadingMore);
+  protected readonly errorMessage = this.store.selectSignal(selectFeedbackBytesError);
 
   protected readonly formattedRange = computed(
     () => `${this.formatTime(this.fromSeconds())}–${this.formatTime(this.toSeconds())}`,
@@ -46,11 +56,20 @@ export class FeedbackByteDrilldown {
         return;
       }
 
-      this.fetchPage(campaignId, type, fromSeconds, toSeconds, 1);
+      this.store.dispatch(
+        feedbackBytesActions.loadCampaignFeedbackBytes({
+          campaignId,
+          feedbackType: type,
+          fromSeconds,
+          toSeconds,
+          page: 1,
+        }),
+      );
     });
   }
 
   close(): void {
+    this.store.dispatch(feedbackBytesActions.feedbackBytesCleared());
     this.closed.emit();
   }
 
@@ -60,40 +79,15 @@ export class FeedbackByteDrilldown {
       return;
     }
 
-    this.fetchPage(this.campaignId(), type, this.fromSeconds(), this.toSeconds(), this.page() + 1);
-  }
-
-  private fetchPage(
-    campaignId: string,
-    type: FeedbackType,
-    fromSeconds: number,
-    toSeconds: number,
-    page: number,
-  ): void {
-    if (page === 1) {
-      this.loading.set(true);
-    } else {
-      this.loadingMore.set(true);
-    }
-    this.errorMessage.set(null);
-
-    this.feedbackBytesService
-      .getFeedbackBytesForCampaign(campaignId, type, fromSeconds, toSeconds, page)
-      .subscribe({
-        next: (result) => {
-          this.items.update((items) => (page === 1 ? result.items : [...items, ...result.items]));
-          this.page.set(result.page);
-          this.totalPages.set(result.totalPages);
-          this.total.set(result.total);
-          this.loading.set(false);
-          this.loadingMore.set(false);
-        },
-        error: () => {
-          this.errorMessage.set('Failed to load feedback.');
-          this.loading.set(false);
-          this.loadingMore.set(false);
-        },
-      });
+    this.store.dispatch(
+      feedbackBytesActions.loadCampaignFeedbackBytes({
+        campaignId: this.campaignId(),
+        feedbackType: type,
+        fromSeconds: this.fromSeconds(),
+        toSeconds: this.toSeconds(),
+        page: this.page() + 1,
+      }),
+    );
   }
 
   private formatTime(totalSeconds: number): string {
