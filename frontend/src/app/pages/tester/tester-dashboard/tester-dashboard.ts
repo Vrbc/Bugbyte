@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { DashboardService } from '../../../core/dashboard/dashboard.service';
 import {
   TesterDashboard as TesterDashboardModel,
@@ -22,7 +23,10 @@ export class TesterDashboard {
 
   protected readonly campaignTypeLabel = campaignTypeLabel;
 
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.dashboardService.getTesterDashboard().subscribe({
@@ -35,5 +39,9 @@ export class TesterDashboard {
         this.loading.set(false);
       },
     });
+  }
+
+  goToCampaign(campaignId: string): void {
+    this.router.navigate(['/tester/campaigns', campaignId]);
   }
 }

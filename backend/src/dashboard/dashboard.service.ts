@@ -183,7 +183,7 @@ export class DashboardService {
       completedSessionsCount,
       feedbackBytesCount,
       recentApplications,
-      recommendedCampaigns,
+      recommendedCampaignCandidates,
     ] = await Promise.all([
       this.prisma.campaignApplication.count({
         where: {
@@ -272,7 +272,7 @@ export class DashboardService {
         orderBy: {
           createdAt: 'desc',
         },
-        take: 5,
+        take: 20,
         select: {
           id: true,
           title: true,
@@ -314,6 +314,14 @@ export class DashboardService {
         },
       }),
     ]);
+
+    const recommendedCampaigns = [...recommendedCampaignCandidates]
+      .sort((a, b) => {
+        const aMatchesGenre = testerProfile.favoriteGenres.includes(a.game.genre) ? 0 : 1;
+        const bMatchesGenre = testerProfile.favoriteGenres.includes(b.game.genre) ? 0 : 1;
+        return aMatchesGenre - bMatchesGenre;
+      })
+      .slice(0, 5);
 
     return {
       profile: {

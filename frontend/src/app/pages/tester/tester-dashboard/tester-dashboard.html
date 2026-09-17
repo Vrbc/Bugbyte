@@ -35,9 +35,7 @@
       </div>
     </app-card>
 
-    <div class="grid grid-cols-2 gap-bb-sm md:grid-cols-5">
-      <app-stat-tile icon="apps" label="Applications" [value]="data.stats.applicationsCount" />
-      <app-stat-tile icon="pending_actions" label="Pending" [value]="data.stats.pendingApplicationsCount" accent="warning" />
+    <div class="grid grid-cols-3 gap-bb-sm">
       <app-stat-tile icon="check_circle" label="Accepted" [value]="data.stats.acceptedApplicationsCount" accent="positive" />
       <app-stat-tile icon="sports_esports" label="Completed" [value]="data.stats.completedSessionsCount" accent="cyan" />
       <app-stat-tile icon="memory" label="Feedback" [value]="data.stats.feedbackBytesCount" accent="purple" />
@@ -53,7 +51,10 @@
 
         <div class="flex flex-col gap-bb-xs">
           @for (application of data.recentApplications; track application.id) {
-            <div class="flex items-center justify-between gap-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm">
+            <div
+              class="flex cursor-pointer items-center justify-between gap-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm transition-colors hover:border-cyan"
+              (click)="goToCampaign(application.campaign.id)"
+            >
               <div>
                 <p class="font-body text-body-md font-semibold">{{ application.campaign.title }}</p>
                 <p class="font-mono text-label-mono text-on-surface-variant">
@@ -75,7 +76,10 @@
 
         <div class="flex flex-col gap-bb-xs">
           @for (campaign of data.recommendedCampaigns; track campaign.id) {
-            <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
+            <div
+              class="cursor-pointer rounded-sm border border-border bg-level-0 p-bb-sm transition-colors hover:border-cyan"
+              (click)="goToCampaign(campaign.id)"
+            >
               <p class="font-body text-body-md font-semibold">{{ campaign.title }}</p>
               <p class="font-mono text-label-mono text-on-surface-variant">
                 {{ campaign.game.title }} · {{ campaignTypeLabel(campaign.type) }} · {{ campaign.estimatedMinutes }} min
