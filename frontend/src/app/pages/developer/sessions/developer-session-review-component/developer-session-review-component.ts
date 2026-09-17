@@ -1,11 +1,16 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { SessionsService } from '../../../../core/sessions/sessions.service';
+import { Store } from '@ngrx/store';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
 import { ReviewsService } from '../../../../core/reviews/reviews.service';
 import { FeedbackByte } from '../../../../core/feedback-bytes/feedback-bytes.models';
-import { TestSession } from '../../../../core/sessions/sessions.models';
-import { forkJoin, Subscription } from 'rxjs';
+import { sessionActions } from '../../../../core/sessions/state/session.actions';
+import {
+  selectSession,
+  selectSessionError,
+  selectSessionLoading,
+} from '../../../../core/sessions/state/session.selectors';
+import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { Card } from '../../../../shared/ui/card/card';
@@ -21,13 +26,20 @@ import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedb
   styleUrl: './developer-session-review-component.scss',
 })
 export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
-  session = signal<TestSession | null>(null);
+  private readonly store = inject(Store);
+
+  session = this.store.selectSignal(selectSession);
+  private readonly sessionLoading = this.store.selectSignal(selectSessionLoading);
+  private readonly sessionError = this.store.selectSignal(selectSessionError);
+
   feedbackBytes = signal<FeedbackByte[]>([]);
 
-  loading = signal(true);
+  private readonly feedbackBytesLoading = signal(true);
+  loading = computed(() => this.sessionLoading() || this.feedbackBytesLoading());
   submittingReview = signal(false);
   reviewSubmitted = signal(false);
-  errorMessage = signal<string | null>(null);
+  localErrorMessage = signal<string | null>(null);
+  errorMessage = computed(() => this.sessionError() ?? this.localErrorMessage());
   successMessage = signal<string | null>(null);
 
   rating = 5;
@@ -44,7 +56,6 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly sessionsService: SessionsService,
     private readonly feedbackBytesService: FeedbackBytesService,
     private readonly reviewsService: ReviewsService,
     private readonly sessionSocket: SessionSocketService,
@@ -52,34 +63,32 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
-    this.loadPage(1);
+    this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
+    this.loadFeedbackBytes(1);
     this.connectToLiveUpdates();
   }
 
   ngOnDestroy(): void {
     this.socketSubscriptions.unsubscribe();
     this.sessionSocket.leaveSession(this.sessionId);
+    this.store.dispatch(sessionActions.sessionCleared());
   }
 
-  loadPage(page: number): void {
-    this.loading.set(true);
-    this.errorMessage.set(null);
+  private loadFeedbackBytes(page: number): void {
+    this.localErrorMessage.set(null);
+    this.feedbackBytesLoading.set(true);
 
-    forkJoin({
-      session: this.sessionsService.getSession(this.sessionId),
-      feedbackBytes: this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page),
-    }).subscribe({
-      next: ({ session, feedbackBytes }) => {
-        this.session.set(session);
-        this.feedbackBytes.set(feedbackBytes.items);
-        this.feedbackPage.set(feedbackBytes.page);
-        this.feedbackTotalPages.set(feedbackBytes.totalPages);
-        this.feedbackTotal.set(feedbackBytes.total);
-        this.loading.set(false);
+    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page).subscribe({
+      next: (result) => {
+        this.feedbackBytes.set(result.items);
+        this.feedbackPage.set(result.page);
+        this.feedbackTotalPages.set(result.totalPages);
+        this.feedbackTotal.set(result.total);
+        this.feedbackBytesLoading.set(false);
       },
       error: () => {
-        this.errorMessage.set('Failed to load session review.');
-        this.loading.set(false);
+        this.localErrorMessage.set('Failed to load feedback bytes.');
+        this.feedbackBytesLoading.set(false);
       },
     });
   }
@@ -105,7 +114,7 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
         this.loadingMoreFeedback.set(false);
       },
       error: () => {
-        this.errorMessage.set('Failed to load older feedback.');
+        this.localErrorMessage.set('Failed to load older feedback.');
         this.loadingMoreFeedback.set(false);
       },
     });
@@ -137,29 +146,20 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
     );
 
     this.socketSubscriptions.add(
-      this.sessionSocket.onSessionUpdate().subscribe((session) => {
-        if (session.id !== this.sessionId) {
-          return;
-        }
-
-        this.session.set(session);
-      }),
-    );
-
-    this.socketSubscriptions.add(
       this.sessionSocket.onReconnect().subscribe(() => {
         this.sessionSocket.joinSession(this.sessionId);
-        this.loadPage(1);
+        this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
+        this.loadFeedbackBytes(1);
       }),
     );
   }
 
   submitReview(): void {
-    this.errorMessage.set(null);
+    this.localErrorMessage.set(null);
     this.successMessage.set(null);
 
     if (this.session()?.status !== 'COMPLETED') {
-      this.errorMessage.set('Only completed sessions can be reviewed.');
+      this.localErrorMessage.set('Only completed sessions can be reviewed.');
       return;
     }
 
@@ -177,7 +177,7 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.submittingReview.set(false);
-        this.errorMessage.set(
+        this.localErrorMessage.set(
           error?.error?.message || 'Failed to submit tester review.',
         );
       },

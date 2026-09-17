@@ -1,8 +1,16 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SessionsService } from '../../../../core/sessions/sessions.service';
+import { Actions, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
 import { TestSession } from '../../../../core/sessions/sessions.models';
+import { sessionActions } from '../../../../core/sessions/state/session.actions';
+import {
+  selectSession,
+  selectSessionEnding,
+  selectSessionError,
+  selectSessionLoading,
+} from '../../../../core/sessions/state/session.selectors';
 import { FeedbackByte, FeedbackSeverity, FeedbackType } from '../../../../core/feedback-bytes/feedback-bytes.models';
 import { combineLatest, filter, interval, map, Observable, of, Subscription, switchMap } from 'rxjs';
 import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
@@ -68,17 +76,25 @@ const COMMENT_REQUIRED_TYPES: FeedbackType[] = ['BUG', 'SUGGESTION', 'DIFFICULTY
   styleUrl: './active-session-component.scss',
 })
 export class ActiveSessionComponent implements OnInit, OnDestroy {
+  private readonly store = inject(Store);
+  private readonly actions$ = inject(Actions);
+
   protected readonly feedbackTypeMeta = FEEDBACK_TYPE_META;
   protected readonly commentRequiredTypes = COMMENT_REQUIRED_TYPES;
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
-  session = signal<TestSession | null>(null);
-  private readonly session$ = toObservable(this.session);
-  feedbackBytes = signal<FeedbackByte[]>([])
 
-  loading = signal(true);
+  session = this.store.selectSignal(selectSession);
+  private readonly session$ = this.store.select(selectSession);
+  loading = this.store.selectSignal(selectSessionLoading);
+  ending = this.store.selectSignal(selectSessionEnding);
+  private readonly sessionError = this.store.selectSignal(selectSessionError);
+
+  feedbackBytes = signal<FeedbackByte[]>([]);
+
   sending = signal(false);
-  errorMessage = signal<string | null>(null);
+  localErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  errorMessage = computed(() => this.sessionError() ?? this.localErrorMessage());
 
   selectedType = signal<FeedbackType>('COMMENT');
 
@@ -91,7 +107,6 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   elapsedSeconds = signal(0);
 
-  ending = signal(false);
   confirmingEndSession = signal(false);
 
   finalFunRating = 4;
@@ -122,17 +137,20 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly sessionsService: SessionsService,
     private readonly feedbackBytesService: FeedbackBytesService,
     private readonly uploadsService: UploadsService,
     private readonly router: Router,
     private readonly sessionSocket: SessionSocketService,
-  ) {}
+  ) {
+    this.actions$
+      .pipe(ofType(sessionActions.endSessionSuccess), takeUntilDestroyed())
+      .subscribe(() => this.successMessage.set('Session completed successfully.'));
+  }
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.setUpTimer();
-    this.loadSession();
+    this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
     this.loadFeedbackBytes(1);
     this.connectToLiveUpdates();
   }
@@ -141,12 +159,13 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     this.timerSubscription?.unsubscribe();
     this.socketSubscriptions.unsubscribe();
     this.sessionSocket.leaveSession(this.sessionId);
+    this.store.dispatch(sessionActions.sessionCleared());
     this.revokeScreenshotPreview();
   }
 
   selectType(type: FeedbackType): void {
     this.selectedType.set(type);
-    this.errorMessage.set(null);
+    this.localErrorMessage.set(null);
     this.successMessage.set(null);
   }
 
@@ -178,16 +197,16 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   submitFeedback() : void {
 
-    this.errorMessage.set(null);
+    this.localErrorMessage.set(null);
     this.successMessage.set(null);
 
     if (this.session()?.status !== 'LIVE') {
-      this.errorMessage.set('Only live sessions can receive feedback.');
+      this.localErrorMessage.set('Only live sessions can receive feedback.');
       return;
     }
 
     if (COMMENT_REQUIRED_TYPES.includes(this.selectedType()) && !this.comment.trim()) {
-      this.errorMessage.set('Comment is required for this feedback type.');
+      this.localErrorMessage.set('Comment is required for this feedback type.');
       return;
     }
 
@@ -225,7 +244,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.sending.set(false);
-        this.errorMessage.set(
+        this.localErrorMessage.set(
           error?.error?.message || 'Failed to submit feedback.',
         );
       },
@@ -253,23 +272,10 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
         this.loadingMoreFeedback.set(false);
       },
       error: () => {
-        this.errorMessage.set('Failed to load older feedback.');
+        this.localErrorMessage.set('Failed to load older feedback.');
         this.loadingMoreFeedback.set(false);
       },
     });
-  }
-
-  private loadSession() : void {
-    this.sessionsService.getSession(this.sessionId).subscribe({
-       next: (session) => {
-        this.session.set(session);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Failed to load session.');
-        this.loading.set(false);
-      },
-    })
   }
 
   private loadFeedbackBytes(page: number): void {
@@ -281,7 +287,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
         this.feedbackTotal.set(result.total);
       },
       error: () => {
-        this.errorMessage.set('Failed to load feedback bytes.');
+        this.localErrorMessage.set('Failed to load feedback bytes.');
       },
     });
   }
@@ -316,16 +322,6 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     );
 
     this.socketSubscriptions.add(
-      this.sessionSocket.onSessionUpdate().subscribe((session) => {
-        if (session.id !== this.sessionId) {
-          return;
-        }
-
-        this.session.set(session);
-      }),
-    );
-
-    this.socketSubscriptions.add(
       this.sessionSocket.onReconnect().subscribe(() => {
         this.sessionSocket.joinSession(this.sessionId);
         this.loadFeedbackBytes(1);
@@ -340,55 +336,27 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   confirmEndSession(): void {
     this.confirmingEndSession.set(false);
-    this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    this.ending.set(true);
-
-    this.sessionsService.endSession(this.sessionId, {
-      finalFunRating: Number(this.finalFunRating),
-      finalDifficultyRating: Number(this.finalDifficultyRating),
-      finalClarityRating: Number(this.finalClarityRating),
-      finalComment: this.finalComment || undefined,
-    }).subscribe({
-      next: (session) => {
-        this.session.set(session);
-        this.ending.set(false);
-        this.successMessage.set('Session completed successfully.');
-      },
-      error: (error) => {
-        this.ending.set(false);
-        this.errorMessage.set(
-          error?.error?.message || 'Failed to end session.',
-        );
-      },
-    });
+    this.store.dispatch(
+      sessionActions.endSession({
+        sessionId: this.sessionId,
+        request: {
+          finalFunRating: Number(this.finalFunRating),
+          finalDifficultyRating: Number(this.finalDifficultyRating),
+          finalClarityRating: Number(this.finalClarityRating),
+          finalComment: this.finalComment || undefined,
+        },
+      }),
+    );
   }
 
   pauseSession(): void {
-    this.errorMessage.set(null);
-
-    this.sessionsService.pauseSession(this.sessionId).subscribe({
-      next: (session) => this.session.set(session),
-      error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Failed to pause session.',
-        );
-      },
-    });
+    this.store.dispatch(sessionActions.pauseSession({ sessionId: this.sessionId }));
   }
 
   resumeSession(): void {
-    this.errorMessage.set(null);
-
-    this.sessionsService.resumeSession(this.sessionId).subscribe({
-      next: (session) => this.session.set(session),
-      error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Failed to resume session.',
-        );
-      },
-    });
+    this.store.dispatch(sessionActions.resumeSession({ sessionId: this.sessionId }));
   }
 
   private setUpTimer(): void {
