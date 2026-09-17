@@ -9,10 +9,11 @@ import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-tester-applications-component',
-  imports: [ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination, ConfirmDialog],
+  imports: [ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination, ConfirmDialog, LoadingSpinner],
   templateUrl: './tester-applications-component.html',
   styleUrl: './tester-applications-component.scss',
 })

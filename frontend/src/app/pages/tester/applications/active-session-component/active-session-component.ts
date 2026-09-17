@@ -35,6 +35,7 @@ import { Input } from '../../../../shared/ui/input/input';
 import { Select } from '../../../../shared/ui/select/select';
 import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedback-byte-item';
 import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 export interface FeedbackTypeMeta {
   icon: string;
@@ -81,7 +82,7 @@ const COMMENT_REQUIRED_TYPES: FeedbackType[] = ['BUG', 'SUGGESTION', 'DIFFICULTY
 
 @Component({
   selector: 'app-active-session-component',
-  imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem, ConfirmDialog],
+  imports: [FormsModule, Card, StatusBadge, Button, Input, Select, FeedbackByteItem, ConfirmDialog, LoadingSpinner],
   templateUrl: './active-session-component.html',
   styleUrl: './active-session-component.scss',
 })

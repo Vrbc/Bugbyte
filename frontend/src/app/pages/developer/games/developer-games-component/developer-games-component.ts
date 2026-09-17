@@ -7,10 +7,11 @@ import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-developer-games-component',
-  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination],
+  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Pagination, LoadingSpinner],
   templateUrl: './developer-games-component.html',
   styleUrl: './developer-games-component.scss',
 })

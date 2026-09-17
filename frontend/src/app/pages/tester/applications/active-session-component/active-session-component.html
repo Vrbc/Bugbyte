@@ -1,6 +1,6 @@
 <section class="flex flex-col gap-bb-md">
   @if (loading()) {
-    <p class="font-body text-body-md text-on-surface-variant">Loading session...</p>
+    <app-loading-spinner label="Loading session..." />
   }
 
   @if (errorMessage()) {

@@ -13,10 +13,11 @@ import { Input } from '../../../../shared/ui/input/input';
 import { Select } from '../../../../shared/ui/select/select';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-edit-campaign-component',
-  imports: [FormsModule, RouterLink, Card, Input, Select, Button, ToggleChipGroup],
+  imports: [FormsModule, RouterLink, Card, Input, Select, Button, ToggleChipGroup, LoadingSpinner],
   templateUrl: './edit-campaign-component.html',
   styleUrl: './edit-campaign-component.scss',
 })

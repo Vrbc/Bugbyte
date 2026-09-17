@@ -14,10 +14,11 @@ import {
 import { Button } from '../../../../../shared/ui/button/button';
 import { FeedbackByteItem } from '../../../../../shared/ui/feedback-byte-item/feedback-byte-item';
 import { StatusBadge } from '../../../../../shared/ui/status-badge/status-badge';
+import { LoadingSpinner } from '../../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-feedback-byte-drilldown',
-  imports: [Button, FeedbackByteItem, StatusBadge],
+  imports: [Button, FeedbackByteItem, StatusBadge, LoadingSpinner],
   templateUrl: './feedback-byte-drilldown.html',
   styleUrl: './feedback-byte-drilldown.scss',
 })

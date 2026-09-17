@@ -12,10 +12,11 @@ import { Input } from '../../../../shared/ui/input/input';
 import { Select } from '../../../../shared/ui/select/select';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { ToggleChipGroup } from '../../../../shared/ui/toggle-chip-group/toggle-chip-group';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-edit-game-component',
-  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, Input, Select, Button, ToggleChipGroup],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, Input, Select, Button, ToggleChipGroup, LoadingSpinner],
   templateUrl: './edit-game-component.html',
   styleUrl: './edit-game-component.scss',
 })

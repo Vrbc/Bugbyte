@@ -11,10 +11,11 @@ import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
 import { Input } from '../../../../shared/ui/input/input';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-game-details-component',
-  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Input],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Button, Input, LoadingSpinner],
   templateUrl: './game-details-component.html',
   styleUrl: './game-details-component.scss',
 })

@@ -12,12 +12,13 @@ import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { CampaignTimeline } from './campaign-timeline/campaign-timeline';
 import { ConfirmDialog } from '../../../../shared/ui/confirm-dialog/confirm-dialog';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 type PendingCampaignAction = 'complete' | 'archive';
 
 @Component({
   selector: 'app-campaign-details-component',
-  imports: [RouterLink, Card, StatusBadge, Button, Pagination, CampaignTimeline, ConfirmDialog],
+  imports: [RouterLink, Card, StatusBadge, Button, Pagination, CampaignTimeline, ConfirmDialog, LoadingSpinner],
   templateUrl: './campaign-details-component.html',
   styleUrl: './campaign-details-component.scss',
 })

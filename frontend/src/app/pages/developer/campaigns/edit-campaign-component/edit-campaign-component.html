@@ -14,7 +14,7 @@
   </div>
 
   @if (loading()) {
-    <p class="font-body text-body-md text-on-surface-variant">Loading campaign...</p>
+    <app-loading-spinner label="Loading campaign..." />
   }
 
   @if (errorMessage()) {

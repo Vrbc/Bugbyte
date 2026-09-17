@@ -6,10 +6,11 @@ import {
 import { Card } from '../../../shared/ui/card/card';
 import { StatTile } from '../../../shared/ui/stat-tile/stat-tile';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
+import { LoadingSpinner } from '../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-tester-dashboard',
-  imports: [Card, StatTile, StatusBadge],
+  imports: [Card, StatTile, StatusBadge, LoadingSpinner],
   templateUrl: './tester-dashboard.html',
   styleUrl: './tester-dashboard.scss',
 })

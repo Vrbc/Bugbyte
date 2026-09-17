@@ -28,7 +28,7 @@
 
       <div class="mt-bb-sm overflow-y-auto">
         @if (loading()) {
-          <p class="font-body text-body-md text-on-surface-variant">Loading...</p>
+          <app-loading-spinner label="Loading feedback..." />
         } @else if (errorMessage()) {
           <p class="font-body text-body-md text-bug">{{ errorMessage() }}</p>
         } @else if (items().length === 0) {

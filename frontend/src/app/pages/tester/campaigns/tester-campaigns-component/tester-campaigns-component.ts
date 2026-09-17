@@ -10,10 +10,11 @@ import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { buttonClasses } from '../../../../shared/ui/button/button';
 import { Pagination } from '../../../../shared/ui/pagination/pagination';
 import { Input } from '../../../../shared/ui/input/input';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-tester-campaigns-component',
-  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Pagination, Input],
+  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Pagination, Input, LoadingSpinner],
   templateUrl: './tester-campaigns-component.html',
   styleUrl: './tester-campaigns-component.scss',
 })

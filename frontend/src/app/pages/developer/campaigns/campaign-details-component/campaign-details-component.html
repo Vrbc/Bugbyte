@@ -8,7 +8,7 @@
   </a>
 
   @if (loading()) {
-    <p class="font-body text-body-md text-on-surface-variant">Loading campaign details...</p>
+    <app-loading-spinner label="Loading campaign details..." />
   }
 
   @if (errorMessage()) {

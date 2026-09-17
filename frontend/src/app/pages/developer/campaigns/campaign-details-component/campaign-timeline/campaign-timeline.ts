@@ -3,6 +3,7 @@ import { CampaignTimelineBucket, CampaignTimelineStats } from '../../../../../co
 import { FeedbackType } from '../../../../../core/feedback-bytes/feedback-bytes.models';
 import { StatusBadge } from '../../../../../shared/ui/status-badge/status-badge';
 import { FeedbackByteDrilldown } from '../feedback-byte-drilldown/feedback-byte-drilldown';
+import { LoadingSpinner } from '../../../../../shared/ui/loading-spinner/loading-spinner';
 
 interface PendingDrilldown {
   type: FeedbackType;
@@ -42,7 +43,7 @@ const NO_DATA_OPACITY = 0.05;
 
 @Component({
   selector: 'app-campaign-timeline',
-  imports: [StatusBadge, FeedbackByteDrilldown],
+  imports: [StatusBadge, FeedbackByteDrilldown, LoadingSpinner],
   templateUrl: './campaign-timeline.html',
   styleUrl: './campaign-timeline.scss',
 })

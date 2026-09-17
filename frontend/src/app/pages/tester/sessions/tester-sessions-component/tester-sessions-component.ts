@@ -6,12 +6,13 @@ import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-ur
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { buttonClasses } from '../../../../shared/ui/button/button';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 type SessionFilter = 'ALL' | 'LIVE' | 'COMPLETED';
 
 @Component({
   selector: 'app-tester-sessions-component',
-  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge],
+  imports: [RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, LoadingSpinner],
   templateUrl: './tester-sessions-component.html',
   styleUrl: './tester-sessions-component.scss',
 })

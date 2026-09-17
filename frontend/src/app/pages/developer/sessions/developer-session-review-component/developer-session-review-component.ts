@@ -25,10 +25,11 @@ import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button } from '../../../../shared/ui/button/button';
 import { Input } from '../../../../shared/ui/input/input';
 import { FeedbackByteItem } from '../../../../shared/ui/feedback-byte-item/feedback-byte-item';
+import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-spinner';
 
 @Component({
   selector: 'app-developer-session-review-component',
-  imports: [FormsModule, RouterLink, Card, StatusBadge, Button, Input, FeedbackByteItem],
+  imports: [FormsModule, RouterLink, Card, StatusBadge, Button, Input, FeedbackByteItem, LoadingSpinner],
   templateUrl: './developer-session-review-component.html',
   styleUrl: './developer-session-review-component.scss',
 })
