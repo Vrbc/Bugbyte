@@ -1,16 +1,23 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
 import { ReviewsService } from '../../../../core/reviews/reviews.service';
-import { FeedbackByte } from '../../../../core/feedback-bytes/feedback-bytes.models';
 import { sessionActions } from '../../../../core/sessions/state/session.actions';
 import {
   selectSession,
   selectSessionError,
   selectSessionLoading,
 } from '../../../../core/sessions/state/session.selectors';
-import { Subscription } from 'rxjs';
+import { feedbackBytesActions } from '../../../../core/feedback-bytes/state/feedback-bytes.actions';
+import {
+  selectAllFeedbackBytes,
+  selectFeedbackBytesError,
+  selectFeedbackBytesLoading,
+  selectFeedbackBytesLoadingMore,
+  selectFeedbackBytesPage,
+  selectFeedbackBytesTotal,
+  selectFeedbackBytesTotalPages,
+} from '../../../../core/feedback-bytes/state/feedback-bytes.selectors';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { Card } from '../../../../shared/ui/card/card';
@@ -32,31 +39,29 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
   private readonly sessionLoading = this.store.selectSignal(selectSessionLoading);
   private readonly sessionError = this.store.selectSignal(selectSessionError);
 
-  feedbackBytes = signal<FeedbackByte[]>([]);
+  feedbackBytes = this.store.selectSignal(selectAllFeedbackBytes);
+  feedbackPage = this.store.selectSignal(selectFeedbackBytesPage);
+  feedbackTotalPages = this.store.selectSignal(selectFeedbackBytesTotalPages);
+  feedbackTotal = this.store.selectSignal(selectFeedbackBytesTotal);
+  loadingMoreFeedback = this.store.selectSignal(selectFeedbackBytesLoadingMore);
+  private readonly feedbackBytesLoading = this.store.selectSignal(selectFeedbackBytesLoading);
+  private readonly feedbackError = this.store.selectSignal(selectFeedbackBytesError);
 
-  private readonly feedbackBytesLoading = signal(true);
   loading = computed(() => this.sessionLoading() || this.feedbackBytesLoading());
   submittingReview = signal(false);
   reviewSubmitted = signal(false);
   localErrorMessage = signal<string | null>(null);
-  errorMessage = computed(() => this.sessionError() ?? this.localErrorMessage());
+  errorMessage = computed(() => this.sessionError() ?? this.feedbackError() ?? this.localErrorMessage());
   successMessage = signal<string | null>(null);
 
   rating = 5;
   helpful = true;
   comment = '';
 
-  feedbackPage = signal(1);
-  feedbackTotalPages = signal(1);
-  feedbackTotal = signal(0);
-  loadingMoreFeedback = signal(false);
-
   private sessionId = '';
-  private readonly socketSubscriptions = new Subscription();
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly feedbackBytesService: FeedbackBytesService,
     private readonly reviewsService: ReviewsService,
     private readonly sessionSocket: SessionSocketService,
   ) {}
@@ -64,93 +69,24 @@ export class DeveloperSessionReviewComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
-    this.loadFeedbackBytes(1);
-    this.connectToLiveUpdates();
+    this.store.dispatch(feedbackBytesActions.loadSessionFeedbackBytes({ sessionId: this.sessionId, page: 1 }));
+    this.sessionSocket.joinSession(this.sessionId);
   }
 
   ngOnDestroy(): void {
-    this.socketSubscriptions.unsubscribe();
     this.sessionSocket.leaveSession(this.sessionId);
     this.store.dispatch(sessionActions.sessionCleared());
-  }
-
-  private loadFeedbackBytes(page: number): void {
-    this.localErrorMessage.set(null);
-    this.feedbackBytesLoading.set(true);
-
-    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page).subscribe({
-      next: (result) => {
-        this.feedbackBytes.set(result.items);
-        this.feedbackPage.set(result.page);
-        this.feedbackTotalPages.set(result.totalPages);
-        this.feedbackTotal.set(result.total);
-        this.feedbackBytesLoading.set(false);
-      },
-      error: () => {
-        this.localErrorMessage.set('Failed to load feedback bytes.');
-        this.feedbackBytesLoading.set(false);
-      },
-    });
+    this.store.dispatch(feedbackBytesActions.feedbackBytesCleared());
   }
 
   loadMoreFeedbackBytes(): void {
-    if (this.loadingMoreFeedback() || this.feedbackPage() >= this.feedbackTotalPages()) {
+    const page = this.feedbackPage();
+    if (this.loadingMoreFeedback() || page >= this.feedbackTotalPages()) {
       return;
     }
 
-    const nextPage = this.feedbackPage() + 1;
-    this.loadingMoreFeedback.set(true);
-
-    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, nextPage).subscribe({
-      next: (result) => {
-        this.feedbackBytes.update((items) => {
-          const existingIds = new Set(items.map((item) => item.id));
-          const olderItems = result.items.filter((item) => !existingIds.has(item.id));
-          return [...items, ...olderItems];
-        });
-        this.feedbackPage.set(result.page);
-        this.feedbackTotalPages.set(result.totalPages);
-        this.feedbackTotal.set(result.total);
-        this.loadingMoreFeedback.set(false);
-      },
-      error: () => {
-        this.localErrorMessage.set('Failed to load older feedback.');
-        this.loadingMoreFeedback.set(false);
-      },
-    });
-  }
-
-  private connectToLiveUpdates(): void {
-    this.sessionSocket.joinSession(this.sessionId);
-
-    this.socketSubscriptions.add(
-      this.sessionSocket.onNewFeedback().subscribe((feedbackByte) => {
-        if (feedbackByte.sessionId !== this.sessionId) {
-          return;
-        }
-
-        let added = false;
-        this.feedbackBytes.update((items) => {
-          if (items.some((item) => item.id === feedbackByte.id)) {
-            return items;
-          }
-
-          added = true;
-          return [feedbackByte, ...items];
-        });
-
-        if (added) {
-          this.feedbackTotal.update((total) => total + 1);
-        }
-      }),
-    );
-
-    this.socketSubscriptions.add(
-      this.sessionSocket.onReconnect().subscribe(() => {
-        this.sessionSocket.joinSession(this.sessionId);
-        this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
-        this.loadFeedbackBytes(1);
-      }),
+    this.store.dispatch(
+      feedbackBytesActions.loadSessionFeedbackBytes({ sessionId: this.sessionId, page: page + 1 }),
     );
   }
 

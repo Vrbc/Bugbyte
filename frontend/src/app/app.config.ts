@@ -9,6 +9,8 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { sessionFeature } from './core/sessions/state/session.reducer';
 import { SessionEffects } from './core/sessions/state/session.effects';
+import { feedbackBytesFeature } from './core/feedback-bytes/state/feedback-bytes.reducer';
+import { FeedbackBytesEffects } from './core/feedback-bytes/state/feedback-bytes.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,7 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideStore(),
     provideState(sessionFeature),
-    provideEffects(SessionEffects),
+    provideState(feedbackBytesFeature),
+    provideEffects(SessionEffects, FeedbackBytesEffects),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
   ],
 };

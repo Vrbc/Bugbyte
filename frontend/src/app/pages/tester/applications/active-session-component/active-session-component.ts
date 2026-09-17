@@ -11,9 +11,19 @@ import {
   selectSessionError,
   selectSessionLoading,
 } from '../../../../core/sessions/state/session.selectors';
-import { FeedbackByte, FeedbackSeverity, FeedbackType } from '../../../../core/feedback-bytes/feedback-bytes.models';
-import { combineLatest, filter, interval, map, Observable, of, Subscription, switchMap } from 'rxjs';
-import { FeedbackBytesService } from '../../../../core/feedback-bytes/feedback-bytes.service';
+import { FeedbackSeverity, FeedbackType } from '../../../../core/feedback-bytes/feedback-bytes.models';
+import { feedbackBytesActions } from '../../../../core/feedback-bytes/state/feedback-bytes.actions';
+import {
+  selectAllFeedbackBytes,
+  selectFeedbackBytesError,
+  selectFeedbackBytesLoadingMore,
+  selectFeedbackBytesPage,
+  selectFeedbackBytesSubmitError,
+  selectFeedbackBytesSubmitting,
+  selectFeedbackBytesTotal,
+  selectFeedbackBytesTotalPages,
+} from '../../../../core/feedback-bytes/state/feedback-bytes.selectors';
+import { combineLatest, filter, interval, map, Observable, of, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { SessionSocketService } from '../../../../core/realtime/session-socket.service';
 import { UploadImageResponse, UploadsService } from '../../../../core/uploads/uploads.service';
@@ -89,12 +99,22 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   ending = this.store.selectSignal(selectSessionEnding);
   private readonly sessionError = this.store.selectSignal(selectSessionError);
 
-  feedbackBytes = signal<FeedbackByte[]>([]);
+  feedbackBytes = this.store.selectSignal(selectAllFeedbackBytes);
+  feedbackPage = this.store.selectSignal(selectFeedbackBytesPage);
+  feedbackTotalPages = this.store.selectSignal(selectFeedbackBytesTotalPages);
+  feedbackTotal = this.store.selectSignal(selectFeedbackBytesTotal);
+  loadingMoreFeedback = this.store.selectSignal(selectFeedbackBytesLoadingMore);
+  private readonly feedbackError = this.store.selectSignal(selectFeedbackBytesError);
+  private readonly feedbackSubmitError = this.store.selectSignal(selectFeedbackBytesSubmitError);
+  private readonly submitting = this.store.selectSignal(selectFeedbackBytesSubmitting);
+  private readonly uploading = signal(false);
+  sending = computed(() => this.uploading() || this.submitting());
 
-  sending = signal(false);
   localErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
-  errorMessage = computed(() => this.sessionError() ?? this.localErrorMessage());
+  errorMessage = computed(
+    () => this.sessionError() ?? this.feedbackError() ?? this.feedbackSubmitError() ?? this.localErrorMessage(),
+  );
 
   selectedType = signal<FeedbackType>('COMMENT');
 
@@ -125,19 +145,12 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   severities: FeedbackSeverity[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
-  feedbackPage = signal(1);
-  feedbackTotalPages = signal(1);
-  feedbackTotal = signal(0);
-  loadingMoreFeedback = signal(false);
-
   private sessionId = '';
   private timerSubscription?: Subscription;
-  private readonly socketSubscriptions = new Subscription();
 
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly feedbackBytesService: FeedbackBytesService,
     private readonly uploadsService: UploadsService,
     private readonly router: Router,
     private readonly sessionSocket: SessionSocketService,
@@ -145,21 +158,33 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
     this.actions$
       .pipe(ofType(sessionActions.endSessionSuccess), takeUntilDestroyed())
       .subscribe(() => this.successMessage.set('Session completed successfully.'));
+
+    this.actions$
+      .pipe(ofType(feedbackBytesActions.submitFeedbackByteSuccess), takeUntilDestroyed())
+      .subscribe(() => {
+        this.comment = '';
+        this.reproductionSteps = '';
+        this.severity = 'LOW';
+        this.revokeScreenshotPreview();
+        this.selectedScreenshotFile = null;
+        this.screenshotPreviewUrl.set(null);
+        this.successMessage.set('Feedback byte submitted.');
+      });
   }
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('id') || '';
     this.setUpTimer();
     this.store.dispatch(sessionActions.loadSession({ sessionId: this.sessionId }));
-    this.loadFeedbackBytes(1);
-    this.connectToLiveUpdates();
+    this.store.dispatch(feedbackBytesActions.loadSessionFeedbackBytes({ sessionId: this.sessionId, page: 1 }));
+    this.sessionSocket.joinSession(this.sessionId);
   }
 
   ngOnDestroy(): void {
     this.timerSubscription?.unsubscribe();
-    this.socketSubscriptions.unsubscribe();
     this.sessionSocket.leaveSession(this.sessionId);
     this.store.dispatch(sessionActions.sessionCleared());
+    this.store.dispatch(feedbackBytesActions.feedbackBytesCleared());
     this.revokeScreenshotPreview();
   }
 
@@ -210,40 +235,32 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.sending.set(true);
+    this.uploading.set(true);
 
     const upload$: Observable<UploadImageResponse | null> = this.selectedScreenshotFile
       ? this.uploadsService.uploadImage(this.selectedScreenshotFile)
       : of(null);
 
-    upload$.pipe(
-      switchMap((uploadResult) =>
-        this.feedbackBytesService.createFeedbackByte(this.sessionId, {
-          type: this.selectedType(),
-          timestampSeconds: this.elapsedSeconds(),
-          severity: this.selectedType() === 'BUG' ? this.severity : undefined,
-          comment: this.comment.trim() || undefined,
-          reproductionSteps:
-          this.selectedType() === 'BUG' ? this.reproductionSteps || undefined : undefined,
-          screenshotUrl: uploadResult?.url,
-        }),
-      ),
-    ).subscribe({
-      next: (feedbackByte) => {
-        this.prependFeedbackByte(feedbackByte);
-
-        this.comment = '';
-        this.reproductionSteps = '';
-        this.severity = 'LOW';
-        this.revokeScreenshotPreview();
-        this.selectedScreenshotFile = null;
-        this.screenshotPreviewUrl.set(null);
-
-        this.sending.set(false);
-        this.successMessage.set('Feedback byte submitted.');
+    upload$.subscribe({
+      next: (uploadResult) => {
+        this.uploading.set(false);
+        this.store.dispatch(
+          feedbackBytesActions.submitFeedbackByte({
+            sessionId: this.sessionId,
+            request: {
+              type: this.selectedType(),
+              timestampSeconds: this.elapsedSeconds(),
+              severity: this.selectedType() === 'BUG' ? this.severity : undefined,
+              comment: this.comment.trim() || undefined,
+              reproductionSteps:
+                this.selectedType() === 'BUG' ? this.reproductionSteps || undefined : undefined,
+              screenshotUrl: uploadResult?.url,
+            },
+          }),
+        );
       },
       error: (error) => {
-        this.sending.set(false);
+        this.uploading.set(false);
         this.localErrorMessage.set(
           error?.error?.message || 'Failed to submit feedback.',
         );
@@ -252,83 +269,15 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   }
 
   loadMoreFeedbackBytes(): void {
-    if (this.loadingMoreFeedback() || this.feedbackPage() >= this.feedbackTotalPages()) {
+    const page = this.feedbackPage();
+    if (this.loadingMoreFeedback() || page >= this.feedbackTotalPages()) {
       return;
     }
 
-    const nextPage = this.feedbackPage() + 1;
-    this.loadingMoreFeedback.set(true);
-
-    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, nextPage).subscribe({
-      next: (result) => {
-        this.feedbackBytes.update((items) => {
-          const existingIds = new Set(items.map((item) => item.id));
-          const olderItems = result.items.filter((item) => !existingIds.has(item.id));
-          return [...items, ...olderItems];
-        });
-        this.feedbackPage.set(result.page);
-        this.feedbackTotalPages.set(result.totalPages);
-        this.feedbackTotal.set(result.total);
-        this.loadingMoreFeedback.set(false);
-      },
-      error: () => {
-        this.localErrorMessage.set('Failed to load older feedback.');
-        this.loadingMoreFeedback.set(false);
-      },
-    });
-  }
-
-  private loadFeedbackBytes(page: number): void {
-    this.feedbackBytesService.getFeedbackBytesForSession(this.sessionId, page).subscribe({
-      next: (result) => {
-        this.feedbackBytes.set(result.items);
-        this.feedbackPage.set(result.page);
-        this.feedbackTotalPages.set(result.totalPages);
-        this.feedbackTotal.set(result.total);
-      },
-      error: () => {
-        this.localErrorMessage.set('Failed to load feedback bytes.');
-      },
-    });
-  }
-
-  private prependFeedbackByte(feedbackByte: FeedbackByte): void {
-    let added = false;
-    this.feedbackBytes.update((items) => {
-      if (items.some((item) => item.id === feedbackByte.id)) {
-        return items;
-      }
-
-      added = true;
-      return [feedbackByte, ...items];
-    });
-
-    if (added) {
-      this.feedbackTotal.update((total) => total + 1);
-    }
-  }
-
-  private connectToLiveUpdates(): void {
-    this.sessionSocket.joinSession(this.sessionId);
-
-    this.socketSubscriptions.add(
-      this.sessionSocket.onNewFeedback().subscribe((feedbackByte) => {
-        if (feedbackByte.sessionId !== this.sessionId) {
-          return;
-        }
-
-        this.prependFeedbackByte(feedbackByte);
-      }),
-    );
-
-    this.socketSubscriptions.add(
-      this.sessionSocket.onReconnect().subscribe(() => {
-        this.sessionSocket.joinSession(this.sessionId);
-        this.loadFeedbackBytes(1);
-      }),
+    this.store.dispatch(
+      feedbackBytesActions.loadSessionFeedbackBytes({ sessionId: this.sessionId, page: page + 1 }),
     );
   }
-
 
   endSession(): void {
     this.confirmingEndSession.set(true);
