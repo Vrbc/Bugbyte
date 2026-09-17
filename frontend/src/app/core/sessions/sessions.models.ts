@@ -1,3 +1,5 @@
+import { TesterLevel } from '../testers/testers.models';
+
 export type SessionStatus = 'LIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
 
 export interface TestSession {
@@ -45,7 +47,7 @@ export interface TestSession {
     testerProfile?: {
       rating: number;
       reputationPoints: number;
-      level: string;
+      level: TesterLevel;
       experienceLevel: string;
       platforms: string[];
       favoriteGenres: string[];

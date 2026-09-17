@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CampaignStatus, CampaignType } from '../../../../core/campaigns/campaigns.models';
+import { CampaignStatus, CampaignType, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { Game } from '../../../../core/games/games.models';
 import { GameBuild } from '../../../../core/builds/builds.models';
 import { GamesService } from '../../../../core/games/games.service';
@@ -28,6 +28,7 @@ export class CreateCampaignComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   gameId = '';
   buildId = '';

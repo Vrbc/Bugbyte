@@ -10,6 +10,19 @@ export type CampaignType =
   | 'PERFORMANCE_CHECK'
   | 'UX_FEEDBACK';
 
+const CAMPAIGN_TYPE_LABELS: Record<CampaignType, string> = {
+  FIRST_IMPRESSION: 'First Impression',
+  BUG_HUNT: 'Bug Hunt',
+  BALANCE_TEST: 'Balance Test',
+  TUTORIAL_CLARITY: 'Tutorial Clarity',
+  PERFORMANCE_CHECK: 'Performance Check',
+  UX_FEEDBACK: 'UX Feedback',
+};
+
+export function campaignTypeLabel(type: CampaignType | undefined): string {
+  return type ? CAMPAIGN_TYPE_LABELS[type] : '';
+}
+
 export type CampaignStatus =
   | 'DRAFT'
   | 'ACTIVE'

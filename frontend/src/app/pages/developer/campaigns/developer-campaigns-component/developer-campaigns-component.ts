@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { PlaytestCampaign, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { Router, RouterLink } from '@angular/router';
 import { Card } from '../../../../shared/ui/card/card';
@@ -28,6 +28,7 @@ export class DeveloperCampaignsComponent implements OnInit {
 
   protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   constructor(
     private readonly campaignsService: CampaignsService,

@@ -5,6 +5,7 @@ import { ApplicationStatus } from '../../../core/applications/applications.model
 import { SessionStatus } from '../../../core/sessions/sessions.models';
 import { GameStatus } from '../../../core/games/games.models';
 import { BuildStatus } from '../../../core/builds/builds.models';
+import { TesterLevel } from '../../../core/testers/testers.models';
 
 export type StatusBadgeStatus =
   | FeedbackType
@@ -12,7 +13,8 @@ export type StatusBadgeStatus =
   | ApplicationStatus
   | SessionStatus
   | GameStatus
-  | BuildStatus;
+  | BuildStatus
+  | TesterLevel;
 
 interface StatusStyle {
   label: string;
@@ -47,7 +49,20 @@ const STATUS_STYLES: Record<StatusBadgeStatus, StatusStyle> = {
   REJECTED: { label: 'Rejected', classes: TIER_CLASSES.bug },
   CANCELLED: { label: 'Cancelled', classes: TIER_CLASSES.neutral },
   LIVE: { label: 'Live', classes: 'bg-positive text-level-0' },
+  NEW_TESTER: { label: 'New Tester', classes: TIER_CLASSES.neutral },
+  RELIABLE_TESTER: { label: 'Reliable Tester', classes: TIER_CLASSES.cyan },
+  TRUSTED_TESTER: { label: 'Trusted Tester', classes: TIER_CLASSES.purple },
+  EXPERT_TESTER: { label: 'Expert Tester', classes: TIER_CLASSES.positive },
+  ELITE_TESTER: { label: 'Elite Tester', classes: TIER_CLASSES.warning },
 };
+
+const TESTER_LEVEL_STATUSES = new Set<StatusBadgeStatus>([
+  'NEW_TESTER',
+  'RELIABLE_TESTER',
+  'TRUSTED_TESTER',
+  'EXPERT_TESTER',
+  'ELITE_TESTER',
+]);
 
 @Component({
   selector: 'app-status-badge',
@@ -62,6 +77,7 @@ export class StatusBadge {
   protected readonly style = computed(() => STATUS_STYLES[this.status()]);
   protected readonly displayLabel = computed(() => this.label() ?? this.style().label);
   protected readonly isLive = computed(() => this.status() === 'LIVE');
+  protected readonly isTesterLevel = computed(() => TESTER_LEVEL_STATUSES.has(this.status()));
 
   protected readonly classes = computed(
     () =>

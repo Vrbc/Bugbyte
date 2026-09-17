@@ -1,3 +1,5 @@
+import { TesterLevel } from '../testers/testers.models';
+
 export interface DeveloperDashboard {
   stats: {
     gamesCount: number;
@@ -15,7 +17,7 @@ export interface TesterDashboard {
   profile: {
     rating: number;
     reputationPoints: number;
-    level: string;
+    level: TesterLevel;
     platforms: string[];
     favoriteGenres: string[];
     experienceLevel: string;

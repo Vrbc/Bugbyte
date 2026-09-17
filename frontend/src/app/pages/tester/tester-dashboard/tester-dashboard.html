@@ -22,7 +22,7 @@
       <div class="flex flex-wrap items-center justify-between gap-bb-sm">
         <div>
           <p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Tester Level</p>
-          <h2 class="font-display text-headline-md">{{ data.profile.level }}</h2>
+          <app-status-badge class="mt-1 inline-block" [status]="data.profile.level" />
         </div>
         <div class="flex flex-wrap gap-bb-md font-mono text-label-mono text-on-surface-variant">
           <span class="flex items-center gap-1">
@@ -78,7 +78,7 @@
             <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
               <p class="font-body text-body-md font-semibold">{{ campaign.title }}</p>
               <p class="font-mono text-label-mono text-on-surface-variant">
-                {{ campaign.game.title }} · {{ campaign.type }} · {{ campaign.estimatedMinutes }} min
+                {{ campaign.game.title }} · {{ campaignTypeLabel(campaign.type) }} · {{ campaign.estimatedMinutes }} min
               </p>
             </div>
           }

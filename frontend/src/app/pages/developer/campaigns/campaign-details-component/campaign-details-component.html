@@ -30,7 +30,7 @@
           <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">Campaign details</p>
           <h1 class="mt-1 font-display text-display-lg-mobile">{{ campaignData.title }}</h1>
           <p class="mt-1 font-body text-body-md text-on-surface-variant">
-            {{ campaignData.game?.title }} · {{ campaignData.build?.version }} · {{ campaignData.type }}
+            {{ campaignData.game?.title }} · {{ campaignData.build?.version }} · {{ campaignTypeLabel(campaignData.type) }}
           </p>
         </div>
 
@@ -146,11 +146,13 @@
                   <app-status-badge [status]="application.status" />
                 </div>
 
-                <div class="mt-1 flex flex-wrap gap-2 font-mono text-label-mono text-on-surface-variant">
+                <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-label-mono text-on-surface-variant">
                   <span>Rating: {{ application.tester?.testerProfile?.rating ?? 0 }}</span>
                   <span>·</span>
-                  <span>Level: {{ application.tester?.testerProfile?.level }}</span>
-                  <span>·</span>
+                  @if (application.tester?.testerProfile?.level; as level) {
+                    <app-status-badge [status]="level" />
+                    <span>·</span>
+                  }
                   <span>Experience: {{ application.tester?.testerProfile?.experienceLevel }}</span>
                 </div>
 

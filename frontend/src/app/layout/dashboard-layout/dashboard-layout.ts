@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Button } from '../../shared/ui/button/button';
+import { Logo } from '../../shared/ui/logo/logo';
 
 interface NavItem {
   path: string;
@@ -24,7 +25,7 @@ const TESTER_NAV: NavItem[] = [
 
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, Button],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, Button, Logo],
   templateUrl: './dashboard-layout.html',
   styleUrl: './dashboard-layout.scss',
 })

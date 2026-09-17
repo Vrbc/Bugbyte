@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
-import { PublicCampaignDetails } from '../../../../core/campaigns/campaigns.models';
+import { PublicCampaignDetails, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
@@ -29,6 +29,7 @@ export class TesterCampaignsDetailsComponent {
   alreadyApplied = signal(false);
 
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   private campaignId = '';
 

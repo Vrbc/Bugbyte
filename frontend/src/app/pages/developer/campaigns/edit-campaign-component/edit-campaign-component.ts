@@ -1,5 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { CampaignType, PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { CampaignType, PlaytestCampaign, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { Game } from '../../../../core/games/games.models';
 import { GameBuild } from '../../../../core/builds/builds.models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -25,6 +25,7 @@ export class EditCampaignComponent {
    campaign = signal<PlaytestCampaign | null>(null);
 
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   games = signal<Game[]>([]);
   builds = signal<GameBuild[]>([]);

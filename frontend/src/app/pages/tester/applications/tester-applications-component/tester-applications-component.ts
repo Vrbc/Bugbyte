@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CampaignApplication } from '../../../../core/applications/applications.models';
+import { campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
 import { Router } from '@angular/router';
@@ -30,6 +31,7 @@ export class TesterApplicationsComponent implements OnInit {
   total = signal(0);
 
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   constructor(
     private readonly applicationsService: ApplicationsService,

@@ -7,6 +7,7 @@ import { Card } from '../../../shared/ui/card/card';
 import { StatTile } from '../../../shared/ui/stat-tile/stat-tile';
 import { StatusBadge } from '../../../shared/ui/status-badge/status-badge';
 import { LoadingSpinner } from '../../../shared/ui/loading-spinner/loading-spinner';
+import { campaignTypeLabel } from '../../../core/campaigns/campaigns.models';
 
 @Component({
   selector: 'app-tester-dashboard',
@@ -18,6 +19,8 @@ export class TesterDashboard {
   dashboard = signal<TesterDashboardModel | null>(null);
   loading = signal(true);
   errorMessage = signal<string | null>(null);
+
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   constructor(private readonly dashboardService: DashboardService) {}
 

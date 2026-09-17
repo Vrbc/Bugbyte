@@ -2,7 +2,7 @@
   <!-- Desktop sidebar -->
   <aside class="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-56 md:flex-col md:border-r md:border-border md:bg-level-1">
     <div class="flex h-16 shrink-0 items-center gap-2 border-b border-border px-bb-md">
-      <span class="material-symbols-outlined text-cyan" style="font-variation-settings: 'FILL' 1">bug_report</span>
+      <app-logo [size]="40"></app-logo>
       <span class="font-display text-headline-md font-bold">Bugbyte</span>
     </div>
 
@@ -41,7 +41,7 @@
     class="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-level-0 px-margin-mobile md:hidden"
   >
     <div class="flex items-center gap-2">
-      <span class="material-symbols-outlined text-cyan" style="font-variation-settings: 'FILL' 1">bug_report</span>
+      <app-logo [size]="40"></app-logo>
       <span class="font-display text-headline-md font-bold">Bugbyte</span>
     </div>
     <button
@@ -68,8 +68,9 @@
       @for (item of navItems(); track item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="bg-cyan text-on-cyan"
-          class="flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1 text-center text-on-surface-variant transition-transform active:scale-90"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [class]="'flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1 text-center transition-transform active:scale-90 ' + (rla.isActive ? 'bg-cyan text-on-cyan' : 'text-on-surface-variant')"
         >
           <span class="material-symbols-outlined text-xl">{{ item.icon }}</span>
           <span class="text-[10px] font-label-sm leading-tight">{{ item.label }}</span>

@@ -59,7 +59,7 @@
               <p class="mt-1 font-body text-body-md text-on-surface-variant">
                 {{ application.campaign?.game?.title }}
                 · Build {{ application.campaign?.build?.version }}
-                · {{ application.campaign?.type }}
+                · {{ campaignTypeLabel(application.campaign?.type) }}
               </p>
 
               @if (application.message) {

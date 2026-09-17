@@ -2,5 +2,8 @@
   @if (isLive()) {
     <span class="h-1.5 w-1.5 rounded-full bg-level-0 animate-pulse"></span>
   }
+  @if (isTesterLevel()) {
+    <span class="material-symbols-outlined text-xs" data-weight="fill">military_tech</span>
+  }
   {{ displayLabel() }}
 </span>

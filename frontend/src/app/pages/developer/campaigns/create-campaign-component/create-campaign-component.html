@@ -42,7 +42,7 @@
       <div class="grid gap-bb-sm md:grid-cols-2">
         <app-select label="Campaign type" [(ngModel)]="type" name="type">
           @for (campaignType of campaignTypes; track campaignType) {
-            <option [value]="campaignType">{{ campaignType }}</option>
+            <option [value]="campaignType">{{ campaignTypeLabel(campaignType) }}</option>
           }
         </app-select>
 

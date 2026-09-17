@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, Subscription, debounceTime } from 'rxjs';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
-import { PublicCampaign } from '../../../../core/campaigns/campaigns.models';
+import { PublicCampaign, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
@@ -33,6 +33,7 @@ export class TesterCampaignsComponent implements OnInit, OnDestroy {
   platforms = ['PC', 'Web', 'Android', 'iOS'];
 
   protected readonly primaryLinkClasses = buttonClasses('primary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   private readonly filterChanged = new Subject<void>();
   private filterSubscription?: Subscription;

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CampaignTimelineStats, PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
+import { CampaignTimelineStats, PlaytestCampaign, campaignTypeLabel } from '../../../../core/campaigns/campaigns.models';
 import { CampaignApplication } from '../../../../core/applications/applications.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { ApplicationsService } from '../../../../core/applications/applications.service';
@@ -40,6 +40,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
 
   protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
+  protected readonly campaignTypeLabel = campaignTypeLabel;
 
   campaignId = '';
   private readonly socketSubscriptions = new Subscription();

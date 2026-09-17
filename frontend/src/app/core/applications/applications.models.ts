@@ -1,3 +1,6 @@
+import { CampaignType } from '../campaigns/campaigns.models';
+import { TesterLevel } from '../testers/testers.models';
+
 export type ApplicationStatus =
   | 'PENDING'
   | 'ACCEPTED'
@@ -17,7 +20,7 @@ export interface CampaignApplication {
   campaign?: {
     id: string;
     title: string;
-    type: string;
+    type: CampaignType;
     estimatedMinutes: number;
     status: string;
     game: {
@@ -49,7 +52,7 @@ export interface CampaignApplication {
       experienceLevel: string;
       rating: number;
       reputationPoints: number;
-      level: string;
+      level: TesterLevel;
     };
   };
 
