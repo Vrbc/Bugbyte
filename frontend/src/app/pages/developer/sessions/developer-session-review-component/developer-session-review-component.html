@@ -83,31 +83,40 @@
       </app-card>
 
       <div class="flex flex-col gap-bb-md">
-        <app-card>
-          <h2 class="font-display text-headline-md">Final survey</h2>
-          <p class="mt-1 font-body text-body-md text-on-surface-variant">Tester submitted these final ratings.</p>
+        @if (sessionData.status === 'COMPLETED') {
+          <app-card>
+            <h2 class="font-display text-headline-md">Final survey</h2>
+            <p class="mt-1 font-body text-body-md text-on-surface-variant">Tester submitted these final ratings.</p>
 
-          <div class="mt-bb-sm grid gap-bb-xs">
-            <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
-              <p class="font-label-sm text-label-sm text-on-surface-variant">Fun</p>
-              <p class="mt-1 font-display text-headline-md">{{ sessionData.finalFunRating }}/5</p>
+            <div class="mt-bb-sm grid gap-bb-xs">
+              <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Fun</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalFunRating }}/5</p>
+              </div>
+              <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Difficulty</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalDifficultyRating }}/5</p>
+              </div>
+              <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Clarity</p>
+                <p class="mt-1 font-display text-headline-md">{{ sessionData.finalClarityRating }}/5</p>
+              </div>
             </div>
-            <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
-              <p class="font-label-sm text-label-sm text-on-surface-variant">Difficulty</p>
-              <p class="mt-1 font-display text-headline-md">{{ sessionData.finalDifficultyRating }}/5</p>
-            </div>
-            <div class="rounded-sm border border-border bg-level-0 p-bb-sm">
-              <p class="font-label-sm text-label-sm text-on-surface-variant">Clarity</p>
-              <p class="mt-1 font-display text-headline-md">{{ sessionData.finalClarityRating }}/5</p>
-            </div>
-          </div>
 
-          @if (sessionData.finalComment) {
-            <p class="mt-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm font-body text-body-md text-on-surface-variant">
-              {{ sessionData.finalComment }}
+            @if (sessionData.finalComment) {
+              <p class="mt-bb-sm rounded-sm border border-border bg-level-0 p-bb-sm font-body text-body-md text-on-surface-variant">
+                {{ sessionData.finalComment }}
+              </p>
+            }
+          </app-card>
+        } @else {
+          <app-card>
+            <h2 class="font-display text-headline-md">Final survey</h2>
+            <p class="mt-1 font-body text-body-md text-on-surface-variant">
+              Final survey will be available once the tester completes the session.
             </p>
-          }
-        </app-card>
+          </app-card>
+        }
 
         <app-card>
           <form class="flex flex-col gap-bb-sm" (ngSubmit)="submitReview()">
