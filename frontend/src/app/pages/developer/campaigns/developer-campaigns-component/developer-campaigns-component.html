@@ -55,7 +55,7 @@
 
   <div class="grid gap-bb-sm xl:grid-cols-2">
     @for (campaign of campaigns(); track campaign.id) {
-      <app-card [hoverable]="true">
+      <app-card [hoverable]="true" class="cursor-pointer" (click)="goToCampaign(campaign)">
         <div class="flex flex-col justify-between gap-bb-sm md:flex-row md:items-start">
           <div>
             <div class="flex flex-wrap items-center gap-bb-xs">
@@ -69,12 +69,19 @@
           </div>
 
           <div class="flex flex-wrap gap-bb-xs">
-            <a [routerLink]="['/developer/campaigns', campaign.id]" [class]="primaryLinkClasses">Open</a>
             @if (campaign.status !== 'COMPLETED' && campaign.status !== 'ARCHIVED') {
-              <a [routerLink]="['/developer/campaigns', campaign.id, 'edit']" [class]="secondaryLinkClasses">Edit</a>
+              <a
+                [routerLink]="['/developer/campaigns', campaign.id, 'edit']"
+                [class]="secondaryLinkClasses"
+                (click)="$event.stopPropagation()"
+              >
+                Edit
+              </a>
             }
             @if (campaign.status === 'DRAFT' || campaign.status === 'COMPLETED') {
-              <app-button variant="danger" type="button" (click)="archiveCampaign(campaign)">Archive</app-button>
+              <app-button variant="danger" type="button" (click)="$event.stopPropagation(); archiveCampaign(campaign)">
+                Archive
+              </app-button>
             }
           </div>
         </div>

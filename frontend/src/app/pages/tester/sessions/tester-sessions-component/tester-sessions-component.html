@@ -50,7 +50,7 @@
 
   <div class="grid gap-bb-sm xl:grid-cols-2">
     @for (session of filteredSessions(); track session.id) {
-      <app-card [hoverable]="true" [padded]="false">
+      <app-card [hoverable]="true" [padded]="false" class="cursor-pointer" (click)="goToSession(session)">
         <div class="h-40 bg-level-0">
           @if (session.campaign?.game?.coverImageUrl) {
             <img
@@ -94,7 +94,11 @@
             </div>
           </div>
 
-          <a [routerLink]="['/tester/sessions', session.id, 'live']" [class]="primaryLinkClasses">
+          <a
+            [routerLink]="['/tester/sessions', session.id, 'live']"
+            [class]="primaryLinkClasses"
+            (click)="$event.stopPropagation()"
+          >
             {{ session.status === 'LIVE' ? 'Continue session' : 'View session' }}
           </a>
         </div>

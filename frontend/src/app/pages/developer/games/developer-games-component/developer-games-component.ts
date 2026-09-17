@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { Game } from '../../../../core/games/games.models';
 import { GamesService } from '../../../../core/games/games.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
@@ -27,7 +27,14 @@ export class DeveloperGamesComponent implements OnInit {
   protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(
+    private readonly gamesService: GamesService,
+    private readonly router: Router,
+  ) {}
+
+  goToGame(game: Game): void {
+    this.router.navigate(['/developer/games', game.id]);
+  }
 
   ngOnInit(): void {
     this.loadGames(1);

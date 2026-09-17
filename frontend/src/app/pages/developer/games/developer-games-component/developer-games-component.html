@@ -40,7 +40,7 @@
 
   <div class="grid gap-bb-sm md:grid-cols-2 xl:grid-cols-3">
     @for (game of games(); track game.id) {
-      <app-card [hoverable]="true" [padded]="false">
+      <app-card [hoverable]="true" [padded]="false" class="cursor-pointer" (click)="goToGame(game)">
         <div class="h-40 bg-level-0">
           @if (game.coverImageUrl) {
             <img
@@ -77,10 +77,17 @@
           </div>
 
           <div class="mt-bb-xs flex flex-wrap gap-bb-xs">
-            <a [routerLink]="['/developer/games', game.id]" [class]="primaryLinkClasses">Open</a>
-            <a [routerLink]="['/developer/games', game.id, 'edit']" [class]="secondaryLinkClasses">Edit</a>
+            <a
+              [routerLink]="['/developer/games', game.id, 'edit']"
+              [class]="secondaryLinkClasses"
+              (click)="$event.stopPropagation()"
+            >
+              Edit
+            </a>
             @if (game.status !== 'ARCHIVED') {
-              <app-button variant="danger" type="button" (click)="archiveGame(game)">Archive</app-button>
+              <app-button variant="danger" type="button" (click)="$event.stopPropagation(); archiveGame(game)">
+                Archive
+              </app-button>
             }
           </div>
         </div>

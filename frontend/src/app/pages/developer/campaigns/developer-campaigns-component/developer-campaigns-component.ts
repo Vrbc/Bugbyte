@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { PlaytestCampaign } from '../../../../core/campaigns/campaigns.models';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
 import { Button, buttonClasses } from '../../../../shared/ui/button/button';
@@ -29,7 +29,14 @@ export class DeveloperCampaignsComponent implements OnInit {
   protected readonly primaryLinkClasses = buttonClasses('primary');
   protected readonly secondaryLinkClasses = buttonClasses('secondary');
 
-  constructor(private readonly campaignsService: CampaignsService) {}
+  constructor(
+    private readonly campaignsService: CampaignsService,
+    private readonly router: Router,
+  ) {}
+
+  goToCampaign(campaign: PlaytestCampaign): void {
+    this.router.navigate(['/developer/campaigns', campaign.id]);
+  }
 
   ngOnInit(): void {
     this.loadCampaigns(1);

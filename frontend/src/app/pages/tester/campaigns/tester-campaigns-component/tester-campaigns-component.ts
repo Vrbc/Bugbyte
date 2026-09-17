@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Subject, Subscription, debounceTime } from 'rxjs';
 import { CampaignsService } from '../../../../core/campaigns/campaigns.service';
 import { PublicCampaign } from '../../../../core/campaigns/campaigns.models';
@@ -14,7 +14,7 @@ import { LoadingSpinner } from '../../../../shared/ui/loading-spinner/loading-sp
 
 @Component({
   selector: 'app-tester-campaigns-component',
-  imports: [FormsModule, RouterLink, ResolveUploadUrlPipe, Card, StatusBadge, Pagination, Input, LoadingSpinner],
+  imports: [FormsModule, ResolveUploadUrlPipe, Card, StatusBadge, Pagination, Input, LoadingSpinner],
   templateUrl: './tester-campaigns-component.html',
   styleUrl: './tester-campaigns-component.scss',
 })
@@ -37,7 +37,14 @@ export class TesterCampaignsComponent implements OnInit, OnDestroy {
   private readonly filterChanged = new Subject<void>();
   private filterSubscription?: Subscription;
 
-  constructor(private readonly campaignsService: CampaignsService) {}
+  constructor(
+    private readonly campaignsService: CampaignsService,
+    private readonly router: Router,
+  ) {}
+
+  goToCampaign(campaign: PublicCampaign): void {
+    this.router.navigate(['/tester/campaigns', campaign.id]);
+  }
 
   ngOnInit(): void {
     this.filterSubscription = this.filterChanged

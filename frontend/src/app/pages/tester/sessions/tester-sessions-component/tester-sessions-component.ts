@@ -1,7 +1,7 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { TestSession } from '../../../../core/sessions/sessions.models';
 import { SessionsService } from '../../../../core/sessions/sessions.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ResolveUploadUrlPipe } from '../../../../core/uploads/resolve-upload-url.pipe';
 import { Card } from '../../../../shared/ui/card/card';
 import { StatusBadge } from '../../../../shared/ui/status-badge/status-badge';
@@ -36,7 +36,14 @@ export class TesterSessionsComponent implements OnInit {
     return this.sessions().filter((session) => session.status === filter);
   });
 
-  constructor(private readonly sessionsService: SessionsService) {}
+  constructor(
+    private readonly sessionsService: SessionsService,
+    private readonly router: Router,
+  ) {}
+
+  goToSession(session: TestSession): void {
+    this.router.navigate(['/tester/sessions', session.id, 'live']);
+  }
 
   ngOnInit(): void {
     this.loadSessions();
