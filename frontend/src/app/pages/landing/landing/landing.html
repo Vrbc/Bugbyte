@@ -1,0 +1,126 @@
+<div class="min-h-screen bg-level-0 text-on-background">
+  <header class="fixed inset-x-0 top-0 z-40 border-b border-border bg-level-0/80 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-margin-mobile md:px-margin-desktop">
+      <div class="flex items-center gap-2">
+        <app-logo [size]="36" />
+        <span class="font-display text-headline-md font-bold">Bugbyte</span>
+      </div>
+
+      <nav class="flex items-center gap-bb-sm">
+        <a
+          routerLink="/auth/login"
+          class="hidden font-body text-body-md text-on-surface-variant transition-colors hover:text-on-background sm:inline-block"
+        >
+          Sign in
+        </a>
+        <a routerLink="/auth/register" [class]="primaryLinkClasses">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="pt-16">
+    <section class="relative overflow-hidden px-margin-mobile py-bb-xl md:px-margin-desktop">
+      <div
+        class="pointer-events-none absolute inset-0 -z-10"
+        style="background-image: radial-gradient(circle at 50% 0%, rgba(56,189,248,0.15), transparent 60%);"
+      ></div>
+
+      <div class="mx-auto flex max-w-3xl flex-col items-center gap-bb-sm text-center">
+        <p class="fade-in-up font-mono text-label-mono uppercase tracking-widest text-cyan">
+          Playtest feedback platform
+        </p>
+        <h1 class="fade-in-up delay-100 font-display text-display-lg-mobile md:text-display-lg">
+          Turn testers into a live
+          <span class="bg-linear-to-r from-cyan to-purple bg-clip-text text-transparent">Byte Stream</span>
+        </h1>
+        <p class="fade-in-up delay-200 font-body text-body-lg text-on-surface-variant">
+          Bugbyte connects game developers with real testers. Launch a campaign, watch feedback
+          bytes roll in live, session by session, and ship builds that get played the way you
+          meant them to.
+        </p>
+        <div class="fade-in-up delay-300 flex flex-wrap items-center justify-center gap-bb-sm">
+          <a routerLink="/auth/register" [class]="primaryLinkClasses">
+            Start Testing
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+          <a routerLink="/auth/login" [class]="secondaryLinkClasses">Sign In</a>
+        </div>
+      </div>
+
+      <div class="fade-in-up delay-400 mx-auto mt-bb-xl flex max-w-xl flex-col gap-bb-xs rounded-card border border-border bg-level-1 p-bb-sm">
+        <div class="flex items-center justify-between border-b border-border pb-bb-xs">
+          <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">
+            Byte Stream
+          </span>
+          <app-status-badge status="LIVE" />
+        </div>
+
+        <div class="flex items-center gap-bb-sm rounded-sm border border-border bg-level-0 p-bb-xs">
+          <app-status-badge status="BUG" />
+          <p class="font-body text-body-md text-on-surface-variant">
+            The double jump timing feels a bit laggy here.
+          </p>
+          <span class="ml-auto shrink-0 font-mono text-label-mono text-on-surface-variant">04:12</span>
+        </div>
+
+        <div class="flex items-center gap-bb-sm rounded-sm border border-border bg-level-0 p-bb-xs">
+          <app-status-badge status="SUGGESTION" />
+          <p class="font-body text-body-md text-on-surface-variant">
+            Would love a faster restart button.
+          </p>
+          <span class="ml-auto shrink-0 font-mono text-label-mono text-on-surface-variant">06:47</span>
+        </div>
+
+        <div class="flex items-center gap-bb-sm rounded-sm border border-border bg-level-0 p-bb-xs">
+          <app-status-badge status="POSITIVE" />
+          <p class="font-body text-body-md text-on-surface-variant">
+            Boss fight feels great, loved the pacing.
+          </p>
+          <span class="ml-auto shrink-0 font-mono text-label-mono text-on-surface-variant">09:03</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-margin-mobile py-bb-xl md:px-margin-desktop">
+      <div class="mx-auto max-w-5xl">
+        <div class="text-center">
+          <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">How it works</p>
+          <h2 class="mt-1 font-display text-headline-md md:text-display-lg-mobile">
+            From build to feedback bytes
+          </h2>
+        </div>
+
+        <div class="mt-bb-lg grid gap-bb-sm md:grid-cols-3">
+          @for (step of steps; track step.title; let i = $index) {
+            <app-card class="fade-in-up" [style.animation-delay.ms]="i * 100">
+              <span class="material-symbols-outlined text-3xl text-cyan">{{ step.icon }}</span>
+              <h3 class="mt-bb-xs font-display text-headline-md">{{ step.title }}</h3>
+              <p class="mt-1 font-body text-body-md text-on-surface-variant">{{ step.description }}</p>
+            </app-card>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="px-margin-mobile py-bb-xl text-center md:px-margin-desktop">
+      <h2 class="font-display text-display-lg-mobile">Ready to jump in?</h2>
+      <p class="mx-auto mt-bb-xs max-w-md font-body text-body-lg text-on-surface-variant">
+        Create a free account and launch your first campaign or test today.
+      </p>
+      <div class="mt-bb-sm flex flex-wrap items-center justify-center gap-bb-sm">
+        <a routerLink="/auth/register" [class]="primaryLinkClasses">Create Account</a>
+        <a routerLink="/auth/login" [class]="secondaryLinkClasses">Sign In</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-border px-margin-mobile py-bb-md text-center md:px-margin-desktop">
+    <div class="flex items-center justify-center gap-2">
+      <app-logo [size]="24" />
+      <span class="font-display text-body-md font-bold">Bugbyte</span>
+    </div>
+    <p class="mt-1 font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">
+      Aggressively Functional.
+    </p>
+  </footer>
+</div>

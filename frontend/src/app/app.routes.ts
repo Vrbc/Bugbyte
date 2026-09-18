@@ -1,6 +1,7 @@
 import { RouteConfigLoadStart, Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
+import { Landing } from './pages/landing/landing/landing';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
 import { DeveloperDashboard } from './pages/developer/developer-dashboard/developer-dashboard';
@@ -24,7 +25,7 @@ import { EditCampaignComponent } from './pages/developer/campaigns/edit-campaign
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'auth/login',
+    component: Landing,
     pathMatch: 'full',
   },
   {
@@ -174,6 +175,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'auth/login',
+    redirectTo: '',
   },
 ];
