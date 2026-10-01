@@ -19,7 +19,9 @@ export const roleGuard: CanActivateFn = (route) => {
         ? '/developer/dashboard'
         : role === 'TESTER'
           ? '/tester/dashboard'
-          : '/auth/login';
+          : role === 'ADMIN'
+            ? '/admin/users'
+            : '/auth/login';
 
     return router.createUrlTree([dashboard]);
   };

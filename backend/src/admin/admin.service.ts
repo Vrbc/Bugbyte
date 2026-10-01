@@ -16,18 +16,30 @@ export class AdminService {
     const { page = 1, limit = 20, search, role } = query;
 
     const where: Prisma.UserWhereInput = {
-      OR: [
-        { developerProfile: { isNot: null } },
-        { testerProfile: { isNot: null } },
+      deletedAt: null,
+      AND: [
+        {
+          OR: [
+            { developerProfile: { isNot: null } },
+            { testerProfile: { isNot: null } },
+          ],
+        },
+        ...(search
+          ? [
+              {
+                OR: [
+                  {
+                    username: {
+                      contains: search,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                  { email: { contains: search, mode: 'insensitive' as const } },
+                ],
+              },
+            ]
+          : []),
       ],
-      ...(search
-        ? {
-            OR: [
-              { username: { contains: search, mode: 'insensitive' } },
-              { email: { contains: search, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
       ...(role ? { role } : {}),
     };
 
@@ -56,23 +68,37 @@ export class AdminService {
   async deleteUser(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, deletedAt: true, role: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        deletedAt: true,
+      },
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.deletedAt) {
-      throw new BadRequestException('User already deleted');
-    }
     if (user.role === 'ADMIN') {
       throw new BadRequestException('Cannot delete admin users');
     }
+    if (user.deletedAt) {
+      throw new BadRequestException('User is already deleted');
+    }
+
+    const suffix = `__deleted_${Date.now()}`;
 
     return this.prisma.user.update({
       where: { id: userId },
-      data: { deletedAt: new Date() },
-      select: { id: true, email: true, deletedAt: true },
+      data: {
+        isActive: false,
+        deletedAt: new Date(),
+        username: `${user.username}${suffix}`,
+        email: `deleted${suffix}@deleted.local`,
+        passwordHash: '',
+      },
+      select: { id: true },
     });
   }
 }

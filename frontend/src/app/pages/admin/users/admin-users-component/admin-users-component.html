@@ -1,0 +1,149 @@
+<section class="flex flex-col gap-bb-md">
+  <div>
+    <p class="font-mono text-label-mono uppercase tracking-widest text-cyan">Administration</p>
+    <h1 class="mt-1 font-display text-display-lg-mobile">User Management</h1>
+    <p class="mt-1 font-body text-body-md text-on-surface-variant">
+      Browse, search, and manage registered platform users.
+    </p>
+  </div>
+
+  <app-card>
+    <div class="flex flex-col gap-bb-sm md:flex-row md:items-end">
+      <div class="flex-1">
+        <app-input
+          label="Search"
+          icon="search"
+          placeholder="Search by username or email..."
+          [ngModel]="search()"
+          (ngModelChange)="onSearchInput($event)"
+          name="search"
+        />
+      </div>
+
+      <label class="flex flex-col gap-bb-xs md:w-56">
+        <span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Role</span>
+        <select
+          class="w-full rounded-sm border border-border bg-level-1 py-bb-xs px-bb-sm font-body text-body-md text-on-background focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none"
+          [ngModel]="selectedRole()"
+          (ngModelChange)="onRoleChange($event)"
+        >
+          <option value="">All roles</option>
+          <option value="DEVELOPER">Developer</option>
+          <option value="TESTER">Tester</option>
+        </select>
+      </label>
+
+      @if (search() || selectedRole()) {
+        <div class="flex">
+          <app-button variant="secondary" (click)="onClearFilters()">
+            <span class="material-symbols-outlined text-base">close</span>
+            <span>Clear</span>
+          </app-button>
+        </div>
+      }
+    </div>
+  </app-card>
+
+  @if (errorMessage()) {
+    <app-card>
+      <div class="flex items-center gap-bb-sm text-bug">
+        <span class="material-symbols-outlined">error</span>
+        <span class="font-body text-body-md">{{ errorMessage() }}</span>
+      </div>
+    </app-card>
+  }
+
+  @if (successMessage()) {
+    <app-card>
+      <div class="flex items-center gap-bb-sm text-positive">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span class="font-body text-body-md">{{ successMessage() }}</span>
+      </div>
+    </app-card>
+  }
+
+  @if (loading() && users().length === 0) {
+    <app-loading-spinner label="Loading users..." />
+  }
+
+  <app-card [padded]="false">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-level-0 border-b border-border">
+          <tr>
+            <th class="p-bb-sm font-label text-label-md text-on-surface-variant uppercase tracking-wider">User</th>
+            <th class="p-bb-sm font-label text-label-md text-on-surface-variant uppercase tracking-wider">Role</th>
+            <th class="p-bb-sm font-label text-label-md text-on-surface-variant uppercase tracking-wider">Profile Info</th>
+            <th class="p-bb-sm font-label text-label-md text-on-surface-variant uppercase tracking-wider">Joined</th>
+            <th class="p-bb-sm font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right pr-bb-md">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (user of users(); track user.id) {
+            <tr class="hover:bg-level-2/50 transition-colors">
+              <td class="p-bb-sm">
+                <div class="font-body text-body-md font-medium text-on-background">{{ user.username }}</div>
+                <div class="font-mono text-label-mono text-on-surface-variant">{{ user.email }}</div>
+              </td>
+              <td class="p-bb-sm">
+                <span
+                  class="inline-flex items-center rounded-sm px-2 py-0.5 font-label-sm text-label-sm font-bold uppercase tracking-wider"
+                  [ngClass]="getRoleBadgeClass(user.role)"
+                >
+                  {{ user.role }}
+                </span>
+              </td>
+              <td class="p-bb-sm font-body text-body-sm text-on-surface-variant">
+                @if (user.developerProfile) {
+                  <span>Developer Profile</span>
+                } @else if (user.testerProfile) {
+                  <span>Tester (Rating: {{ user.testerProfile.rating }})</span>
+                } @else {
+                  <span>-</span>
+                }
+              </td>
+              <td class="p-bb-sm font-mono text-label-mono text-on-surface-variant">
+                {{ user.createdAt | date:'mediumDate' }}
+              </td>
+              <td class="p-bb-sm text-right pr-bb-md">
+                <app-button variant="danger" size="sm" (click)="openDelete(user)">
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                  <span>Delete</span>
+                </app-button>
+              </td>
+            </tr>
+          } @empty {
+            @if (!loading()) {
+              <tr>
+                <td colspan="5" class="p-bb-lg text-center font-body text-body-md text-on-surface-variant">
+                  No users found.
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="border-t border-border p-bb-sm">
+        <app-pagination
+          [page]="page()"
+          [totalPages]="totalPages()"
+          (pageChange)="onPageChange($event)"
+        />
+      </div>
+    }
+  </app-card>
+</section>
+
+<app-confirm-dialog
+  [open]="!!pendingDelete()"
+  title="Delete User"
+  [message]="'Are you sure you want to delete ' + (pendingDelete()?.username ?? '') + '? Their account will be permanently deactivated and they will no longer be able to log in. Historical test data (sessions, feedback, reviews) will be preserved.'"
+  confirmLabel="Delete User"
+  cancelLabel="Cancel"
+  variant="danger"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+/>

@@ -42,13 +42,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         isActive: true,
         createdAt: true,
+        deletedAt: true,
       },
     });
 
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || !!user.deletedAt) {
       throw new UnauthorizedException('User is not active or does not exist.');
     }
 
-    return user;
+    const { deletedAt, ...returnUser } = user;
+    return returnUser;
   }
 }

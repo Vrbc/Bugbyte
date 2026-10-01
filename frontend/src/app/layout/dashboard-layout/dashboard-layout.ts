@@ -23,6 +23,10 @@ const TESTER_NAV: NavItem[] = [
   { path: '/tester/sessions', label: 'My Sessions', icon: 'timeline' },
 ];
 
+const ADMIN_NAV: NavItem[] = [
+  { path: '/admin/users', label: 'Users', icon: 'people' },
+];
+
 @Component({
   selector: 'app-dashboard-layout',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, Button, Logo],
@@ -36,6 +40,7 @@ export class DashboardLayout {
     const role = this.authService.currentUser()?.role;
     if (role === 'DEVELOPER') return DEVELOPER_NAV;
     if (role === 'TESTER') return TESTER_NAV;
+    if (role === 'ADMIN') return ADMIN_NAV;
     return [];
   });
 

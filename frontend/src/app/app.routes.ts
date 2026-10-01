@@ -21,6 +21,7 @@ import { DeveloperSessionReviewComponent } from './pages/developer/sessions/deve
 import { TesterSessionsComponent } from './pages/tester/sessions/tester-sessions-component/tester-sessions-component';
 import { EditGameComponent } from './pages/developer/games/edit-game-component/edit-game-component';
 import { EditCampaignComponent } from './pages/developer/campaigns/edit-campaign-component/edit-campaign-component';
+import { AdminUsersComponent } from './pages/admin/users/admin-users-component/admin-users-component';
 
 export const routes: Routes = [
   {
@@ -171,6 +172,27 @@ export const routes: Routes = [
         },
       },
       
+    ],
+  },
+  {
+    path: 'admin',
+    component: DashboardLayout,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'users',
+      },
+      {
+        path: 'dashboard',
+        redirectTo: 'users',
+      },
+      {
+        path: 'users',
+        component: AdminUsersComponent,
+      },
     ],
   },
   {
