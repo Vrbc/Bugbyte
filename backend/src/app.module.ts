@@ -15,6 +15,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadsModule } from './uploads/uploads.module';
     DashboardModule,
     RealtimeModule,
     UploadsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

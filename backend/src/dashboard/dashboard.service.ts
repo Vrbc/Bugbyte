@@ -317,8 +317,16 @@ export class DashboardService {
 
     const recommendedCampaigns = [...recommendedCampaignCandidates]
       .sort((a, b) => {
-        const aMatchesGenre = testerProfile.favoriteGenres.includes(a.game.genre) ? 0 : 1;
-        const bMatchesGenre = testerProfile.favoriteGenres.includes(b.game.genre) ? 0 : 1;
+        const aMatchesGenre = testerProfile.favoriteGenres.includes(
+          a.game.genre,
+        )
+          ? 0
+          : 1;
+        const bMatchesGenre = testerProfile.favoriteGenres.includes(
+          b.game.genre,
+        )
+          ? 0
+          : 1;
         return aMatchesGenre - bMatchesGenre;
       })
       .slice(0, 5);

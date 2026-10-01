@@ -96,6 +96,7 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
 
   developerProfile DeveloperProfile?
   testerProfile    TesterProfile?
@@ -107,6 +108,8 @@ model User {
   feedbackBytes        FeedbackByte[]        @relation("TesterFeedbackBytes")
   developerReviews     TesterReview[]        @relation("DeveloperReviews")
   testerReviews        TesterReview[]        @relation("TesterReviews")
+
+  @@index([deletedAt])
 }
 
 model DeveloperProfile {
