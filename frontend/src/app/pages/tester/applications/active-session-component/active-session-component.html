@@ -88,7 +88,7 @@
       <div class="flex flex-col gap-bb-md">
         @if (sessionData.status === 'LIVE') {
           <app-card>
-            <form class="flex flex-col gap-bb-sm" (ngSubmit)="submitFeedback()">
+            <form class="flex flex-col gap-bb-sm" novalidate (ngSubmit)="submitFeedback()">
               <div>
                 <h2 class="font-display text-headline-md">Submit feedback byte</h2>
                 <p class="mt-1 font-body text-body-md text-on-surface-variant">
@@ -131,6 +131,8 @@
                 [label]="commentRequiredTypes.includes(selectedType()) ? 'Comment' : 'Comment (optional)'"
                 [multiline]="true"
                 [rows]="4"
+                [required]="commentRequiredTypes.includes(selectedType())"
+                [error]="feedbackFormErrorMessage()"
                 [(ngModel)]="comment"
                 name="comment"
                 [placeholder]="
@@ -157,6 +159,7 @@
                 </span>
                 <input
                   type="file"
+                  #screenshotInput
                   accept="image/*"
                   class="w-full rounded-sm border border-border bg-level-1 px-bb-sm py-bb-xs font-body text-body-md text-on-background focus:border-cyan focus:outline-none file:mr-3 file:rounded-sm file:border-0 file:bg-cyan/10 file:px-3 file:py-2 file:text-cyan"
                   name="screenshot"
@@ -172,6 +175,12 @@
                 <app-card [padded]="false">
                   <img [src]="previewUrl" alt="Screenshot preview" class="max-h-48 w-full object-contain" />
                 </app-card>
+              }
+
+              @if (feedbackFormErrorMessage(); as error) {
+                <p class="rounded-sm border border-bug/50 bg-bug/10 px-bb-sm py-bb-xs font-body text-body-sm text-bug" role="alert">
+                  {{ error }}
+                </p>
               }
 
               <app-button type="submit" [fullWidth]="true" [disabled]="sending()">

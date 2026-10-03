@@ -62,6 +62,10 @@ export class Input implements ControlValueAccessor {
   protected readonly inputClasses = computed(() => {
     const base =
       'w-full rounded-sm bg-level-1 border border-border py-bb-xs pr-bb-sm font-body text-body-md text-on-background placeholder:text-on-surface-variant focus:border-cyan focus:shadow-[0_0_10px_rgba(56,189,248,0.2)] focus:outline-none disabled:opacity-50';
-    return this.icon() ? `${base} pl-8` : `${base} pl-bb-sm`;
+    const padding = this.icon() ? 'pl-8' : 'pl-bb-sm';
+    const errorClasses = this.error()
+      ? 'border-bug focus:border-bug focus:shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+      : '';
+    return `${base} ${padding} ${errorClasses}`;
   });
 }

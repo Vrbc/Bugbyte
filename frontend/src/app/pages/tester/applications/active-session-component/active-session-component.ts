@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Actions, ofType } from '@ngrx/effects';
@@ -78,7 +78,7 @@ export const FEEDBACK_TYPE_META: Record<FeedbackType, FeedbackTypeMeta> = {
   },
 };
 
-const COMMENT_REQUIRED_TYPES: FeedbackType[] = ['BUG', 'SUGGESTION', 'DIFFICULTY_SPIKE'];
+const COMMENT_REQUIRED_TYPES: FeedbackType[] = ['BUG', 'SUGGESTION', 'DIFFICULTY_SPIKE', 'COMMENT'];
 
 @Component({
   selector: 'app-active-session-component',
@@ -112,10 +112,14 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
   sending = computed(() => this.uploading() || this.submitting());
 
   localErrorMessage = signal<string | null>(null);
+  feedbackFormError = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   errorMessage = computed(
-    () => this.localErrorMessage() ?? this.sessionError() ?? this.feedbackError() ?? this.feedbackSubmitError(),
+    () => this.localErrorMessage() ?? this.sessionError() ?? this.feedbackError(),
   );
+  feedbackFormErrorMessage = computed(() => this.feedbackFormError() ?? this.feedbackSubmitError() ?? undefined);
+
+  @ViewChild('screenshotInput') private screenshotInput?: ElementRef<HTMLInputElement>;
 
   selectedType = signal<FeedbackType>('COMMENT');
 
@@ -169,6 +173,11 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
         this.revokeScreenshotPreview();
         this.selectedScreenshotFile = null;
         this.screenshotPreviewUrl.set(null);
+        const screenshotInput = this.screenshotInput?.nativeElement;
+        if (screenshotInput) {
+          screenshotInput.value = '';
+        }
+        this.feedbackFormError.set(null);
         this.successMessage.set('Feedback byte submitted.');
       });
   }
@@ -191,7 +200,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   selectType(type: FeedbackType): void {
     this.selectedType.set(type);
-    this.localErrorMessage.set(null);
+    this.feedbackFormError.set(null);
     this.successMessage.set(null);
   }
 
@@ -223,16 +232,16 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
 
   submitFeedback() : void {
 
-    this.localErrorMessage.set(null);
+    this.feedbackFormError.set(null);
     this.successMessage.set(null);
 
     if (this.session()?.status !== 'LIVE') {
-      this.localErrorMessage.set('Only live sessions can receive feedback.');
+      this.feedbackFormError.set('Only live sessions can receive feedback.');
       return;
     }
 
     if (COMMENT_REQUIRED_TYPES.includes(this.selectedType()) && !this.comment.trim()) {
-      this.localErrorMessage.set('Comment is required for this feedback type.');
+      this.feedbackFormError.set('Comment is required for this feedback type.');
       return;
     }
 
@@ -262,7 +271,7 @@ export class ActiveSessionComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.uploading.set(false);
-        this.localErrorMessage.set(
+        this.feedbackFormError.set(
           error?.error?.message || 'Failed to submit feedback.',
         );
       },
