@@ -259,8 +259,45 @@ export class SessionsService {
         status: true,
         pausedAt: true,
         pausedDurationSeconds: true,
+        campaignId: true,
       },
     });
+
+    await this.forceEndLiveSessions(sessions);
+  }
+
+  async forceEndLiveSessionsForTester(testerId: string): Promise<void> {
+    const sessions = await this.prisma.testSession.findMany({
+      where: {
+        testerId,
+        status: { in: [SessionStatus.LIVE, SessionStatus.PAUSED] },
+      },
+      select: {
+        id: true,
+        applicationId: true,
+        campaignId: true,
+        startedAt: true,
+        status: true,
+        pausedAt: true,
+        pausedDurationSeconds: true,
+      },
+    });
+
+    await this.forceEndLiveSessions(sessions);
+  }
+
+  private async forceEndLiveSessions(
+    sessions: Array<{
+      id: string;
+      applicationId: string;
+      campaignId: string;
+      startedAt: Date;
+      status: SessionStatus;
+      pausedAt: Date | null;
+      pausedDurationSeconds: number;
+    }>,
+  ): Promise<void> {
+    const campaignIds = new Set<string>();
 
     for (const session of sessions) {
       const endedAt = new Date();
@@ -286,9 +323,10 @@ export class SessionsService {
       });
 
       this.realtimeGateway.broadcastSessionStatus(session.id, updatedSession);
+      campaignIds.add(session.campaignId);
     }
 
-    if (sessions.length > 0) {
+    for (const campaignId of campaignIds) {
       this.realtimeGateway.broadcastCampaignTimelineChanged(campaignId);
     }
   }

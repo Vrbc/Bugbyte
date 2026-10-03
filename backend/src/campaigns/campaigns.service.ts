@@ -586,6 +586,7 @@ export class CampaignsService {
 
     const where: Prisma.PlaytestCampaignWhereInput = {
       status: CampaignStatus.ACTIVE,
+      developer: { isActive: true, deletedAt: null },
       ...(query.platform ? { requiredPlatforms: { has: query.platform } } : {}),
       ...(query.search
         ? {
@@ -629,6 +630,7 @@ export class CampaignsService {
       where: {
         id,
         status: { not: CampaignStatus.DRAFT },
+        developer: { isActive: true, deletedAt: null },
       },
       select: this.publicCampaignDetailsSelect(),
     });

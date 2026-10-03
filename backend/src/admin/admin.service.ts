@@ -3,14 +3,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  ApplicationStatus,
+  BuildStatus,
+  CampaignStatus,
+  GameStatus,
+  Prisma,
+  UserRole,
+} from '@prisma/client';
 import { buildPaginatedResult } from 'src/common/paginate.util';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SessionsService } from 'src/sessions/sessions.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sessionsService: SessionsService,
+  ) {}
 
   async getAllUsers(query: AdminUsersQueryDto) {
     const { page = 1, limit = 20, search, role } = query;
@@ -80,14 +91,21 @@ export class AdminService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    if (user.role === 'ADMIN') {
+    if (user.role === UserRole.ADMIN) {
       throw new BadRequestException('Cannot delete admin users');
     }
     if (user.deletedAt) {
       throw new BadRequestException('User is already deleted');
     }
 
-    const suffix = `__deleted_${Date.now()}`;
+    if (user.role === UserRole.DEVELOPER) {
+      await this.deactivateDeveloperResources(user.id);
+    } else {
+      await this.sessionsService.forceEndLiveSessionsForTester(user.id);
+      await this.cancelPendingApplicationsForTester(user.id);
+    }
+
+    const suffix = `__deleted_${Date.now()}_${user.id}`;
 
     return this.prisma.user.update({
       where: { id: userId },
@@ -99,6 +117,67 @@ export class AdminService {
         passwordHash: '',
       },
       select: { id: true },
+    });
+  }
+
+  private async deactivateDeveloperResources(developerId: string): Promise<void> {
+    const activeCampaigns = await this.prisma.playtestCampaign.findMany({
+      where: {
+        developerId,
+        status: { in: [CampaignStatus.ACTIVE, CampaignStatus.PAUSED] },
+      },
+      select: { id: true },
+    });
+
+    for (const campaign of activeCampaigns) {
+      await this.sessionsService.forceEndLiveSessionsForCampaign(campaign.id);
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.campaignApplication.updateMany({
+        where: {
+          campaign: { developerId },
+          status: {
+            in: [ApplicationStatus.PENDING, ApplicationStatus.ACCEPTED],
+          },
+          testSession: { is: null },
+        },
+        data: { status: ApplicationStatus.CANCELLED },
+      }),
+      this.prisma.playtestCampaign.updateMany({
+        where: {
+          developerId,
+          status: { not: CampaignStatus.ARCHIVED },
+        },
+        data: { status: CampaignStatus.ARCHIVED },
+      }),
+      this.prisma.gameBuild.updateMany({
+        where: {
+          game: { developerId },
+          status: { not: BuildStatus.ARCHIVED },
+        },
+        data: { status: BuildStatus.ARCHIVED },
+      }),
+      this.prisma.game.updateMany({
+        where: {
+          developerId,
+          status: { not: GameStatus.ARCHIVED },
+        },
+        data: { status: GameStatus.ARCHIVED },
+      }),
+    ]);
+  }
+
+  private async cancelPendingApplicationsForTester(
+    testerId: string,
+  ): Promise<void> {
+    await this.prisma.campaignApplication.updateMany({
+      where: {
+        testerId,
+        status: { in: [ApplicationStatus.PENDING, ApplicationStatus.ACCEPTED] },
+        testSession: { is: null },
+      },
+      data: { status: ApplicationStatus.CANCELLED },
     });
   }
 }
