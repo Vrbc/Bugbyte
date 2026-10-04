@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, takeUntil } from 'rxjs';
+import { catchError, exhaustMap, map, of, switchMap, takeUntil } from 'rxjs';
 import { SessionSocketService } from '../../realtime/session-socket.service';
 import { SessionsService } from '../sessions.service';
 import { sessionActions } from './session.actions';
@@ -26,7 +26,7 @@ export class SessionEffects {
   pauseSession$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sessionActions.pauseSession),
-      switchMap(({ sessionId }) =>
+      exhaustMap(({ sessionId }) =>
         this.sessionsService.pauseSession(sessionId).pipe(
           map((session) => sessionActions.pauseSessionSuccess({ session })),
           catchError((error) =>

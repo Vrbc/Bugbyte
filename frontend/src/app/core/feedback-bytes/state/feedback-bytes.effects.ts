@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, filter, map, merge, of, switchMap, takeUntil, tap } from 'rxjs';
+import { catchError, concatMap, filter, map, merge, of, switchMap, takeUntil, tap } from 'rxjs';
 import { FeedbackBytesService } from '../feedback-bytes.service';
 import { SessionSocketService } from '../../realtime/session-socket.service';
 import { feedbackBytesActions } from './feedback-bytes.actions';
@@ -42,7 +42,7 @@ export class FeedbackBytesEffects {
   submitFeedbackByte$ = createEffect(() =>
     this.actions$.pipe(
       ofType(feedbackBytesActions.submitFeedbackByte),
-      switchMap(({ sessionId, request }) =>
+      concatMap(({ sessionId, request }) =>
         this.feedbackBytesService.createFeedbackByte(sessionId, request).pipe(
           map((feedbackByte) => feedbackBytesActions.submitFeedbackByteSuccess({ feedbackByte })),
           catchError((error) =>
