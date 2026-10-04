@@ -50,74 +50,38 @@ export const routes: Routes = [
       {
         path: 'games',
         component: DeveloperGamesComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        }
       },
       {
         path: 'games/new',
         component: CreateGameComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'games/:id/edit',
         component: EditGameComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'games/:id',
         component: GameDetailsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'campaigns',
         component: DeveloperCampaignsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'campaigns/new',
         component: CreateCampaignComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'campaigns/:id/edit',
         component: EditCampaignComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'sessions/:id/review',
         component: DeveloperSessionReviewComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        },
       },
       {
         path: 'campaigns/:id',
         component: CampaignDetailsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['DEVELOPER'],
-        }
       }
     ],
   },
@@ -134,42 +98,22 @@ export const routes: Routes = [
       {
         path: 'campaigns',
         component: TesterCampaignsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['TESTER'],
-        },
       },
       {
         path: 'campaigns/:id',
         component: TesterCampaignsDetailsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['TESTER'],
-        },
       },
       {
         path: 'applications',
         component: TesterApplicationsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['TESTER'],
-        },
       },
       {
         path: 'sessions',
         component: TesterSessionsComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['TESTER'],
-        },
       },
       {
         path: 'sessions/:id/live',
         component: ActiveSessionComponent,
-        canActivate: [roleGuard],
-        data: {
-          roles: ['TESTER'],
-        },
       },
       
     ],
