@@ -22,6 +22,7 @@ import { TesterSessionsComponent } from './pages/tester/sessions/tester-sessions
 import { EditGameComponent } from './pages/developer/games/edit-game-component/edit-game-component';
 import { EditCampaignComponent } from './pages/developer/campaigns/edit-campaign-component/edit-campaign-component';
 import { AdminUsersComponent } from './pages/admin/users/admin-users-component/admin-users-component';
+import { AccountComponent } from './pages/account/account-component/account-component';
 
 export const routes: Routes = [
   {
@@ -46,6 +47,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: DeveloperDashboard,
+      },
+      {
+        path: 'account',
+        component: AccountComponent,
       },
       {
         path: 'games',
@@ -94,6 +99,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: TesterDashboard,
+      },
+      {
+        path: 'account',
+        component: AccountComponent,
       },
       {
         path: 'campaigns',

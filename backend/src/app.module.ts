@@ -16,6 +16,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { AdminModule } from './admin/admin.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AdminModule } from './admin/admin.module';
     RealtimeModule,
     UploadsModule,
     AdminModule,
+    AccountModule,
   ],
   controllers: [AppController],
   providers: [AppService],

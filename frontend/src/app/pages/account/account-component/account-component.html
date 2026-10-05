@@ -1,0 +1,57 @@
+<section class="mx-auto flex max-w-3xl flex-col gap-bb-md">
+  <div>
+    @if (account(); as profile) {
+      <p class="font-mono text-label-mono uppercase tracking-widest" [class]="profile.role === 'DEVELOPER' ? 'text-cyan' : 'text-purple'">
+        {{ profile.role === 'DEVELOPER' ? 'Developer account' : 'Tester account' }}
+      </p>
+    }
+    <h1 class="mt-1 font-display text-display-lg-mobile">Account</h1>
+    <p class="mt-1 font-body text-body-md text-on-surface-variant">Review your account details and keep your profile up to date.</p>
+  </div>
+
+  @if (loading()) { <app-loading-spinner label="Loading account..." /> }
+  @if (errorMessage()) { <app-card><p class="text-bug">{{ errorMessage() }}</p></app-card> }
+
+  @if (!loading() && account(); as profile) {
+    <app-card>
+      <h2 class="mb-bb-sm font-display text-headline-md">Account information</h2>
+      <div class="grid gap-bb-sm md:grid-cols-2">
+        <app-input label="Username" [ngModel]="profile.username" name="username" [disabled]="true" />
+        <app-input label="Email address" type="email" [ngModel]="profile.email" name="email" [disabled]="true" />
+      </div>
+    </app-card>
+
+    @if (profile.role === 'DEVELOPER') {
+      <app-card>
+        <form class="flex flex-col gap-bb-sm" (ngSubmit)="save()">
+          <div><h2 class="font-display text-headline-md">Studio profile</h2><p class="mt-1 font-body text-body-md text-on-surface-variant">This information identifies your studio in Bugbyte.</p></div>
+          <app-input label="Studio name" [(ngModel)]="studioName" name="studioName" [required]="true" />
+          <app-input label="Bio" [multiline]="true" [rows]="4" [(ngModel)]="bio" name="bio" />
+          <app-input label="Website URL" type="url" [(ngModel)]="websiteUrl" name="websiteUrl" />
+          @if (formErrorMessage()) { <p class="text-bug">{{ formErrorMessage() }}</p> }
+          @if (successMessage()) { <p class="text-positive">{{ successMessage() }}</p> }
+          <div class="flex flex-wrap gap-bb-sm"><app-button type="submit" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save changes' }}</app-button><app-button type="button" variant="secondary" [disabled]="saving()" (click)="resetForm()">Cancel</app-button></div>
+        </form>
+      </app-card>
+    } @else {
+      <app-card>
+        <div class="flex flex-wrap items-center justify-between gap-bb-sm"><div><h2 class="font-display text-headline-md">Tester progress</h2><p class="mt-1 font-body text-body-md text-on-surface-variant">Earn reputation through helpful playtest feedback.</p></div><app-status-badge [status]="profile.testerProfile.level" /></div>
+        <div class="mt-bb-sm grid grid-cols-3 gap-bb-sm text-center">
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs"><p class="font-mono text-label-mono text-on-surface-variant">Rating</p><p class="font-display text-headline-md">{{ profile.testerProfile.rating }}</p></div>
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs"><p class="font-mono text-label-mono text-on-surface-variant">Reputation</p><p class="font-display text-headline-md">{{ profile.testerProfile.reputationPoints }}</p></div>
+          <div class="rounded-sm border border-border bg-level-0 p-bb-xs"><p class="font-mono text-label-mono text-on-surface-variant">Experience</p><p class="font-display text-body-md">{{ profile.testerProfile.experienceLevel }}</p></div>
+        </div>
+      </app-card>
+      <app-card>
+        <form class="flex flex-col gap-bb-sm" (ngSubmit)="save()">
+          <div><h2 class="font-display text-headline-md">Testing preferences</h2><p class="mt-1 font-body text-body-md text-on-surface-variant">Used to match you with relevant playtests.</p></div>
+          <div class="flex flex-col gap-bb-xs"><span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Platforms</span><app-toggle-chip-group [options]="availablePlatforms" [selected]="selectedPlatforms" (toggleOption)="togglePlatform($event)" /></div>
+          <div class="flex flex-col gap-bb-xs"><span class="font-mono text-label-mono uppercase tracking-widest text-on-surface-variant">Favorite genres</span><app-toggle-chip-group [options]="availableGenres" [selected]="selectedGenres" (toggleOption)="toggleGenre($event)" /></div>
+          @if (formErrorMessage()) { <p class="text-bug">{{ formErrorMessage() }}</p> }
+          @if (successMessage()) { <p class="text-positive">{{ successMessage() }}</p> }
+          <div class="flex flex-wrap gap-bb-sm"><app-button type="submit" [disabled]="saving()">{{ saving() ? 'Saving...' : 'Save changes' }}</app-button><app-button type="button" variant="secondary" [disabled]="saving()" (click)="resetForm()">Cancel</app-button></div>
+        </form>
+      </app-card>
+    }
+  }
+</section>

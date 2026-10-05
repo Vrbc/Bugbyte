@@ -12,12 +12,14 @@ interface NavItem {
 
 const DEVELOPER_NAV: NavItem[] = [
   { path: '/developer/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
+  { path: '/developer/account', label: 'Account', icon: 'manage_accounts' },
   { path: '/developer/games', label: 'My Games', icon: 'sports_esports' },
   { path: '/developer/campaigns', label: 'Campaigns', icon: 'campaign' },
 ];
 
 const TESTER_NAV: NavItem[] = [
   { path: '/tester/dashboard', label: 'Dashboard', icon: 'space_dashboard' },
+  { path: '/tester/account', label: 'Account', icon: 'manage_accounts' },
   { path: '/tester/campaigns', label: 'Discover Tests', icon: 'travel_explore' },
   { path: '/tester/applications', label: 'My Applications', icon: 'assignment_turned_in' },
   { path: '/tester/sessions', label: 'My Sessions', icon: 'timeline' },

@@ -120,7 +120,9 @@ export class AdminService {
     });
   }
 
-  private async deactivateDeveloperResources(developerId: string): Promise<void> {
+  private async deactivateDeveloperResources(
+    developerId: string,
+  ): Promise<void> {
     const activeCampaigns = await this.prisma.playtestCampaign.findMany({
       where: {
         developerId,
