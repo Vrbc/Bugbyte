@@ -71,8 +71,7 @@ export class SessionEffects {
     ),
   );
 
-  // bridges the sockets session update push into the store, scoped to the
-  // session currently being watched
+  
   sessionUpdated$ = createEffect(() =>
     this.actions$.pipe(
       ofType(sessionActions.loadSession),

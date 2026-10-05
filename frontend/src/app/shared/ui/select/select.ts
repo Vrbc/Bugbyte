@@ -38,11 +38,6 @@ export class Select implements ControlValueAccessor, AfterViewInit, OnDestroy {
   private onTouched: () => void = () => {};
 
   constructor() {
-    // <option>s are projected by the consumer and can arrive asynchronously (e.g. a
-    // dependent "build" select loaded after its "game" select) — a plain [value] binding
-    // silently fails to select an option that doesn't exist in the DOM yet, and Angular
-    // never re-applies it once the option shows up. Re-sync imperatively whenever this
-    // component re-renders...
     effect(() => {
       const currentValue = this.value();
       this.selectRef().nativeElement.value = currentValue;
@@ -50,8 +45,6 @@ export class Select implements ControlValueAccessor, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // ...and also when the projected <option> list itself changes, since that alone
-    // doesn't re-run the effect above.
     const el = this.selectRef().nativeElement;
     this.optionsObserver = new MutationObserver(() => {
       el.value = this.value();

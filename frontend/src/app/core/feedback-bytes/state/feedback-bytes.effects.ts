@@ -55,8 +55,7 @@ export class FeedbackBytesEffects {
     ),
   );
 
-  // bridges the live feedback push and the reconnect triggered 
-  // reload for whichever sessions feed is currently open
+  
   feedbackSocketBridge$ = createEffect(() =>
     this.actions$.pipe(
       ofType(feedbackBytesActions.loadSessionFeedbackBytes),

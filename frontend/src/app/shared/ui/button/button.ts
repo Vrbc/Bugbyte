@@ -12,8 +12,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
     'bg-transparent cursor-pointer border border-border text-on-surface-variant hover:-translate-y-0.5 hover:border-bug hover:text-bug',
 };
 
-// Exported so non-<button> elements (e.g. an <a routerLink> styled as a CTA) can reuse the
-// exact same look without duplicating the class string.
+
 export function buttonClasses(variant: ButtonVariant = 'primary', fullWidth = false): string {
   return `inline-flex cursor-pointer items-center justify-center gap-bb-xs rounded-sm px-bb-sm py-bb-xs font-body text-body-md font-semibold transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50 ${fullWidth ? 'w-full' : ''} ${VARIANT_CLASSES[variant]}`;
 }

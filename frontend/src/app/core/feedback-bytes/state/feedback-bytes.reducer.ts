@@ -93,9 +93,7 @@ export const feedbackBytesFeature = createFeature({
       submitting: false,
       submitError: error,
     })),
-    // Pushed from the socket bridge effect - guarded against double-counting
-    // `total` for feedback the current tab also just submitted itself, since
-    // the server echoes new feedback back to the room its author is in too.
+
     on(feedbackBytesActions.feedbackByteReceived, (state, { feedbackByte }): FeedbackBytesState => {
       const isNew = !state.entities[feedbackByte.id];
       return feedbackBytesAdapter.upsertOne(feedbackByte, {
